@@ -73,7 +73,7 @@ jobs:
         uses: docker/setup-qemu-action@v3
 
       - name: Build ${{ matrix.addon }} add-on for ${{ matrix.arch }}
-        uses: home-assistant/builder@2024.08.2
+        uses: home-assistant/builder@2026.09.0
         with:
           args: |
             ${{ env.BUILD_ARGS }} \
