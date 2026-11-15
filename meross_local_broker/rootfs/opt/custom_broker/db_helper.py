@@ -27,8 +27,12 @@ class DbHelper:
         self._s = db_session
 
     def add_update_user(self, email: str, password: str, user_key: str, user_id: int) -> User:
-        # Check if the given user/password already exists or is valid.
+        # `password` is the clear password. The local account is a singleton, so
+        # changing its login must update the existing row instead of inserting a
+        # duplicate user_id.
         u = self._s.query(User).filter(User.email == email).first()
+        if u is None and user_id is not None:
+            u = self._s.query(User).filter(User.user_id == user_id).first()
         if u is None:
             l.info(f"User %s not found in db. Adding a new entry...", email)
             if user_key is None:
@@ -40,14 +44,15 @@ class DbHelper:
             self._s.add(u)
             self._s.commit()
         else:
-            l.warning(f"User %s already exists. Updating its password/userid/mqttkey...", email)
+            l.warning(f"User %s already exists. Updating its password/email...", email)
             salt = u.salt
-            hashed_pass = _hash_password(salt=salt, password=password)
+            hashed_pass = _hash_password(salt=salt, password=password, pre_apply_md5=True)
             u.email = email
             u.password = hashed_pass
             u.password_upgraded = True
-            if user_key is not None:
-                u.mqtt_key = user_key        
+            # Keep the existing key so already-paired devices stay authenticated.
+            if not u.mqtt_key and user_key:
+                u.mqtt_key = user_key
 
             self._s.add(u)
             self._s.commit()

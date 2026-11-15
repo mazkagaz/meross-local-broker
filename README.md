@@ -9,11 +9,11 @@ sans dépendre du cloud pour l'usage quotidien.
 
 ## Les trois briques du montage
 
-| Brique | Rôle | Dépôt |
-|---|---|---|
+| Brique                  | Rôle                              | Dépôt                                                                           |
+| ----------------------- | --------------------------------- | ------------------------------------------------------------------------------- |
 | **Meross Local Broker** | add-on : broker MQTT + API locale | [mazkagaz/meross-local-broker](https://github.com/mazkagaz/meross-local-broker) |
-| **Meross Cloud IoT** | intégration Home Assistant (HACS) | [mazkagaz/meross-cloud](https://github.com/mazkagaz/meross-cloud) |
-| **Local Pairer** | application Android d'appairage | [mazkagaz/meross-local-pairer](https://github.com/mazkagaz/meross-local-pairer) |
+| **Meross Cloud IoT**    | intégration Home Assistant (HACS) | [mazkagaz/meross-cloud](https://github.com/mazkagaz/meross-cloud)               |
+| **Local Pairer**        | application Android d'appairage   | [mazkagaz/meross-local-pairer](https://github.com/mazkagaz/meross-local-pairer) |
 
 ```
 MRS100 ──MQTT/TLS──> add-on Meross Local Broker ──API/MQTT──> intégration HA
@@ -49,8 +49,8 @@ Le bouton ci-dessous ouvre directement la boîte de dialogue :
 ### 2. Créer le compte local du broker
 
 1. Ouvrir le panneau **Local Meross Broker** de l'add-on.
-2. Créer un compte local, par exemple `meross@local`, avec un mot de passe.
-3. Laisser **Meross Link** désactivé pour un fonctionnement 100 % local.
+2. Créer un compte local, par exemple `meross-local`, avec un mot de passe.
+3. Aucun identifiant cloud Meross n’est demandé : ce compte reste local.
 4. Valider. L'add-on redémarre ses services.
 
 Ce compte sert uniquement au broker local. Ce n'est pas votre compte Meross
@@ -62,7 +62,7 @@ En cas de besoin, la même opération peut être faite en ligne de commande
 ```bash
 curl -s -X PUT http://homeassistant.local:2003/_admin_/configuration \
   -H 'Content-Type: application/json' \
-  -d '{"email":"meross@local","password":"MotDePasseLocal","enableMerossLink":false}'
+  -d '{"email":"meross-local","password":"MotDePasseLocal"}'
 ```
 
 La réponse contient `userId` et `mqttKey`. Le `userId` vaut normalement `1`.
@@ -87,13 +87,13 @@ L'intégration s'installe avec **HACS**, puis se configure en mode
 
 Champs usuels :
 
-| Champ | Valeur |
-|---|---|
-| HTTP API Endpoint | `http://homeassistant.local:2003` |
-| MQTT Address | `homeassistant.local:2001` |
-| Email Address | le compte local, par exemple `meross@local` |
-| Password | le mot de passe local |
-| Skip MQTT certificate validation | coché |
+| Champ                            | Valeur                                      |
+| -------------------------------- | ------------------------------------------- |
+| HTTP API Endpoint                | `http://homeassistant.local:2003`           |
+| MQTT Address                     | `homeassistant.local:2001`                  |
+| Email Address (local login)      | le compte local, par exemple `meross-local` |
+| Password                         | le mot de passe local                       |
+| Skip MQTT certificate validation | coché                                       |
 
 Si `homeassistant.local` ne répond pas, utiliser l'adresse IP de Home Assistant.
 
@@ -122,14 +122,14 @@ appareils. Laisser vide pour utiliser le fuseau de Home Assistant.
 
 ## Dépannage
 
-| Problème | Vérifier |
-|---|---|
-| L'add-on ne démarre pas | architecture amd64/aarch64, logs du Supervisor, image GHCR publique |
-| Aucun appareil dans l'add-on | appairage Local Pairer, port MQTT 2001, Wi-Fi 2,4 GHz WPA2 |
-| L'intégration ne voit pas le broker | mode LAN-only, adresse HTTP 2003, certificat MQTT ignoré |
-| Entités absentes | appareil ONLINE dans l'add-on, puis redémarrer l'intégration |
-| Durées non conservées | logs `Stored roller-shutter config` / `Re-applied roller-shutter config` |
-| Appareil déjà lié au cloud Meross | réinitialiser l'appareil avant l'appairage local |
+| Problème                            | Vérifier                                                                 |
+| ----------------------------------- | ------------------------------------------------------------------------ |
+| L'add-on ne démarre pas             | architecture amd64/aarch64, logs du Supervisor, image GHCR publique      |
+| Aucun appareil dans l'add-on        | appairage Local Pairer, port MQTT 2001, Wi-Fi 2,4 GHz WPA2               |
+| L'intégration ne voit pas le broker | mode LAN-only, adresse HTTP 2003, certificat MQTT ignoré                 |
+| Entités absentes                    | appareil ONLINE dans l'add-on, puis redémarrer l'intégration             |
+| Durées non conservées               | logs `Stored roller-shutter config` / `Re-applied roller-shutter config` |
+| Appareil déjà lié au cloud Meross   | réinitialiser l'appareil avant l'appairage local                         |
 
 ## Documentation technique
 

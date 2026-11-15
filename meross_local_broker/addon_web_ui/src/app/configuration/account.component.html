@@ -1,7 +1,7 @@
 <div class="configuration-container">
   <div class="account-container">
     <mat-card class="account-card">
-      <mat-card-title>Account Configuration </mat-card-title>
+      <mat-card-title>Local account</mat-card-title>
       <mat-card-content>
         <div *ngIf="!reconfigure">
           <p>An account is already configured. If you want to change it, click on the following button.</p>
@@ -9,13 +9,16 @@
         </div>
         <form [formGroup]="accountForm" (ngSubmit)="onSubmit()" *ngIf="reconfigure">
           <p>
-            Please configure the account credentials to be used for device pairing. These are the credentials info to be
-            used with the Meross Custom Pairer app to pair your devices with this borker.
+            Create a <b>local login</b> for this broker. It is used by Local Pairer and by the Home Assistant
+            integration. This account is independent from Meross: the add-on never contacts the Meross cloud and never
+            stores your Meross credentials.
           </p>
+          <p><b>Do not use your official Meross account email or password here.</b> Choose a dedicated local login.</p>
           <div class="form-container">
             <mat-form-field>
-              <mat-label>Account Email</mat-label>
-              <input type="text" formControlName="email" matInput placeholder="meross@local" required />
+              <mat-label>Login (email or username)</mat-label>
+              <input type="text" formControlName="email" matInput placeholder="meross-local" required />
+              <mat-hint>Example: meross-local. An email address is not required.</mat-hint>
             </mat-form-field>
             <mat-form-field>
               <mat-label>Password</mat-label>
@@ -23,7 +26,7 @@
                 matInput
                 formControlName="password"
                 [type]="hidePassword ? 'password' : 'text'"
-                placeholder="Changeme!"
+                placeholder="Choose a password"
                 [required]="configuration === null"
               />
               <button
@@ -37,15 +40,6 @@
                 <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
               </button>
             </mat-form-field>
-            <div [ngClass]="{ 'meross-link-disclaimer': accountForm.controls.enableMerossLink.value }">
-              <mat-slide-toggle formControlName="enableMerossLink" class="vspaced" color="accent">
-                Enable Meross Link
-              </mat-slide-toggle>
-              <p *ngIf="accountForm.controls.enableMerossLink.value">
-                Meross Link enables the local broker to act as a relay against the Official cloud. To make this work,
-                make sure you specify your personal <b>meross account credentials</b>.
-              </p>
-            </div>
             <button
               class="vspaced"
               mat-raised-button

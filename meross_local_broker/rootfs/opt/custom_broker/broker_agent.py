@@ -613,19 +613,14 @@ def main():
     # Set all devices to unknown online status
     dbhelper.reset_device_online_status()
 
-    # Check if we need to enable the bridging feature
-    enable_meross_bridge = False
-    conf = dbhelper.get_configuration()
-    if conf is not None and conf.enable_meross_link:
-        l.info("Enabling meross bridging as per saved configuration")
-        enable_meross_bridge = True
-
+    # This fork is local-only. Ignore any legacy enable_meross_link value
+    # that may remain in an existing database.
     b = Broker(hostname=args.host,
                port=args.port,
                username=args.username,
                password=args.password,
                cert_ca=args.cert_ca,
-               enable_bridging=enable_meross_bridge,
+               enable_bridging=False,
                device_timezone=args.timezone)
     b.start_periodic_refresh()
 

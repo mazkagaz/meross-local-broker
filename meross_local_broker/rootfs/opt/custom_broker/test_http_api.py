@@ -112,6 +112,27 @@ class HttpApiCompatibilityTest(unittest.TestCase):
             'acc': 2, 'clientid': 'app:test'})
         self.assertEqual((response.status_code, response.data), (200, b'ok'))
 
+    def test_admin_configuration_is_local_only(self):
+        with patch('blueprints.admin.service_manager.restart_service'):
+            response = self.client.put('/_admin_/configuration', json={
+                'email': 'local-user',
+                'password': 'local-secret',
+                'enableMerossLink': True,
+            })
+        self.assertEqual(response.status_code, 200)
+        data = response.get_json()
+        self.assertEqual(data['email'], 'local-user')
+
+        from db_helper import dbhelper
+        self.assertFalse(dbhelper.get_configuration().enable_meross_link)
+        configuration = self.client.get('/_admin_/configuration').get_json()
+        self.assertFalse(configuration['enableMerossLink'])
+
+        login = self.envelope({'email': 'local-user', 'password': 'local-secret'})
+        response = self.client.post('/v1/Auth/signIn', json=login)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.get_json()['apiStatus'], 0)
+
     def test_admin_json_and_cors_preflight(self):
         response = self.client.get('/_admin_/devices', headers={'Origin': 'http://localhost'})
         self.assertEqual(response.status_code, 200)

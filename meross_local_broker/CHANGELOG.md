@@ -1,3 +1,12 @@
+## 0.0.1-alpha57
+
+- Local-only account configuration: remove the Meross Link toggle and the
+  cloud federation path. The add-on never contacts or stores Meross cloud
+  credentials.
+- Clarify the account form: "Login (email or username)", local account only.
+- Point the setup wizard to Local Pairer (GitHub Releases) and to the
+  `mazkagaz/meross-cloud` HACS integration instead of the legacy Play Store app.
+
 ## 0.0.1-alpha56
 
 - Fix add-on startup: `get_option` no longer aborts under `set -e` when an

@@ -11,8 +11,8 @@ Home Assistant. Il est prévu pour être utilisé avec :
 ## Démarrage
 
 1. Démarrer l'add-on.
-2. Ouvrir son panneau et créer un **compte local** (email et mot de passe).
-3. Laisser **Meross Link** désactivé pour un fonctionnement 100 % local.
+2. Ouvrir son panneau et créer un **compte local** (login et mot de passe).
+3. Ce compte est strictement local : aucun identifiant cloud Meross n’est utilisé.
 4. Appairer l'appareil avec Local Pairer.
 5. Ajouter l'intégration Home Assistant en mode **LAN-only broker**.
 
@@ -40,13 +40,13 @@ remontent ni tension, ni courant, ni consommation.
 
 ## Dépannage
 
-| Problème | Vérifier |
-|---|---|
-| L'appareil n'apparaît pas | appairage effectué, Wi-Fi 2,4 GHz WPA2, port 2001 |
-| Authentification refusée | identifiants du compte local, `UserId`/`mqttKey` |
-| Entités absentes dans HA | intégration en mode local, certificat MQTT ignoré |
-| Consommation à zéro | `device_timezone` renseigné ou fuseau HA correct |
-| Durées perdues | logs `Stored` / `Re-applied`, reconnexion de l'appareil |
+| Problème                  | Vérifier                                                |
+| ------------------------- | ------------------------------------------------------- |
+| L'appareil n'apparaît pas | appairage effectué, Wi-Fi 2,4 GHz WPA2, port 2001       |
+| Authentification refusée  | identifiants du compte local, `UserId`/`mqttKey`        |
+| Entités absentes dans HA  | intégration en mode local, certificat MQTT ignoré       |
+| Consommation à zéro       | `device_timezone` renseigné ou fuseau HA correct        |
+| Durées perdues            | logs `Stored` / `Re-applied`, reconnexion de l'appareil |
 
 ## Licence
 

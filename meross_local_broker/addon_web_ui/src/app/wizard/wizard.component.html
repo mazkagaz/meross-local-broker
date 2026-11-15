@@ -6,29 +6,27 @@
       <!--<button mat-button matStepperNext>Next</button>-->
     </mat-step>
     <mat-step>
-      <ng-template matStepLabel>Meross Pairer App</ng-template>
-      <p>Install the Meross Custom Pairer App on your Android Device.</p>
-      <div class="app-step-container">
-        <img src="assets/images/meross_pairer_qr.svg" width="200" />
-        <span> OR </span>
+      <ng-template matStepLabel>Local Pairer app</ng-template>
+      <p>Install <b>Local Pairer</b> on your Android device. It is distributed on GitHub, not on the Play Store.</p>
+      <p>
         <a
-          href="https://play.google.com/store/apps/details?id=com.albertogeniola.merossconf&pcampaignid=pcampaignidMKT-Other-global-all-co-prtnr-py-PartBadge-Mar2515-1"
+          mat-raised-button
+          color="accent"
+          href="https://github.com/mazkagaz/meross-local-pairer/releases/latest"
+          target="_blank"
+          rel="noopener"
         >
-          <img
-            alt="Get it on Google Play"
-            src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png"
-            width="160"
-          />
+          Download Local Pairer
         </a>
-      </div>
-      <p>Once done, click on the following button.</p>
-      <button mat-raised-button matStepperNext color="accent">I have installed the app &#8594;</button>
+      </p>
+      <p class="small">The legacy "Custom Pairer" application from the Play Store is not used by this add-on.</p>
+      <button mat-raised-button matStepperNext color="accent">I have installed Local Pairer &#8594;</button>
     </mat-step>
     <mat-step>
-      <ng-template matStepLabel>Login with custom pairer <span class="small">TEST</span></ng-template>
+      <ng-template matStepLabel>Login with Local Pairer</ng-template>
       <div class="login-step-container">
         <ul>
-          <li><b>Open the app</b> (Custom Pairer) and select <b>Login to Meross Local Addon</b></li>
+          <li><b>Open Local Pairer</b> and log in to the local broker API.</li>
           <li>
             Make sure <b>WiFi is enabled and connected</b> to the same network where Homeassistant is running. Please
             note that you will also need to <b>enable location (gps)</b> for the discovery, as Android requires GPS
@@ -47,8 +45,8 @@
     - ADDON_API_PORT is the port, on the host of HA, where the Addon is listening. The default is 2003.
             </pre>
           </li>
-          <li>Fill in the username and email fileds with the values chosen during the Step 1.</li>
-          <li>Tap on "Login", and make sure the login succeeds.</li>
+          <li>Enter the <b>local login</b> and <b>password</b> created in step 1.</li>
+          <li>Tap on "Login" and make sure the login succeeds.</li>
         </ul>
         <div>
           <button
@@ -73,10 +71,10 @@
     <mat-step optional>
       <ng-template matStepLabel>Pair Meross devices</ng-template>
       <div class="pair-step-container">
-        <p>You can now pair your Meross hardware devices with this local addon.</p>
-        <p>To do so, select the "Pair" option from the Meross Pairer menu and follow the app procedure.</p>
+        <p>You can now pair your Meross hardware devices with this local add-on.</p>
+        <p>In Local Pairer, follow the pairing procedure described in its README.</p>
         <p>
-          <b>Note: you must to reset your meross devices before being able to pair them with the Custom Pairer App.</b>
+          <b>Note: reset your Meross devices before pairing them with Local Pairer.</b>
         </p>
       </div>
     </mat-step>
@@ -84,11 +82,10 @@
       <ng-template matStepLabel>Configure HomeAssistant</ng-template>
       <div class="ha-step-container">
         <p>
-          You can now install and configure the Homeassistant Meross component to use this local addon as server rather
-          than the Official Meross cloud. To do so, please refer to the installation instructions
-          <a href="https://github.com/albertogeniola/meross-homeassistant#installation--configuration" target="_blank"
-            >here</a
-          >.
+          Install the <b>Meross Cloud IoT</b> integration from
+          <a href="https://github.com/mazkagaz/meross-cloud#installation-avec-hacs" target="_blank" rel="noopener"
+            >mazkagaz/meross-cloud</a
+          >, choose the <b>LAN-only broker</b> mode, and use the local login created in step 1.
         </p>
       </div>
     </mat-step>

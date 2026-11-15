@@ -11,7 +11,6 @@ from constants import DEFAULT_USER_ID
 from s6 import service_manager
 from setup import setup_account
 from datetime import datetime
-from meross_iot.model.http.exception import BadLoginException
 
 
 admin_blueprint = Blueprint('admin', __name__)
@@ -116,23 +115,15 @@ def set_account():
     payload = request.get_json(force=True)
     if payload is None:
         raise BadRequestError(msg=f"Missing json payload.")
-    email: str = payload.get('email')
+    login: str = (payload.get('email') or '').strip()
     password: str = payload.get('password')
-    meross_link: bool = payload.get('enableMerossLink', False)
-    if email is None:
-        raise BadRequestError(msg=f"Missing or invalid email.")
-    if password is None:
+    if not login:
+        raise BadRequestError(msg=f"Missing or invalid local login.")
+    if password is None or password == '':
         raise BadRequestError(msg=f"Missing or invalid password.")
-    if meross_link is None:
-        raise BadRequestError(msg=f"Missing or invalid enableMerossLink option.")
-    
-    # Setup Account
-    try:
-        user = setup_account(email=email, password=password, enable_meross_link=meross_link)
-    except BadLoginException as e:
-        raise BadRequestError(msg=f"Invalid credentials.")
-    
-    dbhelper.add_update_configuration(enable_meross_link=meross_link, local_user_id=user.user_id)
+
+    # Local-only account: never contact or store Meross cloud credentials.
+    user = setup_account(email=login, password=password)
 
     # As soon as the Account is set, we need to restart the mosquitto and the broker services
     _LOGGER.warn("Restarting broker & MQTT services (due to account configuration changes)")

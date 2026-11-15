@@ -107,13 +107,12 @@ export class AdminService {
       .pipe(catchError(this.handleError('getConfiguration', null)));
   }
 
-  updateConfiguration(email: string, password: string, enableMerossLink: boolean): Observable<Configuration> {
+  updateConfiguration(email: string, password: string): Observable<Configuration> {
     var headers = new HttpHeaders();
     headers.append('Content-Type', 'application/json; charset=utf-8');
     var data = {
       email: email,
       password: password,
-      enableMerossLink: enableMerossLink,
     };
 
     return this.http

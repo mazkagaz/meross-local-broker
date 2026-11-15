@@ -16,7 +16,6 @@ export class AccountComponent implements OnInit {
   accountForm = this.fb.group({
     email: ['', Validators.required],
     password: ['', Validators.required],
-    enableMerossLink: [false],
   });
 
   @Output() configurationUpdatedEvent = new EventEmitter<string>();
@@ -42,7 +41,6 @@ export class AccountComponent implements OnInit {
       this.configuration = conf;
       this.accountForm.controls.password.setValue(null);
       this.accountForm.controls.email.setValue(conf.email);
-      this.accountForm.controls.enableMerossLink.setValue(conf.enableMerossLink);
     }
   }
 
@@ -67,11 +65,7 @@ export class AccountComponent implements OnInit {
   onSubmit(): void {
     this.processing = true;
     this.adminService
-      .updateConfiguration(
-        this.accountForm.controls.email.value,
-        this.accountForm.controls.password.value,
-        this.accountForm.controls.enableMerossLink.value
-      )
+      .updateConfiguration(this.accountForm.controls.email.value, this.accountForm.controls.password.value)
       .subscribe((configuration: Configuration) => {
         if (configuration != null) {
           this.loadConfiguration(configuration);
