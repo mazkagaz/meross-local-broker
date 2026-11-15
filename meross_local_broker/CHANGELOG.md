@@ -1,3 +1,9 @@
+## 0.0.1-alpha58
+
+- Fix the upgrade path for accounts created with alpha56 or earlier: their
+  password was double-hashed by the admin panel. The first successful login
+  now repairs the stored hash transparently, so no account is locked out.
+
 ## 0.0.1-alpha57
 
 - Local-only account configuration: remove the Meross Link toggle and the

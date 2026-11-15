@@ -3,7 +3,7 @@
 # Licensed under the Apache License, Version 2.0. See NOTICE.
 # Modifications copyright 2026 the MRS100 fork contributors.
 
-from hashlib import sha256
+from hashlib import md5, sha256
 import uuid
 from typing import Tuple, Optional
 
@@ -57,8 +57,20 @@ def _user_login(email: str, password: str, providing_pre_hashed_password: bool) 
     computed_hashed_password = _hash_password(salt=user.salt, password=password, pre_apply_md5 = not providing_pre_hashed_password)
 
     if computed_hashed_password != user.password:
-        dbhelper.store_event(EventType.USER_LOGIN_FAILURE, details=f"User {email} has failed to log in via Local Meross API: wrong password.");
-        raise HttpApiError(ErrorCodes.CODE_WRONG_CREDENTIALS)
+        # alpha56 (and earlier) double-hashed passwords created through the
+        # admin panel. Accept that legacy form once, then rewrite the correct
+        # hash so the next login uses the standard path.
+        effective = (password if providing_pre_hashed_password
+                     else md5(password.encode("utf8")).hexdigest())
+        legacy_hashed_password = sha256(
+            f"{user.salt}{md5(effective.encode('utf8')).hexdigest()}".encode("utf8")).hexdigest()
+        if legacy_hashed_password == user.password:
+            dbhelper.set_user_password_hash(user, computed_hashed_password)
+            dbhelper.store_event(EventType.USER_PASSWORD_UPGRADE,
+                                 details=f"Legacy password hash upgraded for {email}.")
+        else:
+            dbhelper.store_event(EventType.USER_LOGIN_FAILURE, details=f"User {email} has failed to log in via Local Meross API: wrong password.");
+            raise HttpApiError(ErrorCodes.CODE_WRONG_CREDENTIALS)
 
     # If ok, generate an HTTP_TOKEN
     hash = sha256()

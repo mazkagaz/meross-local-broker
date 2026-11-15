@@ -58,6 +58,12 @@ class DbHelper:
             self._s.commit()
         return u
 
+    def set_user_password_hash(self, user: User, hashed_password: str) -> None:
+        user.password = hashed_password
+        user.password_upgraded = True
+        self._s.add(user)
+        self._s.commit()
+
     def store_new_user_token(self, userid, token) -> UserToken:
         token = UserToken(user_id=userid, token=token)
         self._s.add(token)

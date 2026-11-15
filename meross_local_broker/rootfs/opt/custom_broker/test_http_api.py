@@ -145,6 +145,26 @@ class HttpApiCompatibilityTest(unittest.TestCase):
         self.assertIn('POST', response.headers['Access-Control-Allow-Methods'])
         self.assertIn('Content-Type', response.headers['Access-Control-Allow-Headers'])
 
+    def test_legacy_double_hashed_password_is_upgraded(self):
+        from db_helper import dbhelper
+        from utilities import _hash_password
+
+        self.database.db_session.remove()
+        user = dbhelper.get_user_by_email('test@example.com')
+        salt = user.salt
+        effective = hashlib.md5(b'test-password').hexdigest()
+        user.password = hashlib.sha256(
+            f"{salt}{hashlib.md5(effective.encode()).hexdigest()}".encode()).hexdigest()
+        dbhelper._s.add(user)
+        dbhelper._s.commit()
+
+        response = self.sign_in()
+        self.assertEqual(response.get_json()['apiStatus'], 0)
+
+        self.database.db_session.remove()
+        self.assertEqual(dbhelper.get_user_by_email('test@example.com').password,
+                         _hash_password(salt=salt, password='test-password', pre_apply_md5=True))
+
     def test_database_reinitialization_preserves_account(self):
         self.database.db_session.remove()
         self.database.engine.dispose()
