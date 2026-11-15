@@ -3,7 +3,7 @@
 Cet add-on remplace le cloud Meross par un broker local (MQTT + API HTTP) pour
 Home Assistant. Il est prévu pour être utilisé avec :
 
-- [Local Pairer](https://github.com/mazkagaz/meross-local-pairer) pour appairer
+- [Meross Local Pairer](https://github.com/mazkagaz/meross-local-pairer) pour appairer
   un appareil Meross ;
 - [Meross Cloud IoT](https://github.com/mazkagaz/meross-cloud) pour créer les
   entités Home Assistant.
@@ -13,7 +13,7 @@ Home Assistant. Il est prévu pour être utilisé avec :
 1. Démarrer l'add-on.
 2. Ouvrir son panneau et créer un **compte local** (login et mot de passe).
 3. Ce compte est strictement local : aucun identifiant cloud Meross n’est utilisé.
-4. Appairer l'appareil avec Local Pairer.
+4. Appairer l'appareil avec Meross Local Pairer.
 5. Ajouter l'intégration Home Assistant en mode **LAN-only broker**.
 
 L'add-on expose :

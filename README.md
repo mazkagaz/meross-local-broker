@@ -13,13 +13,13 @@ sans dépendre du cloud pour l'usage quotidien.
 | ----------------------- | --------------------------------- | ------------------------------------------------------------------------------- |
 | **Meross Local Broker** | add-on : broker MQTT + API locale | [mazkagaz/meross-local-broker](https://github.com/mazkagaz/meross-local-broker) |
 | **Meross Cloud IoT**    | intégration Home Assistant (HACS) | [mazkagaz/meross-cloud](https://github.com/mazkagaz/meross-cloud)               |
-| **Local Pairer**        | application Android d'appairage   | [mazkagaz/meross-local-pairer](https://github.com/mazkagaz/meross-local-pairer) |
+| **Meross Local Pairer** | application Android d'appairage   | [mazkagaz/meross-local-pairer](https://github.com/mazkagaz/meross-local-pairer) |
 
 ```
 MRS100 ──MQTT/TLS──> add-on Meross Local Broker ──API/MQTT──> intégration HA
                             ^
                             │ appairage initial
-                       Local Pairer (Android)
+                       Meross Local Pairer (Android)
 ```
 
 ## Avant de commencer
@@ -27,7 +27,7 @@ MRS100 ──MQTT/TLS──> add-on Meross Local Broker ──API/MQTT──> in
 - Home Assistant OS ou Supervised (l'add-on a besoin du Supervisor).
 - HACS installé, pour l'intégration Home Assistant.
 - Un MRS100 et un Wi-Fi **2,4 GHz en WPA2**.
-- Un téléphone Android pour Local Pairer.
+- Un téléphone Android pour Meross Local Pairer.
 - Installations **amd64** ou **aarch64** uniquement (les architectures 32 bits
   ne sont plus construites).
 
@@ -70,7 +70,7 @@ La réponse contient `userId` et `mqttKey`. Le `userId` vaut normalement `1`.
 ### 3. Appairer le MRS100
 
 Suivre la procédure de
-[Local Pairer](https://github.com/mazkagaz/meross-local-pairer#appairage-pas-à-pas).
+[Meross Local Pairer](https://github.com/mazkagaz/meross-local-pairer#appairage-pas-à-pas).
 L'application configure le MRS100 pour qu'il se connecte à cet add-on.
 
 Une fois l'appairage terminé :
@@ -125,7 +125,7 @@ appareils. Laisser vide pour utiliser le fuseau de Home Assistant.
 | Problème                            | Vérifier                                                                 |
 | ----------------------------------- | ------------------------------------------------------------------------ |
 | L'add-on ne démarre pas             | architecture amd64/aarch64, logs du Supervisor, image GHCR publique      |
-| Aucun appareil dans l'add-on        | appairage Local Pairer, port MQTT 2001, Wi-Fi 2,4 GHz WPA2               |
+| Aucun appareil dans l'add-on        | appairage Meross Local Pairer, port MQTT 2001, Wi-Fi 2,4 GHz WPA2        |
 | L'intégration ne voit pas le broker | mode LAN-only, adresse HTTP 2003, certificat MQTT ignoré                 |
 | Entités absentes                    | appareil ONLINE dans l'add-on, puis redémarrer l'intégration             |
 | Durées non conservées               | logs `Stored roller-shutter config` / `Re-applied roller-shutter config` |

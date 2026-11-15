@@ -5,7 +5,7 @@ API HTTP) pour les appareils appairés sur le réseau local.
 
 - Installation et utilisation : voir le
   [README du dépôt](https://github.com/mazkagaz/meross-local-broker#readme).
-- Appairage : [Local Pairer](https://github.com/mazkagaz/meross-local-pairer).
+- Appairage : [Meross Local Pairer](https://github.com/mazkagaz/meross-local-pairer).
 - Entités Home Assistant :
   [Meross Cloud IoT](https://github.com/mazkagaz/meross-cloud).
 

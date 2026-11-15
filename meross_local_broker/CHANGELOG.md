@@ -1,3 +1,8 @@
+## 0.0.1-alpha60
+
+- Refer to the Android pairing app as **Meross Local Pairer** in the Web UI
+  and documentation.
+
 ## 0.0.1-alpha59
 
 - The About page now shows the add-on version declared in `config.yaml`.
