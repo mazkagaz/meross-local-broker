@@ -1,3 +1,10 @@
+## 0.0.1-alpha61
+
+- Clarify add-on options with names and descriptions in the configuration tab.
+- Simplify the Web UI: the device and subdevice tiles are the only front page;
+  Setup, Service status and About move to a `...` menu in the top-right.
+- Remove the language selector while only English is available.
+
 ## 0.0.1-alpha60
 
 - Refer to the Android pairing app as **Meross Local Pairer** in the Web UI

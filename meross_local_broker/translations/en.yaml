@@ -1,0 +1,21 @@
+configuration:
+  reinit_db:
+    name: Reset database on startup
+    description: >-
+      Delete the local account and every paired device when the add-on starts.
+      Use this only to recover from a corrupted database.
+  advertise:
+    name: Advertise the local API
+    description: >-
+      Announce the HTTP API over mDNS so Meross Local Pairer can discover Home
+      Assistant automatically. Disable only when mDNS is unavailable on your
+      network.
+  debug_mode:
+    name: Debug logging
+    description: >-
+      Write detailed logs for troubleshooting. Keep disabled for normal use.
+  device_timezone:
+    name: Device timezone
+    description: >-
+      Timezone pushed to paired devices, for example Europe/Paris. Leave empty
+      to use the Home Assistant timezone.
