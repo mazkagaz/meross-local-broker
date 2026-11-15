@@ -1,76 +1,148 @@
-# Meross Local LAN Addon (MRS100 fork)
+# Meross Local Broker — add-on Home Assistant (fork MRS100)
 
-## MRS100 fork
+Add-on **non officiel** qui remplace le cloud Meross par un broker local pour
+Home Assistant. Il permet de contrôler les appareils Meross sur le réseau local,
+sans dépendre du cloud pour l'usage quotidien.
 
-This fork adds MRS100 / roller-shutter support to the local broker:
+![aarch64](https://img.shields.io/badge/aarch64-yes-green.svg)
+![amd64](https://img.shields.io/badge/amd64-yes-green.svg)
 
-- persists and re-applies `Appliance.RollerShutter.Config` (`signalOpen`/`signalClose`);
-- caches `RollerShutter.Position/State/Adjust`;
-- discovers the cover channel from `System.All`, `System.Ability`, or the `mrs100` type;
-- exposes `ability` and a `rollerShutter` object (config/position/adjust) in `/v1/Device/devList`;
-- includes Python 3 import fixes.
+## Les trois briques du montage
 
-### Install as an add-on
-
-Settings -> Add-ons -> Add-on Store -> three-dot menu -> Repositories, then add:
+| Brique | Rôle | Dépôt |
+|---|---|---|
+| **Meross Local Broker** | add-on : broker MQTT + API locale | [mazkagaz/meross-local-broker](https://github.com/mazkagaz/meross-local-broker) |
+| **Meross Cloud IoT** | intégration Home Assistant (HACS) | [mazkagaz/meross-cloud](https://github.com/mazkagaz/meross-cloud) |
+| **Local Pairer** | application Android d'appairage | [mazkagaz/meross-local-pairer](https://github.com/mazkagaz/meross-local-pairer) |
 
 ```
-https://github.com/mazkagaz/meross-local-broker
+MRS100 ──MQTT/TLS──> add-on Meross Local Broker ──API/MQTT──> intégration HA
+                            ^
+                            │ appairage initial
+                       Local Pairer (Android)
 ```
 
-Install **Meross Local Broker Addon (MRS100)**. HACS does not install add-ons;
-the companion `meross_cloud` integration is distributed separately.
+## Avant de commencer
 
-See `MRS100.md` for the patch details and `MRS100_PATCH.md` for the summary.
+- Home Assistant OS ou Supervised (l'add-on a besoin du Supervisor).
+- HACS installé, pour l'intégration Home Assistant.
+- Un MRS100 et un Wi-Fi **2,4 GHz en WPA2**.
+- Un téléphone Android pour Local Pairer.
+- Installations **amd64** ou **aarch64** uniquement (les architectures 32 bits
+  ne sont plus construites).
 
-See `TESTING.md` for the hardware/unit-test checklist and known validation gaps.
+## Installation complète
 
+### 1. Installer l'add-on
 
+Dans Home Assistant :
 
+1. **Paramètres → Modules complémentaires → Boutique de modules**.
+2. Menu **⋮ → Dépôts**.
+3. Ajouter `https://github.com/mazkagaz/meross-local-broker`.
+4. Installer **Meross Local Broker Addon (MRS100)**, puis démarrer.
 
-This repository contains the Meross Local LAN addon for HomeAssistant.
+Le bouton ci-dessous ouvre directement la boîte de dialogue :
 
-[![Open your Home Assistant instance and show the add add-on repository dialog with a specific repository URL pre-filled.](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fmazkagaz%2Fmeross-local-broker)
+[![Ouvrir mon Home Assistant](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fmazkagaz%2Fmeross-local-broker)
 
-## Add-ons
+### 2. Créer le compte local du broker
 
-This repository contains the following add-ons
+1. Ouvrir le panneau **Local Meross Broker** de l'add-on.
+2. Créer un compte local, par exemple `meross@local`, avec un mot de passe.
+3. Laisser **Meross Link** désactivé pour un fonctionnement 100 % local.
+4. Valider. L'add-on redémarre ses services.
 
-### [Meross Local Broker](./meross_local_broker)
+Ce compte sert uniquement au broker local. Ce n'est pas votre compte Meross
+cloud.
 
-![Supports aarch64 Architecture][aarch64-shield]
-![Supports amd64 Architecture][amd64-shield]
+En cas de besoin, la même opération peut être faite en ligne de commande
+(remplacer l'adresse et le mot de passe) :
 
-<!--
+```bash
+curl -s -X PUT http://homeassistant.local:2003/_admin_/configuration \
+  -H 'Content-Type: application/json' \
+  -d '{"email":"meross@local","password":"MotDePasseLocal","enableMerossLink":false}'
+```
 
-Notes to developers after forking or using the github template feature:
-- While developing comment out the 'image' key from 'example/config.yaml' to make the supervisor build the addon
-  - Remember to put this back when pushing up your changes.
-- When you merge to the 'main' branch of your repository a new build will be triggered.
-  - Make sure you adjust the 'version' key in 'example/config.yaml' when you do that.
-  - Make sure you update 'example/CHANGELOG.md' when you do that.
-  - The first time this runs you might need to adjust the image configuration on github container registry to make it public
-- Adjust the 'image' key in 'example/config.yaml' so it points to your username instead of 'home-assistant'.
-  - This is where the build images will be published to.
-- Rename the example directory.
-  - The 'slug' key in 'example/config.yaml' should match the directory name.
-- Adjust all keys/url's that points to 'home-assistant' to now point to your user/fork.
-- Share your repository on the forums https://community.home-assistant.io/c/projects/9
-- Do awesome stuff!
- -->
+La réponse contient `userId` et `mqttKey`. Le `userId` vaut normalement `1`.
 
-[aarch64-shield]: https://img.shields.io/badge/aarch64-yes-green.svg
-[amd64-shield]: https://img.shields.io/badge/amd64-yes-green.svg
+### 3. Appairer le MRS100
 
-## License and attribution
+Suivre la procédure de
+[Local Pairer](https://github.com/mazkagaz/meross-local-pairer#appairage-pas-à-pas).
+L'application configure le MRS100 pour qu'il se connecte à cet add-on.
 
-This is an **unofficial fork** of
-[albertogeniola/ha-meross-local-broker](https://github.com/albertogeniola/ha-meross-local-broker).
-Upstream code is Copyright Alberto Geniola and contributors under the
-**Apache License 2.0**; the license text is preserved in `LICENSE`.
-Fork modifications are Copyright 2026 the MRS100 fork contributors under the
-same license. See `NOTICE`, `MODIFICATIONS.md` and `LEGAL.md`.
+Une fois l'appairage terminé :
 
-Meross is a trademark of its respective owner. This fork is not affiliated
-with, endorsed by, or sponsored by Meross or the upstream author. No Meross
-firmware, APK or account secret is distributed here.
+- l'add-on doit journaliser la connexion du MRS100 et son passage **ONLINE** ;
+- `curl http://homeassistant.local:2003/_admin_/devices` doit afficher l'appareil.
+
+### 4. Installer l'intégration Home Assistant
+
+Suivre la procédure de
+[Meross Cloud IoT](https://github.com/mazkagaz/meross-cloud#installation-avec-hacs).
+L'intégration s'installe avec **HACS**, puis se configure en mode
+**LAN-only broker**.
+
+Champs usuels :
+
+| Champ | Valeur |
+|---|---|
+| HTTP API Endpoint | `http://homeassistant.local:2003` |
+| MQTT Address | `homeassistant.local:2001` |
+| Email Address | le compte local, par exemple `meross@local` |
+| Password | le mot de passe local |
+| Skip MQTT certificate validation | coché |
+
+Si `homeassistant.local` ne répond pas, utiliser l'adresse IP de Home Assistant.
+
+### 5. Vérifier
+
+Dans Home Assistant, l'appareil doit apparaître avec :
+
+- une entité `cover` pour le volet ;
+- deux entités `number` pour les durées d'ouverture/fermeture ;
+- deux boutons de calibration ;
+- un capteur **Calibration status**.
+
+## Utilisation
+
+- **Ouvrir/fermer** : entité `cover`.
+- **Durées** : entités `number` (10 à 120 secondes). Les valeurs sont
+  persistées par l'add-on et réappliquées après reconnexion.
+- **Calibration** : bouton **Start calibration**, puis suivi dans
+  **Calibration status** (`in_progress`, `success`, `timeout`,
+  `motor_blocked`, `failed_N`). **Stop calibration** interrompt le mouvement.
+
+## Réglage `device_timezone`
+
+L'option `device_timezone` pousse le fuseau et les règles d'heure d'été aux
+appareils. Laisser vide pour utiliser le fuseau de Home Assistant.
+
+## Dépannage
+
+| Problème | Vérifier |
+|---|---|
+| L'add-on ne démarre pas | architecture amd64/aarch64, logs du Supervisor, image GHCR publique |
+| Aucun appareil dans l'add-on | appairage Local Pairer, port MQTT 2001, Wi-Fi 2,4 GHz WPA2 |
+| L'intégration ne voit pas le broker | mode LAN-only, adresse HTTP 2003, certificat MQTT ignoré |
+| Entités absentes | appareil ONLINE dans l'add-on, puis redémarrer l'intégration |
+| Durées non conservées | logs `Stored roller-shutter config` / `Re-applied roller-shutter config` |
+| Appareil déjà lié au cloud Meross | réinitialiser l'appareil avant l'appairage local |
+
+## Documentation technique
+
+- [MRS100.md](MRS100.md) — détails du support MRS100.
+- [TESTING.md](TESTING.md) — tests unitaires et checklist matérielle.
+- [BUILDING.md](BUILDING.md) — construction de l'image et publication.
+
+## Origine et licence
+
+Fork non officiel de
+[albertogeniola/ha-meross-local-broker](https://github.com/albertogeniola/ha-meross-local-broker),
+sous **Apache License 2.0**. Le texte de licence et l'attribution upstream sont
+conservés dans `LICENSE`, `NOTICE`, `MODIFICATIONS.md` et `LEGAL.md`.
+
+Ce fork n'est ni affilié, ni approuvé, ni sponsorisé par Meross ou l'auteur
+upstream. Meross est une marque de son propriétaire respectif.

@@ -64,5 +64,6 @@ PYTHONPATH=. ../../../../.venv/bin/python -m unittest \
   test_mrs100_roller_shutter test_broker_agent_timezone test_http_api
 ```
 
-HACS cannot install add-ons; the companion `meross_cloud` integration is a
+HACS cannot install add-ons; the companion
+[Meross Cloud IoT integration](https://github.com/mazkagaz/meross-cloud) is a
 separate repository.

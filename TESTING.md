@@ -34,15 +34,17 @@ Expected: 28 tests OK.
    Link for local-only operation.
 2. Retrieve the local account `userId`/`key` (add-on data volume
    `/data/database.db`, users table) if your pairing tool wants manual
-   credentials. Alternatively point Custom Pairer at the local API
-   (`http://<home-assistant>:2003`) and log in with the local account.
-3. Pair the MRS100 to the local broker with Custom Pairer (or any client that
+   credentials. Alternatively point
+   [Local Pairer](https://github.com/mazkagaz/meross-local-pairer) at the local
+   API (`http://homeassistant.local:2003`) and log in with the local account.
+3. Pair the MRS100 to the local broker with Local Pairer (or any client that
    sends `Appliance.Config.Key` + `Appliance.Config.Wifi`).
 4. Confirm the device connects: add-on log should show the device online and
    the broker should see `/appliance/<uuid>/publish`.
-5. Install the companion `meross_cloud` integration (upstream or the HACS fork)
+5. Install the companion
+   [Meross Cloud IoT integration](https://github.com/mazkagaz/meross-cloud)
    and point it at the local API/MQTT; confirm the cover entity appears.
-6. Set open/close timings from HA/Custom Pairer. Reconnect the device and
+6. Set open/close timings from HA or Local Pairer. Reconnect the device and
    verify the add-on log:
    - `Stored roller-shutter config ...`
    - `Re-applied roller-shutter config ...`

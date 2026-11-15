@@ -1,15 +1,53 @@
-# Home Assistant Add-on: Meross Local Broker
+# Meross Local Broker
 
-This addon provides lan-local MQTT capabilities in combination with a fully home-assistant integrated web-ui. 
+Cet add-on remplace le cloud Meross par un broker local (MQTT + API HTTP) pour
+Home Assistant. Il est prévu pour être utilisé avec :
 
-## Configuration
+- [Local Pairer](https://github.com/mazkagaz/meross-local-pairer) pour appairer
+  un appareil Meross ;
+- [Meross Cloud IoT](https://github.com/mazkagaz/meross-cloud) pour créer les
+  entités Home Assistant.
 
-### Option: `device_timezone`
+## Démarrage
 
-Timezone (IANA name, e.g. `Europe/Rome`) pushed to the Meross devices together with the daylight-saving rules,
-exactly like the Meross cloud does when a device connects. Leave it empty to use the Home Assistant timezone.
+1. Démarrer l'add-on.
+2. Ouvrir son panneau et créer un **compte local** (email et mot de passe).
+3. Laisser **Meross Link** désactivé pour un fonctionnement 100 % local.
+4. Appairer l'appareil avec Local Pairer.
+5. Ajouter l'intégration Home Assistant en mode **LAN-only broker**.
 
-Devices paired to a local broker never receive a timezone, and power-metering plugs (mss310, mss210p, ...) do
-not report any electricity or consumption data until they get one. The agent checks the timezone reported by
-each device (`Appliance.System.All`, polled at startup, on device messages and every 60 seconds when stale) and
-sends `Appliance.System.Time` only when it is missing or different.
+L'add-on expose :
+
+- **2001/tcp** : broker MQTT (TLS) ;
+- **2003/tcp** : API HTTP et panneau web ;
+- **10001/tcp** : débogage distant.
+
+## Option `device_timezone`
+
+Fuseau horaire IANA (par exemple `Europe/Paris`) envoyé aux appareils avec les
+règles d'heure d'été, comme le fait le cloud Meross. Laisser vide pour utiliser
+le fuseau de Home Assistant.
+
+Sans fuseau, certains appareils de mesure (prises mss310, mss210p, etc.) ne
+remontent ni tension, ni courant, ni consommation.
+
+## Vérifications rapides
+
+- Appareil connecté : `curl http://homeassistant.local:2003/_admin_/devices`.
+- Journal de l'add-on : recherche de `ONLINE` et des messages
+  `Stored roller-shutter config` / `Re-applied roller-shutter config`.
+- Le broker MQTT doit être joignable sur le port 2001.
+
+## Dépannage
+
+| Problème | Vérifier |
+|---|---|
+| L'appareil n'apparaît pas | appairage effectué, Wi-Fi 2,4 GHz WPA2, port 2001 |
+| Authentification refusée | identifiants du compte local, `UserId`/`mqttKey` |
+| Entités absentes dans HA | intégration en mode local, certificat MQTT ignoré |
+| Consommation à zéro | `device_timezone` renseigné ou fuseau HA correct |
+| Durées perdues | logs `Stored` / `Re-applied`, reconnexion de l'appareil |
+
+## Licence
+
+Fork non officiel, Apache-2.0. Voir `NOTICE`, `MODIFICATIONS.md` et `LEGAL.md`.
