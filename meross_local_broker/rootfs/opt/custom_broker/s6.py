@@ -89,7 +89,7 @@ class ServiceManager:
     _SERVICE_DIRS = {
         "MQTT Service": ServiceDescriptor("MQTT Service", "/var/run/s6/legacy-services/mosquitto", "/var/log/mosquitto", "Mosquitto MQTT broker service where meross devices connect to."),
         "Local API": ServiceDescriptor("Local API", "/var/run/s6/legacy-services/api", "/var/log/api", "Local HTTP web API server"),
-        "Local Agent": ServiceDescriptor("Local Agent", "/var/run/s6/legacy-services/broker", "/var/log/broker", "Local Meross Agent running over MQTT service"),
+        "Local Agent": ServiceDescriptor("Local Agent", "/var/run/s6/legacy-services/broker", "/var/log/broker", "Meross Local Agent running over MQTT service"),
         "Web UI Proxy": ServiceDescriptor("Web UI Proxy", "/var/run/s6/legacy-services/nginx", "/var/log/nginx", "Web UI reverse proxy")
     }
 

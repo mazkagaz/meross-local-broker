@@ -50,7 +50,7 @@ Le bouton ci-dessous ouvre directement la boîte de dialogue :
 
 ### 2. Créer le compte local du broker
 
-1. Ouvrir le panneau **Local Meross Broker** de l'add-on.
+1. Ouvrir le panneau **Meross Local Broker** de l'add-on.
 2. Créer un compte local, par exemple `meross-local`, avec un mot de passe.
 3. Aucun identifiant cloud Meross n’est demandé : ce compte reste local.
 4. Valider. L'add-on redémarre ses services.

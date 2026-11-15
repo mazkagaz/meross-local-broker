@@ -1,3 +1,8 @@
+## 0.0.1-alpha64
+
+- Fix remaining product-name inconsistencies: the Home Assistant sidebar panel,
+  service descriptions and event messages now say **Meross Local Broker**.
+
 ## 0.0.1-alpha63
 
 - Refer to the Home Assistant integration as **Meross Local Cloud** in the

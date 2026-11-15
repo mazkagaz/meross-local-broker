@@ -1,5 +1,5 @@
 name: "Meross Local Broker"
-version: "0.0.1-alpha63"
+version: "0.0.1-alpha64"
 description: "LAN-only Meross broker with MRS100 roller-shutter support."
 slug: "meross_local_broker"
 image: "ghcr.io/mazkagaz/{arch}-meross_local_broker"
@@ -19,7 +19,7 @@ ingress: true
 ingress_port: 2003
 startup: services
 panel_icon: mdi:power-socket-us
-panel_title: Local Meross Broker
+panel_title: Meross Local Broker
 host_dbus: true
 homeassistant: "1.0.0"
 options:
