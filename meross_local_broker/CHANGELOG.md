@@ -1,3 +1,8 @@
+## 0.0.1-alpha67
+
+- Add the standard back arrow in the header of Setup, Service status and About
+  so these pages return to the paired-devices page.
+
 ## 0.0.1-alpha66
 
 - Service logs are decoded with replacement instead of failing with a 500

@@ -1,4 +1,7 @@
 <mat-toolbar class="mat-elevation-z6 navbar" color="primary">
+  <button *ngIf="showBackButton" mat-icon-button (click)="backToDevices()" aria-label="Back to devices">
+    <mat-icon>arrow_back</mat-icon>
+  </button>
   <a class="brand" routerLink="/home" routerLinkActive="active" translate>APP_NAME</a>
   <span fxFlex></span>
   <button mat-icon-button [matMenuTriggerFor]="appMenu" aria-label="More options">
