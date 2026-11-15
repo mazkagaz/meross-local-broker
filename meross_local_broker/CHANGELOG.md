@@ -1,3 +1,9 @@
+## 0.0.1-alpha65
+
+- Add **Forget device** to the device menu: removes the device, its channels,
+  subdevices and roller-shutter state from the broker database.
+- Regenerate the add-on icon from the transparent logo artwork.
+
 ## 0.0.1-alpha64
 
 - Fix remaining product-name inconsistencies: the Home Assistant sidebar panel,

@@ -45,4 +45,8 @@ export class DeviceStore {
   public updateDeviceName(deviceUuid: string, deviceName: string): Observable<Device> {
     return this.adminService.updateDevice(deviceUuid, { dev_name: deviceName });
   }
+
+  public refresh(): void {
+    this.devicesUpdate().subscribe((devices) => this._devices.next(devices));
+  }
 }

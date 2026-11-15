@@ -61,6 +61,19 @@ export class HomeComponent implements AfterViewInit, OnInit {
       data: { device: device },
     });
   }
+
+  forgetDevice(device: Device) {
+    const label = device.devName || device.uuid;
+    if (!window.confirm(`Forget ${label}? Reset the device afterwards to clear its pairing.`)) {
+      return;
+    }
+    this.adminService.deleteDevice(device.uuid).subscribe((deleted) => {
+      if (deleted) {
+        this.deviceStore.refresh();
+        this.snackBarService.open('Device forgotten.', 'ok', { duration: 2000 });
+      }
+    });
+  }
 }
 
 @Component({

@@ -120,6 +120,19 @@ class DbHelper:
     def get_all_devices(self) -> List[Device]:
         return self._s.query(Device).all()
 
+    def delete_device(self, device_uuid: str) -> bool:
+        device = self.get_device_by_uuid(device_uuid)
+        if device is None:
+            return False
+        for model in (DeviceChannel, SubDevice, RollerShutterConfig,
+                      RollerShutterStatus, RollerShutterAdjust, DeviceAbility):
+            column = model.hub_uuid if model is SubDevice else model.device_uuid
+            self._s.query(model).filter(column == device_uuid).delete(synchronize_session=False)
+        self._s.delete(device)
+        self._s.commit()
+        l.info("Forgot device %s", device_uuid)
+        return True
+
     def update_device_status(self, device_uuid: str, status: OnlineStatus) -> None:
         dev = self._s.query(Device).filter(Device.uuid == device_uuid).first()
         if dev is None:

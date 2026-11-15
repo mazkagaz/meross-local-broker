@@ -58,6 +58,13 @@ export class AdminService {
       );
   }
 
+  deleteDevice(uuid: string): Observable<boolean> {
+    return this.http.delete<any>(environment.backend + '/_admin_/devices/' + uuid).pipe(
+      map(() => true),
+      catchError(this.handleError<boolean>('deleteDevice', false))
+    );
+  }
+
   listDevices(): Observable<Device[]> {
     var headers = new HttpHeaders();
     headers.append('Content-Type', 'application/json; charset=utf-8');

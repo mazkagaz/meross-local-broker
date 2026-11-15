@@ -133,6 +133,16 @@ class HttpApiCompatibilityTest(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.get_json()['apiStatus'], 0)
 
+    def test_admin_can_forget_device(self):
+        from db_helper import dbhelper
+        dbhelper.associate_user_device(self.user.user_id, mac='AA:BB:CC:DD:EE:FF',
+                                       uuid='test-device-uuid', device_client_id='client')
+        response = self.client.delete('/_admin_/devices/test-device-uuid')
+        self.assertEqual(response.status_code, 204)
+        self.assertIsNone(dbhelper.get_device_by_uuid('test-device-uuid'))
+        response = self.client.delete('/_admin_/devices/test-device-uuid')
+        self.assertEqual(response.status_code, 400)
+
     def test_admin_json_and_cors_preflight(self):
         response = self.client.get('/_admin_/devices', headers={'Origin': 'http://localhost'})
         self.assertEqual(response.status_code, 200)

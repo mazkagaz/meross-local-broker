@@ -53,6 +53,15 @@ def update_device(uuid: str) -> Dict:
     return jsonify(Device.serialize(device))
 
 
+@admin_blueprint.route('/devices/<uuid>', methods=['DELETE'])
+def forget_device(uuid: str):
+    """Remove a paired device and its local state from the database."""
+    if not dbhelper.delete_device(uuid):
+        raise BadRequestError(msg=f"Device with UUID {uuid} does not exist")
+    _LOGGER.warning("Device %s has been forgotten", uuid)
+    return '', 204
+
+
 # TODO: check super-admin role...
 @admin_blueprint.route('/subdevices', methods=['GET'])
 def list_subdevices() -> List[Dict]:
