@@ -1,3 +1,9 @@
+## 0.0.1-alpha59
+
+- The About page now shows the add-on version declared in `config.yaml`.
+  The build workflow copies that version into the Web UI package before
+  building, so the displayed value can no longer drift (#10).
+
 ## 0.0.1-alpha58
 
 - Fix the upgrade path for accounts created with alpha56 or earlier: their
