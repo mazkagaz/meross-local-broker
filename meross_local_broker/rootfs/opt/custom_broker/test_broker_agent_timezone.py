@@ -167,6 +167,17 @@ class AgentMessageHandlingTest(unittest.TestCase):
             broker._handle_message_to_agent("/_agent", setack)
         self.assertEqual(broker.c.published, [])
 
+    def test_system_all_does_not_mark_connected_device_offline(self):
+        from meross_iot.model.enums import OnlineStatus
+
+        broker = make_broker("Europe/Rome")
+        payload = system_all_getack(timezone="Europe/Rome")
+        payload["payload"]["all"]["system"]["online"]["status"] = 0
+        fake_db = FakeDbHelper()
+        with mock.patch.object(broker_agent, "dbhelper", fake_db):
+            broker._handle_message_to_agent("/_agent", payload)
+        self.assertEqual(fake_db.device.online_status, OnlineStatus.ONLINE)
+
 
 if __name__ == "__main__":
     unittest.main()

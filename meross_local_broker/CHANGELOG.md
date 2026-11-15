@@ -1,3 +1,10 @@
+## 0.0.1-alpha68
+
+- Keep devices marked online in the HTTP device list when they are connected
+  to the local broker. The firmware-reported `system.online.status` can be 0
+  when a device is not bound to the Meross cloud, which previously made Home
+  Assistant entities unavailable even though MQTT was connected.
+
 ## 0.0.1-alpha67
 
 - Add the standard back arrow in the header of Setup, Service status and About

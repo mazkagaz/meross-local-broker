@@ -317,14 +317,17 @@ class Broker:
             hardware = system.get('hardware')
             firmware = system.get('firmware')
             device_time = system.get('time')
-            online = system.get('online')
             device = dbhelper.get_device_by_uuid(device_uuid=appliance_uuid)
             device.device_type = hardware.get('type')
             device.sub_type = hardware.get('subType')
             device.hdware_version = hardware.get('version')
             device.fmware_version = firmware.get('version')
             device.domain = f"{firmware.get('server')}:{firmware.get('port')}"
-            device.online_status = OnlineStatus(online.get('status'))
+            # Receiving this publication proves the device is connected to the
+            # broker. Do not copy system.online.status: firmware can report 0
+            # when it is not bound to the Meross cloud, which would mark a
+            # perfectly reachable local device offline in the HTTP device list.
+            device.online_status = OnlineStatus.ONLINE
             device.local_ip = firmware.get('innerIp')
             dbhelper.update_device(device)
 
