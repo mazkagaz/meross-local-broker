@@ -158,7 +158,9 @@ class ServiceManager:
             return []
 
         log_file = path.join(service_descriptor.log_dir, "current")
-        with open(log_file, "r") as f:
+        # Log files may contain partial or non-UTF-8 bytes (e.g. nginx binary
+        # access logs). Never let decoding break the service log endpoint.
+        with open(log_file, "r", encoding="utf-8", errors="replace") as f:
             lines = f.readlines()
             if tail is not None:
                 return lines[-tail:]

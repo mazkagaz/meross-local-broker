@@ -1,3 +1,8 @@
+## 0.0.1-alpha66
+
+- Service logs are decoded with replacement instead of failing with a 500
+  when a log contains non-UTF-8 bytes (e.g. nginx binary data).
+
 ## 0.0.1-alpha65
 
 - Add **Forget device** to the device menu: removes the device, its channels,
