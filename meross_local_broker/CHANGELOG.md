@@ -1,3 +1,9 @@
+## 0.0.1-alpha56
+
+- Fix add-on startup: `get_option` no longer aborts under `set -e` when an
+  option is `false` or missing. This repairs `40-api.sh` and `60-nginx.sh`
+  exits during container init.
+
 ## 0.0.1-alpha55
 
 - Migrate CI to the maintained `home-assistant/builder` composable actions (2026.09.0).

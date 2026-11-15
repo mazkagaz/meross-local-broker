@@ -1,19 +1,24 @@
-CONFIG_PATH=/data/options.json
+CONFIG_PATH="${CONFIG_PATH:-/data/options.json}"
 
 function get_option {
-    parameter_name=$1
-    default_value=$2
+    local parameter_name=$1
+    local default_value=$2
+    local config_path="${CONFIG_PATH:-/data/options.json}"
+    local ha_value
+    local env_value
 
-    # Always give precedence to HA, if set.
-    ha_value=$(jq -e --raw-output ".$parameter_name" $CONFIG_PATH)
-    if [[ $? -eq 0 ]]; then
+    # Read the key without relying on jq -e: jq exits non-zero for false/null,
+    # which aborts the whole script under bashio's set -e.
+    ha_value=$(jq -r --arg key "$parameter_name" \
+        'if has($key) then .[$key] | tostring else empty end' \
+        "$config_path" 2>/dev/null || true)
+    if [[ -n "$ha_value" ]]; then
         echo "$ha_value"
-        return 
+        return 0
     fi
 
-    # Then look if an env var is set for that parameter_name
-    env_value=$(printenv "$parameter_name")
-    if [[ $? -eq 0 ]]; then
+    env_value=$(printenv "$parameter_name" 2>/dev/null || true)
+    if [[ -n "$env_value" ]]; then
         echo "$env_value"
     else
         echo "$default_value"
