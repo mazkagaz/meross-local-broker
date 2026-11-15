@@ -1,3 +1,9 @@
+## 0.0.1-alpha55
+
+- Migrate CI to the maintained `home-assistant/builder` composable actions (2026.09.0).
+- Build only amd64 and aarch64; the 32-bit architectures are no longer supported by the builder.
+- Keep the Web UI build before the Docker image build.
+
 ## 0.0.1-alpha53
 
 - Fix the alpha52 startup crash by upgrading Flask to 3.1.3, Werkzeug to 3.1.8, and Flask-CORS to 6.0.5.

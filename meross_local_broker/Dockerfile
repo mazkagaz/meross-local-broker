@@ -19,13 +19,21 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # Set workdir
 WORKDIR /usr/src
 
-# Install base dependencies
+# Install base dependencies. GitHub runners occasionally fail to resolve
+# deb.debian.org; retry instead of silently falling back to stale indexes.
 # hadolint ignore=DL3003
-RUN apt-get update \
-  && apt-get --no-install-recommends install -y \
+RUN set -e; \
+  for attempt in 1 2 3 4 5; do \
+    if apt-get -o Acquire::Retries=3 update; then break; fi; \
+    if [ "$attempt" -eq 5 ]; then exit 1; fi; \
+    echo "apt-get update failed (attempt $attempt), retrying..."; \
+    sleep 10; \
+  done; \
+  apt-get --no-install-recommends install -y \
   build-essential \
   git \
   cmake \
+  pkg-config \
   libssl-dev \
   libffi-dev \
   python3-dev \
@@ -44,7 +52,7 @@ RUN apt-get update \
   libglib2.0-0 \
   libglib2.0-dev \
   libdbus-1-dev \
-  && pip3 install wheel
+  && pip3 install --retries 5 --timeout 60 wheel
 
 # Setup GO source # export GOARM=7 ;
 RUN mkdir -p /tmp/go \
@@ -131,7 +139,7 @@ RUN mkdir -p /tmp/go \
 
 # Copy the requirements.txt file and install the listed packages
 COPY rootfs/opt/custom_broker/requirements.txt requirements.txt
-RUN pip3 install -r requirements.txt
+RUN pip3 install --retries 5 --timeout 60 -r requirements.txt
 
 # Catch incompatible Flask dependencies before publishing an image.
 RUN python3 -c 'from flask import Flask; app = Flask("build_check"); app.add_url_rule("/", view_func=lambda: "ok"); response = app.test_client().get("/"); assert response.status_code == 200 and response.data == b"ok", (response.status_code, response.data)'

@@ -1,14 +1,11 @@
 name: "Meross Local Broker Addon (MRS100)"
-version: "0.0.1-alpha54"
+version: "0.0.1-alpha55"
 description: "LAN-only Meross broker with MRS100 roller-shutter support."
 slug: "meross_local_broker"
 image: "ghcr.io/mazkagaz/{arch}-meross_local_broker"
 arch:
   - aarch64
   - amd64
-  - armhf
-  - armv7
-  - i386
 init: false
 ports:
   2001/tcp: 2001
