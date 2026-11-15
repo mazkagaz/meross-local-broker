@@ -5,7 +5,7 @@ Home Assistant. Il est prévu pour être utilisé avec :
 
 - [Meross Local Pairer](https://github.com/mazkagaz/meross-local-pairer) pour appairer
   un appareil Meross ;
-- [Meross Cloud IoT](https://github.com/mazkagaz/meross-cloud) pour créer les
+- [Meross Local Cloud](https://github.com/mazkagaz/meross-cloud) pour créer les
   entités Home Assistant.
 
 ## Démarrage

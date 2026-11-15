@@ -1,3 +1,8 @@
+## 0.0.1-alpha63
+
+- Refer to the Home Assistant integration as **Meross Local Cloud** in the
+  wizard and the installation guide, and document the local-login flow.
+
 ## 0.0.1-alpha62
 
 - Rename the add-on to **Meross Local Broker** and add the new banner and icon.

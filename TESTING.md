@@ -1,4 +1,4 @@
-# Testing the MRS100 add-on fork
+# Testing the add-on
 
 This repository is an unofficial fork. Please report issues with the add-on
 log, the device model/hardware/firmware, and the pairing method.
@@ -42,7 +42,7 @@ Expected: 28 tests OK.
 4. Confirm the device connects: add-on log should show the device online and
    the broker should see `/appliance/<uuid>/publish`.
 5. Install the companion
-   [Meross Cloud IoT integration](https://github.com/mazkagaz/meross-cloud)
+   [Meross Local Cloud integration](https://github.com/mazkagaz/meross-cloud)
    and point it at the local API/MQTT; confirm the cover entity appears.
 6. Set open/close timings from HA or Local Pairer. Reconnect the device and
    verify the add-on log:

@@ -14,7 +14,7 @@ sans dépendre du cloud pour l'usage quotidien.
 | Brique                  | Rôle                              | Dépôt                                                                           |
 | ----------------------- | --------------------------------- | ------------------------------------------------------------------------------- |
 | **Meross Local Broker** | add-on : broker MQTT + API locale | [mazkagaz/meross-local-broker](https://github.com/mazkagaz/meross-local-broker) |
-| **Meross Cloud IoT**    | intégration Home Assistant (HACS) | [mazkagaz/meross-cloud](https://github.com/mazkagaz/meross-cloud)               |
+| **Meross Local Cloud**  | intégration Home Assistant (HACS) | [mazkagaz/meross-cloud](https://github.com/mazkagaz/meross-cloud)               |
 | **Meross Local Pairer** | application Android d'appairage   | [mazkagaz/meross-local-pairer](https://github.com/mazkagaz/meross-local-pairer) |
 
 ```
@@ -42,7 +42,7 @@ Dans Home Assistant :
 1. **Paramètres → Modules complémentaires → Boutique de modules**.
 2. Menu **⋮ → Dépôts**.
 3. Ajouter `https://github.com/mazkagaz/meross-local-broker`.
-4. Installer **Meross Local Broker Addon (MRS100)**, puis démarrer.
+4. Installer **Meross Local Broker**, puis démarrer.
 
 Le bouton ci-dessous ouvre directement la boîte de dialogue :
 
@@ -83,9 +83,9 @@ Une fois l'appairage terminé :
 ### 4. Installer l'intégration Home Assistant
 
 Suivre la procédure de
-[Meross Cloud IoT](https://github.com/mazkagaz/meross-cloud#installation-avec-hacs).
-L'intégration s'installe avec **HACS**, puis se configure en mode
-**LAN-only broker**.
+[Meross Local Cloud](https://github.com/mazkagaz/meross-cloud#installation-avec-hacs).
+L'intégration s'installe avec **HACS**, puis se configure avec le compte local
+du broker.
 
 Champs usuels :
 
@@ -93,7 +93,7 @@ Champs usuels :
 | -------------------------------- | ------------------------------------------- |
 | HTTP API Endpoint                | `http://homeassistant.local:2003`           |
 | MQTT Address                     | `homeassistant.local:2001`                  |
-| Email Address (local login)      | le compte local, par exemple `meross-local` |
+| Local login                      | le compte local, par exemple `meross-local` |
 | Password                         | le mot de passe local                       |
 | Skip MQTT certificate validation | coché                                       |
 
