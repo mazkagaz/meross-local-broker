@@ -65,5 +65,5 @@ PYTHONPATH=. ../../../../.venv/bin/python -m unittest \
 ```
 
 HACS cannot install add-ons; the companion
-[Meross Local Cloud integration](https://github.com/mazkagaz/meross-cloud) is a
+[Meross Local Cloud integration](https://github.com/mazkagaz/meross-local-cloud) is a
 separate repository.

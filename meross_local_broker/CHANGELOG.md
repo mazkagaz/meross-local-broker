@@ -44,7 +44,7 @@
   credentials.
 - Clarify the account form: "Login (email or username)", local account only.
 - Point the setup wizard to Local Pairer (GitHub Releases) and to the
-  `mazkagaz/meross-cloud` HACS integration instead of the legacy Play Store app.
+  `mazkagaz/meross-local-cloud` HACS integration instead of the legacy Play Store app.
 
 ## 0.0.1-alpha56
 

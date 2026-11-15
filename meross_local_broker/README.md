@@ -9,7 +9,7 @@ API HTTP) pour les appareils appairés sur le réseau local.
   [README du dépôt](https://github.com/mazkagaz/meross-local-broker#readme).
 - Appairage : [Meross Local Pairer](https://github.com/mazkagaz/meross-local-pairer).
 - Entités Home Assistant :
-  [Meross Local Cloud](https://github.com/mazkagaz/meross-cloud).
+  [Meross Local Cloud](https://github.com/mazkagaz/meross-local-cloud).
 
 Architectures : `amd64`, `aarch64`.
 

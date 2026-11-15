@@ -14,7 +14,7 @@ sans dépendre du cloud pour l'usage quotidien.
 | Brique                  | Rôle                              | Dépôt                                                                           |
 | ----------------------- | --------------------------------- | ------------------------------------------------------------------------------- |
 | **Meross Local Broker** | add-on : broker MQTT + API locale | [mazkagaz/meross-local-broker](https://github.com/mazkagaz/meross-local-broker) |
-| **Meross Local Cloud**  | intégration Home Assistant (HACS) | [mazkagaz/meross-cloud](https://github.com/mazkagaz/meross-cloud)               |
+| **Meross Local Cloud**  | intégration Home Assistant (HACS) | [mazkagaz/meross-local-cloud](https://github.com/mazkagaz/meross-local-cloud)   |
 | **Meross Local Pairer** | application Android d'appairage   | [mazkagaz/meross-local-pairer](https://github.com/mazkagaz/meross-local-pairer) |
 
 ```
@@ -83,7 +83,7 @@ Une fois l'appairage terminé :
 ### 4. Installer l'intégration Home Assistant
 
 Suivre la procédure de
-[Meross Local Cloud](https://github.com/mazkagaz/meross-cloud#installation-avec-hacs).
+[Meross Local Cloud](https://github.com/mazkagaz/meross-local-cloud#installation-avec-hacs).
 L'intégration s'installe avec **HACS**, puis se configure avec le compte local
 du broker.
 
