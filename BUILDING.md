@@ -1,4 +1,4 @@
-# Building the MRS100 add-on fork
+# Building the add-on
 
 ## Local image (amd64)
 

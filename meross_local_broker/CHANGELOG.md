@@ -1,3 +1,8 @@
+## 0.0.1-alpha62
+
+- Rename the add-on to **Meross Local Broker** and add the new banner and icon.
+- Remove MRS100 from user-facing titles.
+
 ## 0.0.1-alpha61
 
 - Clarify add-on options with names and descriptions in the configuration tab.

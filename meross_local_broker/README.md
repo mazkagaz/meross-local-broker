@@ -1,4 +1,6 @@
-# Meross Local Broker Add-on (MRS100)
+# Meross Local Broker Add-on
+
+![Meross Local Broker](logo.png)
 
 Add-on Home Assistant non officiel qui fournit un broker Meross local (MQTT +
 API HTTP) pour les appareils appairés sur le réseau local.

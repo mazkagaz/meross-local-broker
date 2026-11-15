@@ -1,4 +1,4 @@
 # https://developers.home-assistant.io/docs/add-ons/repository#repository-configuration
-name: Meross Local Broker (MRS100 fork)
-url: 'https://github.com/mazkagaz/meross-local-broker'
-maintainer: 'mazkagaz <bouclier@danslombre.org>'
+name: Meross Local Broker
+url: "https://github.com/mazkagaz/meross-local-broker"
+maintainer: "mazkagaz <bouclier@danslombre.org>"

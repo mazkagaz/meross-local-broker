@@ -1,4 +1,6 @@
-# Meross Local Broker — add-on Home Assistant (fork MRS100)
+# Meross Local Broker — add-on Home Assistant
+
+![Meross Local Broker](meross_local_broker/logo.png)
 
 Add-on **non officiel** qui remplace le cloud Meross par un broker local pour
 Home Assistant. Il permet de contrôler les appareils Meross sur le réseau local,
