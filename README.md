@@ -128,7 +128,7 @@ appareils. Laisser vide pour utiliser le fuseau de Home Assistant.
 | ----------------------------------- | ------------------------------------------------------------------------ |
 | L'add-on ne démarre pas             | architecture amd64/aarch64, logs du Supervisor, image GHCR publique      |
 | Aucun appareil dans l'add-on        | appairage Meross Local Pairer, port MQTT 2001, Wi-Fi 2,4 GHz WPA2        |
-| L'intégration ne voit pas le broker | mode LAN-only, adresse HTTP 2003, certificat MQTT ignoré                 |
+| L'intégration ne voit pas le broker | adresse HTTP 2003, compte local, certificat MQTT ignoré                  |
 | Entités absentes                    | appareil ONLINE dans l'add-on, puis redémarrer l'intégration             |
 | Durées non conservées               | logs `Stored roller-shutter config` / `Re-applied roller-shutter config` |
 | Appareil déjà lié au cloud Meross   | réinitialiser l'appareil avant l'appairage local                         |
