@@ -11,6 +11,11 @@ const routes: Routes = [
     { path: '', redirectTo: '/home', pathMatch: 'full' },
     { path: 'home', component: HomeComponent, data: { title: marker('Home') } },
     { path: 'wizard', component: WizardComponent, data: { title: marker('Wizard') } },
+    { path: 'status', redirectTo: '/home', pathMatch: 'full' },
+    { path: 'setup/credentials', redirectTo: '/setup', pathMatch: 'full' },
+    { path: 'setup/home-assistant', redirectTo: '/setup', pathMatch: 'full' },
+    { path: 'setup/pairer', redirectTo: '/pair-devices', pathMatch: 'full' },
+    { path: 'setup/pairing', redirectTo: '/pair-devices', pathMatch: 'full' },
     { path: 'setup', component: SetupComponent, data: { title: marker('Setup'), section: 'setup' } },
     {
       path: 'pair-devices',
