@@ -27,51 +27,51 @@ body {
 // The fallbacks keep the standalone look when the CSS variables are absent.
 body {
   background-color: var(--primary-background-color, #fafafa);
-  color: var(--primary-text-color, rgba(0, 0, 0, 0.87));
+  color: var(--primary-text-color, #212121);
 }
 
 body a {
-  color: var(--primary-color, #2196f3);
+  color: var(--primary-color, #03a9f4);
 }
 
 body .mat-card,
 body .mat-dialog-container {
   background-color: var(--card-background-color, #fff);
-  color: var(--primary-text-color, rgba(0, 0, 0, 0.87));
+  color: var(--primary-text-color, #212121);
   border-radius: var(--ha-card-border-radius, 4px);
 }
 
 body .mat-toolbar.mat-primary {
-  background-color: var(--primary-color, #2196f3);
+  background-color: var(--primary-color, #03a9f4);
   color: var(--text-primary-color, #fff);
 }
 
 body .mat-raised-button.mat-primary:not([disabled]),
 body .mat-flat-button.mat-primary:not([disabled]) {
-  background-color: var(--primary-color, #2196f3);
+  background-color: var(--primary-color, #03a9f4);
   color: var(--text-primary-color, #fff);
 }
 
 body .mat-raised-button.mat-accent:not([disabled]),
 body .mat-flat-button.mat-accent:not([disabled]) {
-  background-color: var(--accent-color, #ff4081);
+  background-color: var(--accent-color, #ff9800);
   color: var(--text-primary-color, #fff);
 }
 
 body .mat-stroked-button.mat-primary,
 body .mat-button.mat-primary {
-  color: var(--primary-color, #2196f3);
+  color: var(--primary-color, #03a9f4);
 }
 
 body .mat-card-subtitle,
 body .mat-small {
-  color: var(--secondary-text-color, rgba(0, 0, 0, 0.54));
+  color: var(--secondary-text-color, #727272);
 }
 
 body .mat-table,
 body .mat-paginator {
   background-color: var(--card-background-color, #fff);
-  color: var(--primary-text-color, rgba(0, 0, 0, 0.87));
+  color: var(--primary-text-color, #212121);
 }
 
 body .mat-header-cell,

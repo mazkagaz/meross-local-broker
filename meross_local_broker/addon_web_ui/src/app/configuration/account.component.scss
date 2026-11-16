@@ -31,8 +31,8 @@
 
 .meross-link-disclaimer {
   font-size: small;
-  color: #666666;
-  background-color: beige;
+  color: var(--secondary-text-color, #727272);
+  background-color: var(--secondary-background-color, beige);
   margin: 0px;
   padding-left: 2px;
   padding-right: 2px;

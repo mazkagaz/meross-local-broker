@@ -42,7 +42,7 @@ interface LogLine {
         overflow: auto;
         padding: 8px 12px;
         background: var(--card-background-color, #fff);
-        color: var(--primary-text-color, rgba(0, 0, 0, 0.87));
+        color: var(--primary-text-color, #212121);
         border: 1px solid var(--divider-color, #e0e0e0);
         border-radius: var(--ha-card-border-radius, 4px);
         font-family: var(--code-font-family, 'Roboto Mono', monospace);
@@ -55,7 +55,7 @@ interface LogLine {
       }
 
       .log-line.warning {
-        color: var(--warning-color, #ff9800);
+        color: var(--warning-color, #ffa600);
       }
 
       .log-line.error {
