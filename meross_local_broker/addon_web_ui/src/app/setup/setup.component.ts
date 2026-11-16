@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
-type SetupSection = 'credentials' | 'pairer' | 'pairing' | 'home-assistant';
+type SetupSection = 'setup' | 'pair-devices';
 
 @Component({
   selector: 'app-setup',

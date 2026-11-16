@@ -9,7 +9,7 @@ mat-card {
 
 .small {
   font-size: small;
-  color: #666;
+  color: var(--secondary-text-color, #666);
 }
 
 li {

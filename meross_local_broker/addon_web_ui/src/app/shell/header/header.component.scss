@@ -9,10 +9,18 @@
 }
 
 .brand {
-  color: mat-color($app-primary, "default-contrast");
+  color: var(--text-primary-color, #{mat-color($app-primary, "default-contrast")});
   text-decoration: none;
   padding-right: 1rem;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.nav-icon {
+  color: var(--text-primary-color, #{mat-color($app-primary, "default-contrast")});
+}
+
+.nav-icon.active {
+  background-color: var(--secondary-background-color, rgba(255, 255, 255, 0.18));
 }

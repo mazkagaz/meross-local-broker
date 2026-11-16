@@ -1,3 +1,15 @@
+## 0.0.1-alpha78
+
+- Replace the three-dot menu with three toolbar icons: Setup, Pair devices and
+  About.
+- Merge the Home Assistant instructions into the Setup page and move the
+  device pairing procedure to the Pair devices page, with a link to the
+  official pairer user guide.
+- Follow the Home Assistant theme variables (surfaces, text, primary/accent,
+  warning and error colours) with standalone fallbacks.
+- Colour warning and error lines in the service log dialog and add a Copy
+  button.
+
 ## 0.0.1-alpha77
 
 - Paired devices page: show the repository banner, add meaningful device
