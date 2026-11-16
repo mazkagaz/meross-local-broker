@@ -40,6 +40,13 @@ def update_device(uuid: str) -> Dict:
     # Path supported methods: device name
     name = device_patch.get("dev_name")
     if name is not None:
+        name = str(name).strip()
+        if not name:
+            raise BadRequestError("Device name cannot be empty")
+        if len(name) > 128:
+            raise BadRequestError("Device name must be at most 128 characters")
+        if dbhelper.is_device_name_used(name, exclude_uuid=uuid):
+            raise BadRequestError("Device name is already used")
         device.dev_name = name
         del device_patch["dev_name"]
 

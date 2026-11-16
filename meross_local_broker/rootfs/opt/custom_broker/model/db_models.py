@@ -138,7 +138,9 @@ class Device(Base, Serializer):
     def serialize(self):
         d = Serializer.serialize(self)
         del d['ownerUser']
-        d['onlineStatus'] = self.online_status.value
+        d['onlineStatus'] = (self.online_status.value
+                             if self.online_status is not None
+                             else OnlineStatus.UNKNOWN.value)
         d['userEmail'] = self.owner_user.email
         d['channels'] = DeviceChannel.serialize_list(self.channels)
         d['childSubdevices'] = SubDevice.serialize_list(self.child_subdevices)

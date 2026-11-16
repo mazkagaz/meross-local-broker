@@ -8,6 +8,7 @@ from logger import get_logger
 from typing import Optional, List, Dict
 from constants import BASE62_ALPHABET
 from database import db_session
+from sqlalchemy import func
 from model.db_models import (UserToken, Device, User, DeviceChannel, SubDevice,
                              Event, Configuration, RollerShutterConfig, DeviceAbility,
                              RollerShutterStatus, RollerShutterAdjust, RevokedDevice)
@@ -116,6 +117,16 @@ class DbHelper:
         self._s.add(device)
         self._s.commit()
         return device
+
+    def is_device_name_used(self, name: str, exclude_uuid: str = None) -> bool:
+        """Case-insensitive check that no other device owns this name."""
+        if name is None:
+            return False
+        query = self._s.query(Device).filter(
+            func.lower(Device.dev_name) == name.strip().lower())
+        if exclude_uuid is not None:
+            query = query.filter(Device.uuid != exclude_uuid)
+        return query.first() is not None
 
     def get_all_devices(self) -> List[Device]:
         return self._s.query(Device).all()

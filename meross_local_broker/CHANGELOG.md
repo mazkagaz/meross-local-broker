@@ -1,3 +1,12 @@
+## 0.0.1-alpha74
+
+- Device names are now unique (case-insensitive). Both the authenticated
+  `POST /v1/Device/name` endpoint and the Web UI rename action refuse a name
+  already used by another device; renaming a device to its own name is allowed.
+- The Web UI rename validates the name (non-empty, at most 128 characters).
+- Devices without an online status no longer make the admin/Web UI device
+  serialization fail.
+
 ## 0.0.1-alpha73
 
 - Add the authenticated `POST /v1/Device/name` endpoint so the pairing app can

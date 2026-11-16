@@ -225,6 +225,37 @@ class HttpApiCompatibilityTest(unittest.TestCase):
             headers=headers)
         self.assertNotEqual(response.get_json()['apiStatus'], 0)
 
+        # Same name on the same device is allowed; another device cannot take it.
+        response = self.client.post(
+            '/v1/Device/name',
+            json=self.envelope({'uuid': 'rename-device-uuid', 'name': 'Volet salon'}),
+            headers=headers)
+        self.assertEqual(response.get_json()['apiStatus'], 0)
+
+        dbhelper.associate_user_device(self.user.user_id, mac='AA:BB:CC:DD:EE:03',
+                                       uuid='rename-device-two', device_client_id='client')
+        second = dbhelper.get_device_by_uuid('rename-device-two')
+        second.dev_name = 'Volet cuisine'
+        dbhelper.update_device(second)
+
+        response = self.client.post(
+            '/v1/Device/name',
+            json=self.envelope({'uuid': 'rename-device-uuid', 'name': 'volet cuisine'}),
+            headers=headers)
+        self.assertNotEqual(response.get_json()['apiStatus'], 0)
+        self.assertEqual(dbhelper.get_device_by_uuid('rename-device-uuid').dev_name,
+                         'Volet salon')
+
+        # The Web UI rename path enforces the same uniqueness rule.
+        from meross_iot.model.enums import OnlineStatus
+        dbhelper.update_device_status('rename-device-uuid', OnlineStatus.UNKNOWN)
+        response = self.client.put('/_admin_/devices/rename-device-uuid',
+                                   json={'dev_name': 'Volet cuisine'})
+        self.assertEqual(response.status_code, 400)
+        response = self.client.put('/_admin_/devices/rename-device-uuid',
+                                   json={'dev_name': 'Volet salon'})
+        self.assertEqual(response.status_code, 200)
+
         other = dbhelper.add_update_user(
             email='rename-other@example.com', password='other-password',
             user_id=2, user_key='ffeeddccbbaa99887766554433221100')

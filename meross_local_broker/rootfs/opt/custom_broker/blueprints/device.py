@@ -98,6 +98,8 @@ def rename_device(api_payload: Dict, *args, **kwargs):
     device = dbhelper.get_device_by_uuid(device_uuid)
     if device is None or str(device.user_id) != str(user.user_id):
         raise BadRequestError("Device not found for this account")
+    if dbhelper.is_device_name_used(name, exclude_uuid=device_uuid):
+        raise BadRequestError("Device name is already used")
     device.dev_name = name
     dbhelper.update_device(device)
     _LOGGER.info("User %s renamed device %s to %s", user, device_uuid, name)
