@@ -1,5 +1,6 @@
-import { Component, AfterViewInit, ViewChild, OnInit, Inject } from '@angular/core';
+import { Component, AfterViewInit, ViewChild, OnInit, OnDestroy, Inject } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
+import { Subscription } from 'rxjs';
 import { MatSort } from '@angular/material/sort';
 import { MatPaginator } from '@angular/material/paginator';
 import { Device } from '@app/model/device';
@@ -20,13 +21,14 @@ export interface SetNameDialogData {
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss'],
 })
-export class HomeComponent implements AfterViewInit, OnInit {
+export class HomeComponent implements AfterViewInit, OnInit, OnDestroy {
   devicesColumns: string[] = ['deviceId', 'network', 'status', 'userId', 'type'];
   subdevicesColumns: string[] = ['subdeviceId', 'type', 'hubId'];
   deviceSource = new MatTableDataSource<Device>([]);
   subdeviceSource = new MatTableDataSource<Subdevice>([]);
   autoUpdate = true;
   unconfigured = true;
+  private pollSubscription = new Subscription();
 
   @ViewChild(MatPaginator) paginator: MatPaginator;
   @ViewChild(MatSort) sort: MatSort;
@@ -40,11 +42,27 @@ export class HomeComponent implements AfterViewInit, OnInit {
   ) {}
   ngOnInit(): void {
     // Update the device and subdevice lists once
-    this.deviceStore.devices.subscribe((devices) => (this.deviceSource.data = devices));
-    this.subdeviceStore.devices.subscribe((devices) => (this.subdeviceSource.data = devices));
+    this.pollSubscription.add(this.deviceStore.devices.subscribe((devices) => (this.deviceSource.data = devices)));
+    this.pollSubscription.add(
+      this.subdeviceStore.devices.subscribe((devices) => (this.subdeviceSource.data = devices))
+    );
+    if (this.autoUpdate) {
+      // Keep the paired tables in sync with pairer/broker changes without a
+      // manual page refresh.
+      this.pollSubscription.add(
+        this.deviceStore.deviceUpdates.subscribe((devices) => (this.deviceSource.data = devices))
+      );
+      this.pollSubscription.add(
+        this.subdeviceStore.deviceUpdates.subscribe((devices) => (this.subdeviceSource.data = devices))
+      );
+    }
     this.adminService.getConfiguration().subscribe((account: Configuration) => {
       this.unconfigured = !account;
     });
+  }
+
+  ngOnDestroy(): void {
+    this.pollSubscription.unsubscribe();
   }
 
   alertCopied(): void {

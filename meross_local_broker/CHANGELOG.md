@@ -1,3 +1,9 @@
+## 0.0.1-alpha72
+
+- The Web UI device and subdevice tables now refresh automatically every
+  10 seconds, so a device forgotten (or added) from the pairing app disappears
+  without a page reload.
+
 ## 0.0.1-alpha71
 
 - Add an HTTPS listener on port **2004**, sharing the CA and server
