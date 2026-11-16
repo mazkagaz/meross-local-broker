@@ -34,9 +34,9 @@ li {
   align-items: center;
   gap: 12px;
   padding: 12px 16px;
-  border: 1px solid var(--divider-color, #ddd);
+  border: 1px solid var(--ha-card-border-color, var(--divider-color, #ddd));
   border-radius: var(--ha-card-border-radius, 4px);
-  background: var(--card-background-color, #fafafa);
+  background: var(--ha-card-background, var(--card-background-color, #fafafa));
   color: var(--primary-text-color, #212121);
   text-decoration: none;
 }

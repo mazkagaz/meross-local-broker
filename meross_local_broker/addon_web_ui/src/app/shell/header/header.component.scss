@@ -9,7 +9,7 @@
 }
 
 .brand {
-  color: var(--text-primary-color, #fff);
+  color: var(--app-header-text-color, var(--text-primary-color, #fff));
   text-decoration: none;
   padding-right: 1rem;
   overflow: hidden;
@@ -18,7 +18,7 @@
 }
 
 .nav-icon {
-  color: var(--text-primary-color, #fff);
+  color: var(--app-header-text-color, var(--text-primary-color, #fff));
 }
 
 .nav-icon.active {

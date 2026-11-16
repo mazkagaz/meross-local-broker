@@ -41,9 +41,9 @@ interface LogLine {
         height: 60vh;
         overflow: auto;
         padding: 8px 12px;
-        background: var(--card-background-color, #fff);
+        background: var(--ha-card-background, var(--card-background-color, #fff));
         color: var(--primary-text-color, #212121);
-        border: 1px solid var(--divider-color, #e0e0e0);
+        border: 1px solid var(--ha-card-border-color, var(--divider-color, #e0e0e0));
         border-radius: var(--ha-card-border-radius, 4px);
         font-family: var(--code-font-family, 'Roboto Mono', monospace);
         font-size: 12px;

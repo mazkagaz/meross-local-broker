@@ -76,7 +76,7 @@ q {
   padding: 4px 10px;
   border: 1px solid var(--divider-color, #ddd);
   border-radius: 16px;
-  background: var(--card-background-color, #fafafa);
+  background: var(--ha-card-background, var(--card-background-color, #fafafa));
   color: var(--secondary-text-color, #727272);
   font-size: 12px;
   cursor: pointer;

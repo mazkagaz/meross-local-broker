@@ -36,14 +36,14 @@ body a {
 
 body .mat-card,
 body .mat-dialog-container {
-  background-color: var(--card-background-color, #fff);
+  background-color: var(--ha-card-background, var(--card-background-color, #fff));
   color: var(--primary-text-color, #212121);
   border-radius: var(--ha-card-border-radius, 4px);
 }
 
 body .mat-toolbar.mat-primary {
-  background-color: var(--primary-color, #03a9f4);
-  color: var(--text-primary-color, #fff);
+  background-color: var(--app-header-background-color, var(--primary-color, #03a9f4));
+  color: var(--app-header-text-color, var(--text-primary-color, #fff));
 }
 
 body .mat-raised-button.mat-primary:not([disabled]),
@@ -70,7 +70,7 @@ body .mat-small {
 
 body .mat-table,
 body .mat-paginator {
-  background-color: var(--card-background-color, #fff);
+  background-color: var(--ha-card-background, var(--card-background-color, #fff));
   color: var(--primary-text-color, #212121);
 }
 
