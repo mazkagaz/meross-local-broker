@@ -1,3 +1,10 @@
+## 0.0.1-alpha79
+
+- Re-publish the alpha78 Web UI with the final theme polish: Home Assistant
+  header and card variables, default HA colours as fallbacks, readable active
+  toolbar icons and redirects for the old URLs. Earlier alpha78 images were
+  built before these last commits.
+
 ## 0.0.1-alpha78
 
 - Replace the three-dot menu with three toolbar icons: Setup, Pair devices and
