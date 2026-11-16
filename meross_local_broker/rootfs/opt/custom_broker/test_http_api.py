@@ -143,6 +143,31 @@ class HttpApiCompatibilityTest(unittest.TestCase):
         response = self.client.delete('/_admin_/devices/test-device-uuid')
         self.assertEqual(response.status_code, 400)
 
+    def test_authenticated_user_can_forget_owned_device(self):
+        from db_helper import dbhelper
+        dbhelper.associate_user_device(self.user.user_id, mac='AA:BB:CC:DD:EE:FF',
+                                       uuid='owned-device', device_client_id='client')
+        token = self.sign_in().get_json()['data']['token']
+        response = self.client.post(
+            '/v1/Device/delete', json=self.envelope({'uuid': 'owned-device'}),
+            headers={'Authorization': f'Basic {token}'})
+        self.assertEqual(response.get_json()['apiStatus'], 0)
+        self.assertIsNone(dbhelper.get_device_by_uuid('owned-device'))
+
+        other = dbhelper.add_update_user(
+            email='other@example.com', password='other-password',
+            user_id=2, user_key='ffeeddccbbaa99887766554433221100')
+        dbhelper.associate_user_device(other.user_id, mac='AA:BB:CC:DD:EE:00',
+                                       uuid='not-owned', device_client_id='client')
+        token = self.sign_in().get_json()['data']['token']
+        # The token belongs to user 1; a device owned by user 2 must be refused.
+        self.assertNotEqual(2, self.user.user_id)
+        response = self.client.post(
+            '/v1/Device/delete', json=self.envelope({'uuid': 'not-owned'}),
+            headers={'Authorization': f'Basic {token}'})
+        self.assertNotEqual(response.get_json()['apiStatus'], 0)
+        self.assertIsNotNone(dbhelper.get_device_by_uuid('not-owned'))
+
     def test_admin_json_and_cors_preflight(self):
         response = self.client.get('/_admin_/devices', headers={'Origin': 'http://localhost'})
         self.assertEqual(response.status_code, 200)

@@ -10,6 +10,7 @@ from flask import Blueprint, g
 from decorator import meross_http_api
 from messaging import make_api_response
 from model.db_models import Device
+from model.exception import BadRequestError
 from db_helper import dbhelper
 
 device_blueprint = Blueprint('device', __name__)
@@ -57,3 +58,20 @@ def list_devices(api_payload: Dict, *args, **kwargs):
     _LOGGER.debug("User %s requested deviceList", user)
     data = [serialize_device_metadata(d) for d in user.owned_devices]
     return make_api_response(data=data)
+
+
+@device_blueprint.route('/delete', methods=['POST'])
+@meross_http_api(login_required=True)
+def delete_device(api_payload: Dict, *args, **kwargs):
+    """Forget a device owned by the authenticated local account."""
+    user = g.user
+    device_uuid = api_payload.get('uuid')
+    if not device_uuid:
+        raise BadRequestError("Missing device uuid")
+    device = dbhelper.get_device_by_uuid(device_uuid)
+    if device is None or str(device.user_id) != str(user.user_id):
+        raise BadRequestError("Device not found for this account")
+    if not dbhelper.delete_device(device_uuid):
+        raise BadRequestError("Device could not be deleted")
+    _LOGGER.info("User %s forgot device %s", user, device_uuid)
+    return make_api_response(data={'uuid': device_uuid, 'deleted': True})

@@ -1,3 +1,8 @@
+## 0.0.1-alpha69
+
+- Add the authenticated `POST /v1/Device/delete` endpoint, so the Android
+  pairing app can forget a device owned by the logged-in local account.
+
 ## 0.0.1-alpha68
 
 - Keep devices marked online in the HTTP device list when they are connected
