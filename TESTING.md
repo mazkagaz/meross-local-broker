@@ -22,10 +22,11 @@ python3 -m venv .venv
   meross_iot==0.4.7.5 Flask==3.1.3 Werkzeug==3.1.8 flask-cors==6.0.5 'setuptools<81'
 cd meross_local_broker/rootfs/opt/custom_broker
 PYTHONPATH=. ../../../../.venv/bin/python -m unittest \
-  test_mrs100_roller_shutter test_broker_agent_timezone test_http_api
+  test_mrs100_roller_shutter test_broker_agent_timezone test_http_api \
+  test_supervisor_network
 ```
 
-Expected: 34 tests OK.
+Expected: 38 tests OK.
 
 ## Hardware test checklist
 

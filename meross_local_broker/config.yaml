@@ -1,5 +1,5 @@
 name: "Meross Local Broker"
-version: "0.0.1-alpha74"
+version: "0.0.1-alpha75"
 description: "LAN-only Meross broker with MRS100 roller-shutter support."
 slug: "meross_local_broker"
 image: "ghcr.io/mazkagaz/{arch}-meross_local_broker"

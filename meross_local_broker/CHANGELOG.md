@@ -1,3 +1,11 @@
+## 0.0.1-alpha75
+
+- The API mDNS service now carries TXT records with the usable LAN data:
+  `host` (comma-separated Home Assistant IPv4 addresses from the Supervisor),
+  `http_port` and `https_port` (host-mapped ports, or 0 when HTTPS is
+  disabled). The pairing app can prefill a reachable endpoint instead of
+  relying on the add-on's Docker hostname.
+
 ## 0.0.1-alpha74
 
 - Device names are now unique (case-insensitive). Both the authenticated

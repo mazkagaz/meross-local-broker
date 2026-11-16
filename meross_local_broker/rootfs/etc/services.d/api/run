@@ -7,8 +7,27 @@ if [[ $ADVERTISE == "true" ]]; then
     bashio::log.info "Advertising the Meross API service"
     api_port=$(bashio::addon.ingress_port)
     api_port=${api_port:-"2003"}
-    bashio::log.debug "API_PORT=$api_port"
-    /opt/custom_broker/mdns_register.py register meross_local_api meross_local_api _meross-api._tcp $api_port --update-if-present
+
+    # Publish the address phones can actually reach. The add-on address lives
+    # in the Docker network, so ask the Supervisor for the host interfaces.
+    http_port=$(bashio::addon.port 2003)
+    http_port=${http_port:-"2003"}
+    enable_https=$(get_option 'enable_https' 'true')
+    https_port=0
+    if [[ $enable_https == "true" ]]; then
+        https_port=$(bashio::addon.port 2004)
+        https_port=${https_port:-"2004"}
+    fi
+    host_ips=$(/opt/custom_broker/supervisor_network.py 2>/dev/null || true)
+
+    txt_args=("http_port=$http_port" "https_port=$https_port")
+    if [[ -n $host_ips ]]; then
+        txt_args+=("host=$host_ips")
+    else
+        bashio::log.warning "No LAN IPv4 address found; advertising without host TXT record."
+    fi
+    bashio::log.info "API mDNS: service_port=$api_port http_port=$http_port https_port=$https_port host=$host_ips"
+    /opt/custom_broker/mdns_register.py register meross_local_api meross_local_api _meross-api._tcp $api_port --update-if-present --set "${txt_args[@]}"
 else
     bashio::log.warning "Advertising disabled. The Meross API service won't be advertised via MDNS."
 fi
