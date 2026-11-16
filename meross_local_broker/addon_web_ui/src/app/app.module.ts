@@ -15,7 +15,6 @@ import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
 import { AccountComponent } from './configuration/account.component';
 import { NgxQRCodeModule } from '@techiediaries/ngx-qrcode';
-import { ConfigurationComponent } from './configuration/configuration.component';
 import { WizardComponent } from './wizard/wizard.component';
 import { SetupComponent } from './setup/setup.component';
 
@@ -35,7 +34,7 @@ import { SetupComponent } from './setup/setup.component';
     NgxQRCodeModule,
     AppRoutingModule,
   ],
-  declarations: [AppComponent, AccountComponent, ConfigurationComponent, WizardComponent, SetupComponent],
+  declarations: [AppComponent, AccountComponent, WizardComponent, SetupComponent],
   providers: [],
   bootstrap: [AppComponent],
 })
