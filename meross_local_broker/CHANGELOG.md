@@ -1,3 +1,9 @@
+## 0.0.1-alpha73
+
+- Add the authenticated `POST /v1/Device/name` endpoint so the pairing app can
+  set the device display name during pairing. The name is validated (non-empty,
+  at most 128 characters) and stored in the broker device list.
+
 ## 0.0.1-alpha72
 
 - The Web UI device and subdevice tables now refresh automatically every

@@ -79,6 +79,31 @@ def delete_device(api_payload: Dict, *args, **kwargs):
     return make_api_response(data={'uuid': device_uuid, 'deleted': True})
 
 
+@device_blueprint.route('/name', methods=['POST'])
+@meross_http_api(login_required=True)
+def rename_device(api_payload: Dict, *args, **kwargs):
+    """Set the broker-side display name of an owned device."""
+    user = g.user
+    device_uuid = api_payload.get('uuid')
+    name = api_payload.get('name')
+    if not device_uuid:
+        raise BadRequestError("Missing device uuid")
+    if name is None:
+        raise BadRequestError("Missing device name")
+    name = str(name).strip()
+    if not name:
+        raise BadRequestError("Device name cannot be empty")
+    if len(name) > 128:
+        raise BadRequestError("Device name must be at most 128 characters")
+    device = dbhelper.get_device_by_uuid(device_uuid)
+    if device is None or str(device.user_id) != str(user.user_id):
+        raise BadRequestError("Device not found for this account")
+    device.dev_name = name
+    dbhelper.update_device(device)
+    _LOGGER.info("User %s renamed device %s to %s", user, device_uuid, name)
+    return make_api_response(data={'uuid': device_uuid, 'name': name})
+
+
 @device_blueprint.route('/claim', methods=['POST'])
 @meross_http_api(login_required=True)
 def claim_device(api_payload: Dict, *args, **kwargs):

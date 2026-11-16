@@ -204,6 +204,39 @@ class HttpApiCompatibilityTest(unittest.TestCase):
         self.assertNotEqual(response.get_json()['apiStatus'], 0)
         self.assertIsNotNone(dbhelper.get_device_by_uuid('not-owned'))
 
+    def test_authenticated_user_can_rename_owned_device(self):
+        from db_helper import dbhelper
+        dbhelper.associate_user_device(self.user.user_id, mac='AA:BB:CC:DD:EE:01',
+                                       uuid='rename-device-uuid', device_client_id='client')
+        token = self.sign_in().get_json()['data']['token']
+        headers = {'Authorization': f'Basic {token}'}
+
+        response = self.client.post(
+            '/v1/Device/name',
+            json=self.envelope({'uuid': 'rename-device-uuid', 'name': '  Volet salon  '}),
+            headers=headers)
+        self.assertEqual(response.get_json()['apiStatus'], 0)
+        self.assertEqual(dbhelper.get_device_by_uuid('rename-device-uuid').dev_name,
+                         'Volet salon')
+
+        response = self.client.post(
+            '/v1/Device/name',
+            json=self.envelope({'uuid': 'rename-device-uuid', 'name': '   '}),
+            headers=headers)
+        self.assertNotEqual(response.get_json()['apiStatus'], 0)
+
+        other = dbhelper.add_update_user(
+            email='rename-other@example.com', password='other-password',
+            user_id=2, user_key='ffeeddccbbaa99887766554433221100')
+        dbhelper.associate_user_device(other.user_id, mac='AA:BB:CC:DD:EE:02',
+                                       uuid='rename-other-device', device_client_id='client')
+        response = self.client.post(
+            '/v1/Device/name',
+            json=self.envelope({'uuid': 'rename-other-device', 'name': 'Not mine'}),
+            headers=headers)
+        self.assertNotEqual(response.get_json()['apiStatus'], 0)
+        self.assertIsNone(dbhelper.get_device_by_uuid('rename-other-device').dev_name)
+
     def test_admin_json_and_cors_preflight(self):
         response = self.client.get('/_admin_/devices', headers={'Origin': 'http://localhost'})
         self.assertEqual(response.status_code, 200)
