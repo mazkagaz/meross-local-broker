@@ -140,8 +140,44 @@ class HttpApiCompatibilityTest(unittest.TestCase):
         response = self.client.delete('/_admin_/devices/test-device-uuid')
         self.assertEqual(response.status_code, 204)
         self.assertIsNone(dbhelper.get_device_by_uuid('test-device-uuid'))
+        self.assertTrue(dbhelper.is_device_revoked('AA:BB:CC:DD:EE:FF'))
         response = self.client.delete('/_admin_/devices/test-device-uuid')
         self.assertEqual(response.status_code, 400)
+
+    def device_login(self, mac, uuid):
+        digest = hashlib.md5(f'{mac}{self.mqtt_key}'.encode()).hexdigest()
+        return self.client.post('/_devs_/auth', json={
+            'username': mac, 'password': f'{self.user_id}_{digest}',
+            'clientid': f'fmware:{uuid}_test'})
+
+    def test_forgotten_device_is_revoked_until_claimed(self):
+        from db_helper import dbhelper
+        mac, uuid = 'AA:BB:CC:DD:EE:FF', 'aabbccddeeff00112233445566778899'
+        dbhelper.associate_user_device(self.user.user_id, mac=mac, uuid=uuid,
+                                       device_client_id='client')
+        self.assertEqual((self.device_login(mac, uuid).status_code,
+                          self.device_login(mac, uuid).data), (200, b'ok'))
+
+        token = self.sign_in().get_json()['data']['token']
+        headers = {'Authorization': f'Basic {token}'}
+        response = self.client.post(
+            '/v1/Device/delete', json=self.envelope({'uuid': uuid}), headers=headers)
+        self.assertEqual(response.get_json()['apiStatus'], 0)
+        self.assertTrue(dbhelper.is_device_revoked(mac))
+
+        # The device still holds its credentials, so the login must be refused
+        # even though no user/device row points at it anymore.
+        self.assertEqual(self.device_login(mac, uuid).status_code, 403)
+
+        # Re-pairing claims the MAC again, which lifts the revocation.
+        response = self.client.post(
+            '/v1/Device/claim', json=self.envelope({'mac': mac}), headers=headers)
+        self.assertEqual(response.get_json()['apiStatus'], 0)
+        self.assertFalse(dbhelper.is_device_revoked(mac))
+        relogin = self.device_login(mac, uuid)
+        self.assertEqual((relogin.status_code, relogin.data), (200, b'ok'))
+        # Same UUID: HA keeps the entity identity after forget/re-pair.
+        self.assertIsNotNone(dbhelper.get_device_by_uuid(uuid))
 
     def test_authenticated_user_can_forget_owned_device(self):
         from db_helper import dbhelper

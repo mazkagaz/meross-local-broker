@@ -121,6 +121,17 @@ Dans Home Assistant, l'appareil doit apparaître avec :
   **Calibration status** (`in_progress`, `success`, `timeout`,
   `motor_blocked`, `failed_N`). **Stop calibration** interrompt le mouvement.
 
+## Oublier un appareil
+
+**Forget device** (Web UI de l'add-on ou application d'appairage) supprime
+l'appareil et **révoque son MAC** : l'appareil garde ses identifiants MQTT, mais
+le broker refuse désormais sa connexion, donc il ne peut pas revenir tout seul.
+
+Un nouvel appairage réussi appelle `POST /v1/Device/claim` pour lever la
+révocation. L'appareil conserve le même UUID : dans Home Assistant, l'entité
+`cover`, les entités `number` et les automatisations existantes restent valides
+après un cycle oubli/réappairage.
+
 ## Réglage `device_timezone`
 
 L'option `device_timezone` pousse le fuseau et les règles d'heure d'été aux

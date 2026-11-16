@@ -25,7 +25,7 @@ PYTHONPATH=. ../../../../.venv/bin/python -m unittest \
   test_mrs100_roller_shutter test_broker_agent_timezone test_http_api
 ```
 
-Expected: 28 tests OK.
+Expected: 34 tests OK.
 
 ## Hardware test checklist
 

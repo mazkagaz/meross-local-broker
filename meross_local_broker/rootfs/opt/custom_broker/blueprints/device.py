@@ -71,7 +71,21 @@ def delete_device(api_payload: Dict, *args, **kwargs):
     device = dbhelper.get_device_by_uuid(device_uuid)
     if device is None or str(device.user_id) != str(user.user_id):
         raise BadRequestError("Device not found for this account")
+    device_mac = device.mac
+    dbhelper.revoke_device(device_mac)
     if not dbhelper.delete_device(device_uuid):
         raise BadRequestError("Device could not be deleted")
-    _LOGGER.info("User %s forgot device %s", user, device_uuid)
+    _LOGGER.info("User %s forgot device %s (%s)", user, device_uuid, device_mac)
     return make_api_response(data={'uuid': device_uuid, 'deleted': True})
+
+
+@device_blueprint.route('/claim', methods=['POST'])
+@meross_http_api(login_required=True)
+def claim_device(api_payload: Dict, *args, **kwargs):
+    """Clear a revocation after the device has been paired again."""
+    mac = api_payload.get('mac')
+    if not mac:
+        raise BadRequestError("Missing device mac")
+    dbhelper.clear_device_revocation(mac)
+    _LOGGER.info("User %s re-claimed device %s", g.user, mac)
+    return make_api_response(data={'mac': mac, 'claimed': True})

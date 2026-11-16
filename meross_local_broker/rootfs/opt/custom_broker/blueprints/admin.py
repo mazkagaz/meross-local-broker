@@ -55,10 +55,18 @@ def update_device(uuid: str) -> Dict:
 
 @admin_blueprint.route('/devices/<uuid>', methods=['DELETE'])
 def forget_device(uuid: str):
-    """Remove a paired device and its local state from the database."""
+    """Remove a paired device and revoke its broker credentials.
+
+    Revoking the MAC keeps the device from reconnecting with the credentials it
+    already holds; it stays refused until a new pairing calls /v1/Device/claim.
+    """
+    device = dbhelper.get_device_by_uuid(device_uuid=uuid)
+    if device is None:
+        raise BadRequestError(msg=f"Device with UUID {uuid} does not exist")
+    dbhelper.revoke_device(device.mac)
     if not dbhelper.delete_device(uuid):
         raise BadRequestError(msg=f"Device with UUID {uuid} does not exist")
-    _LOGGER.warning("Device %s has been forgotten", uuid)
+    _LOGGER.warning("Device %s (%s) has been forgotten and revoked", uuid, device.mac)
     return '', 204
 
 

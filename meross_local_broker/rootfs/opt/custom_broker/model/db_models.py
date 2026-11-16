@@ -146,6 +146,18 @@ class Device(Base, Serializer):
         return d
 
 
+class RevokedDevice(Base, Serializer):
+    """MACs explicitly forgotten by their owner.
+
+    A forgotten device keeps its broker credentials, so its next MQTT login is
+    refused until a new pairing claims it again.
+    """
+    __tablename__ = 'revoked_devices'
+
+    mac = Column(String(16), primary_key=True)
+    revoked_at = Column(DateTime, default=func.now())
+
+
 class SubDevice(Base, Serializer):
     __tablename__ = 'subdevices'
 

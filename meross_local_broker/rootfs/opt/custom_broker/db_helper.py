@@ -10,7 +10,7 @@ from constants import BASE62_ALPHABET
 from database import db_session
 from model.db_models import (UserToken, Device, User, DeviceChannel, SubDevice,
                              Event, Configuration, RollerShutterConfig, DeviceAbility,
-                             RollerShutterStatus, RollerShutterAdjust)
+                             RollerShutterStatus, RollerShutterAdjust, RevokedDevice)
 from datetime import datetime
 from utilities import _hash_password
 from model.enums import BridgeStatus, EventType
@@ -132,6 +132,27 @@ class DbHelper:
         self._s.commit()
         l.info("Forgot device %s", device_uuid)
         return True
+
+    def revoke_device(self, mac: str) -> None:
+        mac = mac.upper()
+        if self.is_device_revoked(mac):
+            return
+        self._s.add(RevokedDevice(mac=mac))
+        self._s.commit()
+        l.info("Revoked device MAC %s", mac)
+
+    def is_device_revoked(self, mac: str) -> bool:
+        if mac is None:
+            return False
+        return self._s.query(RevokedDevice).filter(
+            RevokedDevice.mac == mac.upper()).first() is not None
+
+    def clear_device_revocation(self, mac: str) -> None:
+        if mac is None:
+            return
+        self._s.query(RevokedDevice).filter(
+            RevokedDevice.mac == mac.upper()).delete(synchronize_session=False)
+        self._s.commit()
 
     def update_device_status(self, device_uuid: str, status: OnlineStatus) -> None:
         dev = self._s.query(Device).filter(Device.uuid == device_uuid).first()

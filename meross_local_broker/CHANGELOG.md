@@ -1,3 +1,13 @@
+## 0.0.1-alpha70
+
+- Forgotten devices are now revoked, not just deleted: the broker refuses their
+  MQTT login with the credentials they still hold, so a forgotten device cannot
+  reconnect by itself.
+- Add the authenticated `POST /v1/Device/claim` endpoint. After a successful
+  re-pairing, the pairing app calls it to lift the revocation; the device keeps
+  the same UUID, so Home Assistant entity identities and automations survive a
+  forget/re-pair cycle.
+
 ## 0.0.1-alpha69
 
 - Add the authenticated `POST /v1/Device/delete` endpoint, so the Android

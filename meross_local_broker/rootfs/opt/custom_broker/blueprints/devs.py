@@ -184,6 +184,13 @@ def _device_login(mac: str, user_id: str, device_uuid: str, md5hash: str, client
         dbhelper.store_event(event_type=EventType.DEVICE_CONNECT_FAILURE, user_id=user_id, details=f"Device {device_uuid} ({str(request.remote_addr)}) failed authentication: invalid user_id specified.")
         return "ko", 400
 
+    if dbhelper.is_device_revoked(mac):
+        _LOGGER.info("LOGIN_CHECK(device)=> Device %s is revoked until paired again.", mac)
+        dbhelper.store_event(
+            event_type=EventType.DEVICE_CONNECT_FAILURE, user_id=user_id,
+            details=f"Device {device_uuid} ({str(request.remote_addr)}) is revoked.")
+        return "ko", 403
+
     # Lookup key by the given username.
     user = dbhelper.get_user_by_id(userid=userid)
     if user is None:
