@@ -75,6 +75,10 @@ Suivre la procédure de
 [Meross Local Pairer](https://github.com/mazkagaz/meross-local-pairer#appairage-pas-à-pas).
 L'application configure le MRS100 pour qu'il se connecte à cet add-on.
 
+- **Firmware 7** : appairage par l'AP Wi-Fi `Meross_RS_*`.
+- **Firmware 8** : l'AP Wi-Fi n'est pas ouvert ; utiliser l'appairage
+  **Bluetooth LE** de Meross Local Pairer (`MRBL_…`).
+
 Une fois l'appairage terminé :
 
 - l'add-on doit journaliser la connexion du MRS100 et son passage **ONLINE** ;
@@ -124,14 +128,14 @@ appareils. Laisser vide pour utiliser le fuseau de Home Assistant.
 
 ## Dépannage
 
-| Problème                            | Vérifier                                                                 |
-| ----------------------------------- | ------------------------------------------------------------------------ |
-| L'add-on ne démarre pas             | architecture amd64/aarch64, logs du Supervisor, image GHCR publique      |
-| Aucun appareil dans l'add-on        | appairage Meross Local Pairer, port MQTT 2001, Wi-Fi 2,4 GHz WPA2        |
-| L'intégration ne voit pas le broker | adresse HTTP 2003, compte local, certificat MQTT ignoré                  |
-| Entités absentes                    | appareil ONLINE dans l'add-on, puis redémarrer l'intégration             |
-| Durées non conservées               | logs `Stored roller-shutter config` / `Re-applied roller-shutter config` |
-| Appareil déjà lié au cloud Meross   | réinitialiser l'appareil avant l'appairage local                         |
+| Problème                            | Vérifier                                                                     |
+| ----------------------------------- | ---------------------------------------------------------------------------- |
+| L'add-on ne démarre pas             | architecture amd64/aarch64, logs du Supervisor, image GHCR publique          |
+| Aucun appareil dans l'add-on        | appairage Wi-Fi (FW7) ou Bluetooth (FW8), port MQTT 2001, Wi-Fi 2,4 GHz WPA2 |
+| L'intégration ne voit pas le broker | adresse HTTP 2003, compte local, certificat MQTT ignoré                      |
+| Entités absentes                    | appareil ONLINE dans l'add-on, puis redémarrer l'intégration                 |
+| Durées non conservées               | logs `Stored roller-shutter config` / `Re-applied roller-shutter config`     |
+| Appareil déjà lié au cloud Meross   | réinitialiser l'appareil avant l'appairage local                             |
 
 ## Documentation technique
 

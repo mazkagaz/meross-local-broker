@@ -37,8 +37,9 @@ Expected: 28 tests OK.
    credentials. Alternatively point
    [Meross Local Pairer](https://github.com/mazkagaz/meross-local-pairer) at the local
    API (`http://homeassistant.local:2003`) and log in with the local account.
-3. Pair the MRS100 to the local broker with Meross Local Pairer (or any client that
-   sends `Appliance.Config.Key` + `Appliance.Config.Wifi`).
+3. Pair the MRS100 to the local broker with Meross Local Pairer (or any client
+   that sends `Appliance.Config.Key` plus `Appliance.Config.Wifi` on firmware 7,
+   or `Appliance.Config.WifiX` over BLE on firmware 8).
 4. Confirm the device connects: add-on log should show the device online and
    the broker should see `/appliance/<uuid>/publish`.
 5. Install the companion
