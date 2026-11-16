@@ -9,7 +9,7 @@
       (click)="openServiceLogs(service)"
     >
       <span class="status-dot" [class.ok]="isRunning(service)" [class.ko]="!isRunning(service)"></span>
-      <span class="status-tile-label">{{ service.name }}</span>
+      <span class="status-tile-label">{{ serviceShortName(service) }}</span>
     </button>
   </div>
   <div *ngIf="unconfigured" class="first-conf-banner">

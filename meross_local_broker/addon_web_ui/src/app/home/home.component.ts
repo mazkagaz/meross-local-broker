@@ -104,6 +104,10 @@ export class HomeComponent implements AfterViewInit, OnInit, OnDestroy {
     return service.status === 'RUNNING';
   }
 
+  serviceShortName(service: ServiceStatus): string {
+    return service.name.replace(' Service', '').replace('Local ', '');
+  }
+
   openServiceLogs(service: ServiceStatus): void {
     this.dialog.open(ServiceLogsDialogComponent, { data: { service } });
   }
