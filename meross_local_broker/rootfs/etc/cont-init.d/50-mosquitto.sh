@@ -28,7 +28,7 @@ if [[ ! -f $MQTT_CA_KEY_PATH ]] || [[ ! -f $MQTT_CA_CRT_PATH ]] || [[ ! -f $MQTT
   openssl req -new -x509 -days 3600 -key $MQTT_CA_KEY_PATH -out $MQTT_CA_CRT_PATH -passin pass:$MQTT_CA_KEY_SECRET -config $MQTT_CA_CONFIG_PATH
   openssl genrsa -out $MQTT_SERVER_KEY_PATH 2048
   openssl req -new -out /tmp/server.csr -key $MQTT_SERVER_KEY_PATH -config $MQTT_SERVER_CONFIG_PATH
-  openssl x509 -req -in /tmp/server.csr -CA $MQTT_CA_CRT_PATH -CAkey $MQTT_CA_KEY_PATH -CAcreateserial -out $MQTT_SERVER_CRT_PATH -days 3600 -passin pass:$MQTT_CA_KEY_SECRET
+  openssl x509 -req -in /tmp/server.csr -CA $MQTT_CA_CRT_PATH -CAkey $MQTT_CA_KEY_PATH -CAcreateserial -out $MQTT_SERVER_CRT_PATH -days 3600 -passin pass:$MQTT_CA_KEY_SECRET -extfile $MQTT_SERVER_CONFIG_PATH -extensions v3_req
 else
   bashio::log.info "All certificate files seems present."
 fi

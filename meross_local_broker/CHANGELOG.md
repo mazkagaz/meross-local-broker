@@ -1,3 +1,15 @@
+## 0.0.1-alpha71
+
+- Add an HTTPS listener on port **2004**, sharing the CA and server
+  certificate already used by the MQTT/TLS listener on port 2001. Port 2003
+  stays available in plain HTTP for Home Assistant ingress and existing
+  clients.
+- Serve the local CA at `/ca.crt` on both listeners so clients can import or
+  pin it. Compare the fingerprint out of band before trusting it.
+- New certificates carry `homeassistant.local`, `localhost` and `127.0.0.1`
+  in their subject alternative names. Existing certificates are kept; delete
+  `/data/mqtt/certs` (or the add-on data) to regenerate them.
+
 ## 0.0.1-alpha70
 
 - Forgotten devices are now revoked, not just deleted: the broker refuses their

@@ -93,15 +93,36 @@ du broker.
 
 Champs usuels :
 
-| Champ                            | Valeur                                      |
-| -------------------------------- | ------------------------------------------- |
-| HTTP API Endpoint                | `http://homeassistant.local:2003`           |
-| MQTT Address                     | `homeassistant.local:2001`                  |
-| Local login                      | le compte local, par exemple `meross-local` |
-| Password                         | le mot de passe local                       |
-| Skip MQTT certificate validation | coché                                       |
+| Champ                            | Valeur                                                                    |
+| -------------------------------- | ------------------------------------------------------------------------- |
+| HTTP API Endpoint                | `http://homeassistant.local:2003` (ou `https://homeassistant.local:2004`) |
+| MQTT Address                     | `homeassistant.local:2001`                                                |
+| Local login                      | le compte local, par exemple `meross-local`                               |
+| Password                         | le mot de passe local                                                     |
+| Skip MQTT certificate validation | coché                                                                     |
+| Skip HTTP certificate validation | coché avec `https://` et le certificat local                              |
 
 Si `homeassistant.local` ne répond pas, utiliser l'adresse IP de Home Assistant.
+
+### TLS
+
+Le listener MQTT **2001** et le listener HTTPS **2004** partagent la même
+autorité de certification locale (`/data/mqtt/certs`). Le port **2003** reste
+en HTTP simple pour l'ingress Home Assistant et les anciens clients.
+
+Le certificat du serveur est auto-signé. Deux options :
+
+- **valider le certificat** : récupérer la CA sur
+  `http://homeassistant.local:2003/ca.crt` (ou
+  `https://homeassistant.local:2004/ca.crt`), comparer son empreinte avec
+  celle du fichier `/data/mqtt/certs/ca.crt`, puis l'importer côté client.
+  Les certificats générés depuis `alpha71` contiennent
+  `homeassistant.local`, `localhost` et `127.0.0.1` ; avec une autre adresse,
+  désactiver la validation ou régénérer les certificats en supprimant
+  `/data/mqtt/certs`.
+- **ignorer la validation** : cocher les options « Skip … certificate
+  validation » de l'intégration. Le trafic reste chiffré, mais le pairer
+  épingle le certificat au premier usage.
 
 ### 5. Vérifier
 
