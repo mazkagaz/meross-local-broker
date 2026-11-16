@@ -56,7 +56,7 @@ export class ServiceStore {
       // Get initial data and fill the subject
       this.fetchServiceLogs(serviceName).subscribe((logLines) => subject.next(logLines));
 
-      this._logSubjects[serviceName] = subject;
+      this._logSubjects.set(serviceName, subject);
     }
 
     // In case the subject already exists, return it directly.
