@@ -4,6 +4,9 @@
   certificate already used by the MQTT/TLS listener on port 2001. Port 2003
   stays available in plain HTTP for Home Assistant ingress and existing
   clients.
+- The listener is controlled by the new `enable_https` add-on option
+  (default `true`). Turning it off removes only the HTTPS server block;
+  MQTT/TLS on 2001 and HTTP on 2003 are unchanged.
 - Serve the local CA at `/ca.crt` on both listeners so clients can import or
   pin it. Compare the fingerprint out of band before trusting it.
 - New certificates carry `homeassistant.local`, `localhost` and `127.0.0.1`

@@ -29,8 +29,10 @@ options:
   advertise: true
   debug_mode: false
   device_timezone: ""
+  enable_https: true
 schema:
   reinit_db: "bool"
   advertise: "bool"
   debug_mode: "bool"
   device_timezone: "str?"
+  enable_https: "bool"

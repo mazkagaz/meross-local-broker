@@ -110,6 +110,9 @@ Le listener MQTT **2001** et le listener HTTPS **2004** partagent la même
 autorité de certification locale (`/data/mqtt/certs`). Le port **2003** reste
 en HTTP simple pour l'ingress Home Assistant et les anciens clients.
 
+L'option **`enable_https`** (activée par défaut) contrôle le listener 2004 :
+la désactiver ne touche ni MQTT/TLS sur 2001, ni HTTP sur 2003.
+
 Le certificat du serveur est auto-signé. Deux options :
 
 - **valider le certificat** : récupérer la CA sur

@@ -39,6 +39,16 @@ else
     sed -i "s/%%whitelisted_inbound_cidr%%/172.30.32.2/g" /etc/nginx/ingress.conf
 fi
 
+# Optional HTTPS listener. Disabling it leaves port 2003 (plain HTTP) and the
+# MQTT/TLS listener on 2001 untouched.
+ENABLE_HTTPS=$(get_option 'enable_https' 'true')
+if [[ $ENABLE_HTTPS == "true" ]]; then
+    bashio::log.info "HTTPS listener enabled on port 2004."
+else
+    bashio::log.warning "HTTPS listener disabled: removing it from nginx.conf."
+    sed -i '/# BEGIN HTTPS SERVER/,/# END HTTPS SERVER/d' /etc/nginx/ingress.conf
+fi
+
 # Prepare log dir
 mkdir -p /var/log/nginx
 chown nobody:nogroup /var/log/nginx
