@@ -25,8 +25,9 @@ export interface SetNameDialogData {
   styleUrls: ['./home.component.scss'],
 })
 export class HomeComponent implements AfterViewInit, OnInit, OnDestroy {
-  devicesColumns: string[] = ['deviceId', 'network', 'status', 'userId', 'type'];
+  devicesColumns: string[] = [];
   subdevicesColumns: string[] = ['subdeviceId', 'type', 'hubId'];
+  advanced = localStorage.getItem('broker-advanced') === '1';
   deviceSource = new MatTableDataSource<Device>([]);
   subdeviceSource = new MatTableDataSource<Subdevice>([]);
   services: ServiceStatus[] = [];
@@ -46,6 +47,7 @@ export class HomeComponent implements AfterViewInit, OnInit, OnDestroy {
     public dialog: MatDialog
   ) {}
   ngOnInit(): void {
+    this.applyColumns();
     // Update the device and subdevice lists once
     this.pollSubscription.add(this.deviceStore.devices.subscribe((devices) => (this.deviceSource.data = devices)));
     this.pollSubscription.add(
@@ -79,6 +81,18 @@ export class HomeComponent implements AfterViewInit, OnInit, OnDestroy {
   ngAfterViewInit() {
     this.deviceSource.paginator = this.paginator;
     this.deviceSource.sort = this.sort;
+  }
+
+  toggleAdvanced(): void {
+    this.advanced = !this.advanced;
+    localStorage.setItem('broker-advanced', this.advanced ? '1' : '0');
+    this.applyColumns();
+  }
+
+  private applyColumns(): void {
+    this.devicesColumns = this.advanced
+      ? ['deviceId', 'type', 'network', 'userId', 'status']
+      : ['deviceId', 'type', 'status'];
   }
 
   deviceIcon(device: Device): string {

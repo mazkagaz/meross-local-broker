@@ -13,12 +13,11 @@ import { ShellModule } from './shell/shell.module';
 import { AboutModule } from './about/about.module';
 import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
-import { AnsiparserPipe } from './ansiparser.pipe';
-import { StatusComponent } from './status/status.component';
 import { AccountComponent } from './configuration/account.component';
 import { NgxQRCodeModule } from '@techiediaries/ngx-qrcode';
 import { ConfigurationComponent } from './configuration/configuration.component';
 import { WizardComponent } from './wizard/wizard.component';
+import { SetupComponent } from './setup/setup.component';
 
 @NgModule({
   imports: [
@@ -36,14 +35,7 @@ import { WizardComponent } from './wizard/wizard.component';
     NgxQRCodeModule,
     AppRoutingModule,
   ],
-  declarations: [
-    AppComponent,
-    AnsiparserPipe,
-    StatusComponent,
-    AccountComponent,
-    ConfigurationComponent,
-    WizardComponent,
-  ],
+  declarations: [AppComponent, AccountComponent, ConfigurationComponent, WizardComponent, SetupComponent],
   providers: [],
   bootstrap: [AppComponent],
 })

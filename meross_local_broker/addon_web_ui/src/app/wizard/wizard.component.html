@@ -1,14 +1,13 @@
 <div class="container">
   <mat-vertical-stepper [linear]="!configured" #stepper id="stepper">
     <mat-step>
-      <ng-template matStepLabel>Credentials configuration</ng-template>
+      <ng-template matStepLabel>Create the local account</ng-template>
       <configuration-account (configurationUpdatedEvent)="onConfigurationUpdate()"></configuration-account>
-      <!--<button mat-button matStepperNext>Next</button>-->
     </mat-step>
     <mat-step>
-      <ng-template matStepLabel>Meross Local Pairer app</ng-template>
+      <ng-template matStepLabel>Install Meross Local Pairer</ng-template>
       <p>
-        Install <b>Meross Local Pairer</b> on your Android device. It is distributed on GitHub, not on the Play Store.
+        Install <b>Meross Local Pairer</b> on your Android phone. It is distributed on GitHub, not on the Play Store.
       </p>
       <p>
         <a
@@ -25,31 +24,19 @@
       <button mat-raised-button matStepperNext color="accent">I have installed Meross Local Pairer &#8594;</button>
     </mat-step>
     <mat-step>
-      <ng-template matStepLabel>Login with Meross Local Pairer</ng-template>
+      <ng-template matStepLabel>Connect the pairer</ng-template>
       <div class="login-step-container">
         <ul>
-          <li><b>Open Meross Local Pairer</b> and log in to the local broker API.</li>
-          <li>
-            Make sure <b>WiFi is enabled and connected</b> to the same network where Homeassistant is running. Please
-            note that you will also need to <b>enable location (gps)</b> for the discovery, as Android requires GPS
-            permissions to scan nearest WIFIs.
-          </li>
-          <li>
-            Tap on <b>Discovery</b>. This will auto-populate the <i>HTTP server hostname</i> input field. If this
-            doesn't work, then it is highly probable that either the App or Homeassistant are not on the same network.
-            In such cases, you need to identify the network address of the HomeAssistant instance and fill this value as
-            follows:
-            <pre>
-  http://HA_IP:ADDON_API_PORT
-
-  Where: 
-    - HA_IP is the IP address of the HomeAssistant device. The default is homeassistant.local.
-    - ADDON_API_PORT is the port, on the host of HA, where the Addon is listening. The default is 2003.
-            </pre>
-          </li>
-          <li>Enter the <b>local login</b> and <b>password</b> created in step 1.</li>
-          <li>Tap on "Login" and make sure the login succeeds.</li>
+          <li>Connect the phone to the <b>same Wi-Fi network as Home Assistant</b>.</li>
+          <li>Open the pairer. It discovers this broker and fills in its address automatically.</li>
+          <li>Keep <b>HTTPS</b> enabled. HTTP is only useful for diagnostics.</li>
+          <li>Log in with the local account created in step 1.</li>
         </ul>
+        <p class="small">
+          If discovery fails, type the Home Assistant host or IP only (for example <code>homeassistant.local</code>).
+          The app selects the API port automatically; advanced users can change the HTTP and HTTPS ports in its
+          settings.
+        </p>
         <div>
           <button
             mat-raised-button
@@ -58,7 +45,7 @@
             matStepperNext
           >
             <mat-icon>
-              <mat-spinner *ngIf="!loginVerified" color="warn" diameter="20" color="primary"></mat-spinner>
+              <mat-spinner *ngIf="!loginVerified" diameter="20"></mat-spinner>
               {{ loginVerified ? 'done' : '' }}
             </mat-icon>
             <span *ngIf="!loginVerified">Waiting for login...</span>
@@ -73,21 +60,24 @@
     <mat-step optional>
       <ng-template matStepLabel>Pair Meross devices</ng-template>
       <div class="pair-step-container">
-        <p>You can now pair your Meross hardware devices with this local add-on.</p>
-        <p>In Meross Local Pairer, follow the pairing procedure described in its README.</p>
+        <p>Reset the Meross device, then follow the guided pairing in the app.</p>
         <p>
-          <b>Note: reset your Meross devices before pairing them with Meross Local Pairer.</b>
+          Give the device a unique name. The name and its Home Assistant entities are kept if the device is forgotten
+          later.
+        </p>
+        <p class="small">
+          The pairer offers to trust the Wi-Fi network used for your devices. Device access points are always allowed.
         </p>
       </div>
     </mat-step>
     <mat-step>
-      <ng-template matStepLabel>Configure HomeAssistant</ng-template>
+      <ng-template matStepLabel>Configure Home Assistant</ng-template>
       <div class="ha-step-container">
         <p>
           Install the <b>Meross Local Cloud</b> integration from
-          <a href="https://github.com/mazkagaz/meross-local-cloud#installation-avec-hacs" target="_blank" rel="noopener"
+          <a href="https://github.com/mazkagaz/meross-local-cloud#installation" target="_blank" rel="noopener"
             >mazkagaz/meross-local-cloud</a
-          >, choose the <b>LAN-only broker</b> mode, and use the local login created in step 1.
+          >, choose the <b>LAN-only broker</b> mode, and use the local account created in step 1.
         </p>
       </div>
     </mat-step>

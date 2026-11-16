@@ -1,11 +1,67 @@
 <div class="container">
+  <img class="banner" src="assets/images/meross-local-broker-banner.jpeg" alt="Meross Local Broker" />
+
   <mat-card>
-    <h1>
-      <mat-card-title translate>APP_NAME</mat-card-title>
-    </h1>
+    <mat-card-title>Meross Local Broker</mat-card-title>
+    <mat-card-subtitle>Version {{ version }}</mat-card-subtitle>
     <mat-card-content>
-      <mat-icon>code</mat-icon>
-      <span translate>Version</span> {{ version }}
+      <p>
+        A local replacement for the Meross cloud: it runs the MQTT broker and the local API used by Meross devices, the
+        Android pairer and the Home Assistant integration.
+      </p>
     </mat-card-content>
   </mat-card>
+
+  <mat-card>
+    <mat-card-title>Principles</mat-card-title>
+    <mat-card-content>
+      <ul>
+        <li>Local only: no Meross cloud account, no tracking, no telemetry, no ads.</li>
+        <li>Passwords and device data stay in your Home Assistant installation.</li>
+        <li>MQTT and the API can run over TLS, with certificate pinning in the pairer.</li>
+        <li>Free and open source. Provided as is, without warranty.</li>
+      </ul>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-card>
+    <mat-card-title>Attributions</mat-card-title>
+    <mat-card-content>
+      <p>
+        Unofficial fork of
+        <a href="https://github.com/albertogeniola/ha-meross-local-broker" target="_blank" rel="noopener"
+          >albertogeniola/ha-meross-local-broker</a
+        >. Alberto Geniola also wrote the original Meross low-level library and documentation. Icons: Material Icons.
+      </p>
+      <p>Not affiliated with, endorsed by or sponsored by Meross. Meross is a trademark of its owner.</p>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-card>
+    <mat-card-title>Source and support</mat-card-title>
+    <mat-card-content>
+      <ul class="links">
+        <li>
+          <a href="https://github.com/mazkagaz/meross-local-broker" target="_blank" rel="noopener">This broker</a>
+        </li>
+        <li>
+          <a href="https://github.com/mazkagaz/meross-local-pairer" target="_blank" rel="noopener">Android pairer</a>
+        </li>
+        <li>
+          <a href="https://github.com/mazkagaz/meross-local-cloud" target="_blank" rel="noopener"
+            >Home Assistant integration</a
+          >
+        </li>
+      </ul>
+      <p class="small">Report issues or suggest improvements on GitHub.</p>
+    </mat-card-content>
+  </mat-card>
+
+  <a class="coffee-banner" href="https://paypal.me/mazkagaz" target="_blank" rel="noopener">
+    <mat-icon>local_cafe</mat-icon>
+    <span>
+      <b>Offer me a coffee</b>
+      <small>Optional — everything stays free, open source and ad-free.</small>
+    </span>
+  </a>
 </div>

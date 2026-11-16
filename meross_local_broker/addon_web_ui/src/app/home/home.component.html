@@ -14,9 +14,9 @@
   </div>
   <div *ngIf="unconfigured" class="first-conf-banner">
     <p>
-      It looks like this is your first setup! Why won't you start with the
+      This broker has no local account yet. Run the guided setup to connect the pairer and Home Assistant.
       <button mat-raised-button color="primary" routerLink="/wizard" routerLinkActive="active">
-        <span translate>Wizard Setup?</span>
+        <span>Start setup</span>
       </button>
     </p>
   </div>
@@ -26,6 +26,15 @@
       <mat-toolbar color="primary">
         <span>Paired devices</span>
         <span class="spacer"></span>
+        <button
+          mat-icon-button
+          type="button"
+          (click)="toggleAdvanced()"
+          [matTooltip]="advanced ? 'Hide technical details' : 'Show technical details'"
+          aria-label="Toggle advanced details"
+        >
+          <mat-icon>{{ advanced ? 'visibility' : 'visibility_off' }}</mat-icon>
+        </button>
       </mat-toolbar>
       <table mat-table [dataSource]="deviceSource" class="mat-elevation-z8" matSort>
         <!-- Device Name Column -->
@@ -52,8 +61,9 @@
               <div>
                 <a *ngIf="element.devName === null" (click)="assignName(element)" class="grayout">(No name set)</a>
                 <span *ngIf="element.devName !== null">{{ element.devName }}</span>
-                <br />
+                <br *ngIf="advanced" />
                 <a
+                  *ngIf="advanced"
                   (click)="alertCopied()"
                   #tooltip
                   class="mat-small"
@@ -104,7 +114,7 @@
 
         <!-- Row shown when there is no matching data. -->
         <tr class="mat-row" *matNoDataRow>
-          <td class="mat-cell" colspan="5">No data matching</td>
+          <td class="mat-cell" [attr.colspan]="devicesColumns.length">No data matching</td>
         </tr>
 
         <mat-paginator [pageSizeOptions]="[15, 30, 100]"></mat-paginator>

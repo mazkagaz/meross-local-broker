@@ -8,17 +8,31 @@
     <mat-icon>more_horiz</mat-icon>
   </button>
   <mat-menu #appMenu="matMenu">
-    <button mat-menu-item routerLink="/wizard">
-      <mat-icon>auto_awesome</mat-icon>
+    <button mat-menu-item [matMenuTriggerFor]="setupMenu">
+      <mat-icon>build</mat-icon>
       <span translate>Setup</span>
-    </button>
-    <button mat-menu-item routerLink="/status">
-      <mat-icon>poll</mat-icon>
-      <span translate>Service Status</span>
     </button>
     <button mat-menu-item routerLink="/about">
       <mat-icon>info</mat-icon>
       <span translate>About</span>
+    </button>
+  </mat-menu>
+  <mat-menu #setupMenu="matMenu">
+    <button mat-menu-item routerLink="/setup/credentials">
+      <mat-icon>key</mat-icon>
+      <span>Broker access</span>
+    </button>
+    <button mat-menu-item routerLink="/setup/pairer">
+      <mat-icon>android</mat-icon>
+      <span>Pairer app</span>
+    </button>
+    <button mat-menu-item routerLink="/setup/pairing">
+      <mat-icon>devices_other</mat-icon>
+      <span>Pair devices</span>
+    </button>
+    <button mat-menu-item routerLink="/setup/home-assistant">
+      <mat-icon>home</mat-icon>
+      <span>Home Assistant</span>
     </button>
   </mat-menu>
 </mat-toolbar>

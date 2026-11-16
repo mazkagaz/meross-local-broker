@@ -6,6 +6,13 @@
 - Replace the standalone service status page with four compact status tiles
   on the devices page. Each tile shows a green/red LED and opens a closable
   live log window for that service when clicked.
+- The guided setup only appears on a broker without a local account. After
+  that, the menu exposes four separate setup blocks: broker access, pairer
+  app, device pairing and Home Assistant.
+- Add a standard/advanced toggle to the devices table. Standard mode hides the
+  UUID, MAC address and user id; the choice is remembered.
+- Expand the About page with the banner, principles, attributions, source
+  links and an optional coffee link.
 
 ## 0.0.1-alpha76
 

@@ -1,0 +1,62 @@
+<div class="container">
+  <mat-card *ngIf="section === 'credentials'">
+    <mat-card-title>Broker access</mat-card-title>
+    <mat-card-content>
+      <p>
+        Create the local login used by Meross Local Pairer and the Home Assistant integration. This account is
+        independent from Meross: the add-on never contacts the Meross cloud.
+      </p>
+    </mat-card-content>
+  </mat-card>
+  <configuration-account *ngIf="section === 'credentials'"></configuration-account>
+
+  <mat-card *ngIf="section === 'pairer'">
+    <mat-card-title>Meross Local Pairer</mat-card-title>
+    <mat-card-content>
+      <p>
+        Install the Android app that pairs your devices with this broker. It is distributed on GitHub, not on the Play
+        Store.
+      </p>
+      <a
+        mat-raised-button
+        color="accent"
+        href="https://github.com/mazkagaz/meross-local-pairer/releases/latest"
+        target="_blank"
+        rel="noopener"
+      >
+        Download Meross Local Pairer
+      </a>
+      <p class="small">The legacy "Custom Pairer" application from the Play Store is not used by this add-on.</p>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-card *ngIf="section === 'pairing'">
+    <mat-card-title>Pair devices</mat-card-title>
+    <mat-card-content>
+      <ol>
+        <li>Connect the phone to the same Wi-Fi network as Home Assistant and open the pairer.</li>
+        <li>The broker address is discovered automatically. Enter the local login created in "Broker access".</li>
+        <li>Reset the Meross device, then follow the guided pairing.</li>
+        <li>Give the device a unique name. It is kept if the device is forgotten later.</li>
+      </ol>
+      <p class="small">
+        The pairer offers to trust the current Wi-Fi network. Device access points are always allowed.
+      </p>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-card *ngIf="section === 'home-assistant'">
+    <mat-card-title>Home Assistant</mat-card-title>
+    <mat-card-content>
+      <p>
+        Install the
+        <a href="https://github.com/mazkagaz/meross-local-cloud#installation" target="_blank" rel="noopener"
+          >Meross Local Cloud</a
+        >
+        integration with HACS, choose the <b>LAN-only broker</b> mode, and use the local login created in "Broker
+        access".
+      </p>
+      <p class="small">The broker is advertised over mDNS, so the integration can find it automatically.</p>
+    </mat-card-content>
+  </mat-card>
+</div>
