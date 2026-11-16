@@ -18,7 +18,7 @@ if [[ $REINIT_DB == "true" ]]; then
 fi
 
 # Configure env-vars
-ingress_entry=$(bashio::addon.ingress_entry)
+ingress_entry=$(bashio::app.ingress_entry)
 sed -i "s#%%APIURL%%#${ingress_entry}#g" /var/www/assets/env.js
 
 # Initializing DB

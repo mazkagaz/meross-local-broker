@@ -4,9 +4,9 @@ source /opt/utils/bashutils.sh
 # ==============================================================================
 # Configure NGINX for use with Meross Local Broker
 # ==============================================================================
-ingress_entry=$(bashio::addon.ingress_entry)
-ingress_port=$(bashio::addon.ingress_port)
-ingress_interface=$(bashio::addon.ip_address)
+ingress_entry=$(bashio::app.ingress_entry)
+ingress_port=$(bashio::app.ingress_port)
+ingress_interface=$(bashio::app.ip_address)
 
 # Safe defaults
 if [[ $ingress_interface = "" ]]; then

@@ -1,3 +1,9 @@
+## 0.0.1-alpha76
+
+- Replace the deprecated `bashio::addon.ingress_entry`, `ingress_port` and
+  `ip_address` calls with `bashio::app.*`, removing the repeated deprecation
+  warnings from the add-on log.
+
 ## 0.0.1-alpha75
 
 - The API mDNS service now carries TXT records with the usable LAN data:
