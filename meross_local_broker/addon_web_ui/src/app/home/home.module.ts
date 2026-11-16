@@ -6,6 +6,7 @@ import { SharedModule } from '@shared';
 import { MaterialModule } from '@app/material.module';
 import { HomeRoutingModule } from './home-routing.module';
 import { HomeComponent, SetDeviceNameDialog } from './home.component';
+import { ServiceLogsDialogComponent } from './service-logs-dialog.component';
 import { OnlineDeviceStatusName, BridgeStatusName } from '../enums.pipe';
 import { FormsModule } from '@angular/forms';
 
@@ -19,6 +20,12 @@ import { FormsModule } from '@angular/forms';
     HomeRoutingModule,
     FormsModule,
   ],
-  declarations: [HomeComponent, OnlineDeviceStatusName, BridgeStatusName, SetDeviceNameDialog],
+  declarations: [
+    HomeComponent,
+    OnlineDeviceStatusName,
+    BridgeStatusName,
+    SetDeviceNameDialog,
+    ServiceLogsDialogComponent,
+  ],
 })
 export class HomeModule {}

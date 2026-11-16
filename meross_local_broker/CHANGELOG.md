@@ -1,3 +1,12 @@
+## 0.0.1-alpha77
+
+- Paired devices page: show the repository banner, add meaningful device
+  icons (roller shutters vs. plugs), rename "Assign name" to "Rename", and
+  hide the subdevice table when no subdevice is paired.
+- Replace the standalone service status page with four compact status tiles
+  on the devices page. Each tile shows a green/red LED and opens a closable
+  live log window for that service when clicked.
+
 ## 0.0.1-alpha76
 
 - Replace the deprecated `bashio::addon.ingress_entry`, `ingress_port` and

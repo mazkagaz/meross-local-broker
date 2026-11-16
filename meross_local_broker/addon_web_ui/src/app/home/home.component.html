@@ -1,4 +1,17 @@
 <div class="container" fxFlex fxLayout="column">
+  <img class="banner" src="assets/images/meross-local-broker-banner.jpeg" alt="Meross Local Broker" />
+  <div class="status-tiles" *ngIf="services.length > 0">
+    <button
+      *ngFor="let service of services"
+      type="button"
+      class="status-tile"
+      [matTooltip]="service.description + ' — click to view live logs'"
+      (click)="openServiceLogs(service)"
+    >
+      <span class="status-dot" [class.ok]="isRunning(service)" [class.ko]="!isRunning(service)"></span>
+      <span class="status-tile-label">{{ service.name }}</span>
+    </button>
+  </div>
   <div *ngIf="unconfigured" class="first-conf-banner">
     <p>
       It looks like this is your first setup! Why won't you start with the
@@ -19,7 +32,8 @@
         <ng-container matColumnDef="deviceId">
           <th class="p10" mat-header-cell *matHeaderCellDef mat-sort-header>Device Name</th>
           <td class="p10" mat-cell *matCellDef="let element">
-            <div style="flex-direction: row; display: flex">
+            <div style="flex-direction: row; display: flex; align-items: center">
+              <mat-icon class="device-icon" aria-hidden="true">{{ deviceIcon(element) }}</mat-icon>
               <div>
                 <button mat-icon-button [matMenuTriggerFor]="deviceMenu" aria-label="Device menu">
                   <mat-icon>more_vert</mat-icon>
@@ -27,7 +41,7 @@
                 <mat-menu #deviceMenu="matMenu">
                   <button mat-menu-item (click)="assignName(element)">
                     <mat-icon>edit</mat-icon>
-                    <span>Assign name</span>
+                    <span>Rename</span>
                   </button>
                   <button mat-menu-item (click)="forgetDevice(element)">
                     <mat-icon>delete</mat-icon>
@@ -75,6 +89,12 @@
         <ng-container matColumnDef="status">
           <th class="p10" mat-header-cell *matHeaderCellDef mat-sort-header>Status</th>
           <td class="p10" mat-cell *matCellDef="let element" [matTooltip]="'Last message on ' + element.lastSeenTime">
+            <span
+              class="status-dot"
+              [class.ok]="element.onlineStatus === 1"
+              [class.ko]="element.onlineStatus !== 1"
+              aria-hidden="true"
+            ></span>
             <span>{{ element.onlineStatus | onlineDeviceStatusName }}</span>
           </td>
         </ng-container>
@@ -84,7 +104,7 @@
 
         <!-- Row shown when there is no matching data. -->
         <tr class="mat-row" *matNoDataRow>
-          <td class="mat-cell" colspan="4">No data matching</td>
+          <td class="mat-cell" colspan="5">No data matching</td>
         </tr>
 
         <mat-paginator [pageSizeOptions]="[15, 30, 100]"></mat-paginator>
@@ -92,7 +112,7 @@
     </div>
 
     <!-- SubDevice List -->
-    <div class="max-800">
+    <div class="max-800" *ngIf="subdeviceSource.data.length > 0">
       <mat-toolbar color="primary">
         <span>Paired subdevices</span>
         <span class="spacer"></span>
@@ -128,7 +148,7 @@
 
         <!-- Row shown when there is no matching data. -->
         <tr class="mat-row" *matNoDataRow>
-          <td class="mat-cell" colspan="4">No data matching</td>
+          <td class="mat-cell" colspan="3">No data matching</td>
         </tr>
 
         <mat-paginator [pageSizeOptions]="[15, 30, 100]"></mat-paginator>

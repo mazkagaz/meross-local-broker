@@ -11,6 +11,9 @@ import { AdminService } from '@app/services/admin';
 import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Configuration } from '@app/model/configuration';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { ServiceStatus } from '@app/model/service';
+import { ServiceStore } from '@app/providers/service';
+import { ServiceLogsDialogComponent } from './service-logs-dialog.component';
 
 export interface SetNameDialogData {
   device: Device;
@@ -26,6 +29,7 @@ export class HomeComponent implements AfterViewInit, OnInit, OnDestroy {
   subdevicesColumns: string[] = ['subdeviceId', 'type', 'hubId'];
   deviceSource = new MatTableDataSource<Device>([]);
   subdeviceSource = new MatTableDataSource<Subdevice>([]);
+  services: ServiceStatus[] = [];
   autoUpdate = true;
   unconfigured = true;
   private pollSubscription = new Subscription();
@@ -36,6 +40,7 @@ export class HomeComponent implements AfterViewInit, OnInit, OnDestroy {
   constructor(
     private deviceStore: DeviceStore,
     private subdeviceStore: SubdeviceStore,
+    private serviceStore: ServiceStore,
     private adminService: AdminService,
     private snackBarService: MatSnackBar,
     public dialog: MatDialog
@@ -56,6 +61,8 @@ export class HomeComponent implements AfterViewInit, OnInit, OnDestroy {
         this.subdeviceStore.deviceUpdates.subscribe((devices) => (this.subdeviceSource.data = devices))
       );
     }
+    this.pollSubscription.add(this.serviceStore.services.subscribe((services) => (this.services = services)));
+    this.pollSubscription.add(this.serviceStore.serviceUpdates.subscribe((services) => (this.services = services)));
     this.adminService.getConfiguration().subscribe((account: Configuration) => {
       this.unconfigured = !account;
     });
@@ -72,6 +79,19 @@ export class HomeComponent implements AfterViewInit, OnInit, OnDestroy {
   ngAfterViewInit() {
     this.deviceSource.paginator = this.paginator;
     this.deviceSource.sort = this.sort;
+  }
+
+  deviceIcon(device: Device): string {
+    const rollerShutters = ['mrs100', 'mss560', 'mss570', 'mrs200'];
+    return rollerShutters.includes((device.deviceType || '').toLowerCase()) ? 'window' : 'power';
+  }
+
+  isRunning(service: ServiceStatus): boolean {
+    return service.status === 'RUNNING';
+  }
+
+  openServiceLogs(service: ServiceStatus): void {
+    this.dialog.open(ServiceLogsDialogComponent, { data: { service } });
   }
 
   assignName(device: Device) {
