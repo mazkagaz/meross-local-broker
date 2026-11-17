@@ -119,7 +119,7 @@ class ServiceManager:
         exitcode = int (exitcode) if exitcode is not None else None
         try:
             log_status = ServiceInfo.log_status_from_lines(
-                self.get_log(service_name, tail=200))
+                self.get_log(service_name, tail=500))
         except Exception:
             log_status = "empty"
         return ServiceInfo(descriptor=service_descriptor, up=up.lower()=='true',
