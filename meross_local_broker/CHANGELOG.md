@@ -1,3 +1,11 @@
+## 0.0.1-alpha93
+
+- Les diodes d'état des services reflètent désormais les logs : **grise** si
+  les logs sont vides, **verte** si le service tourne sans incident,
+  **orange** si des warnings sont présents, **rouge** si une erreur est
+  présente. `/_admin_/services` expose `logStatus` (analyse des 200 dernières
+  lignes).
+
 ## 0.0.1-alpha92
 
 - Corrige l'appel à `supervisor_network.py` (`Permission denied`) : le script
