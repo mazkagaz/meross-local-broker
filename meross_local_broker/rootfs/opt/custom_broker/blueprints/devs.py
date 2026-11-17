@@ -27,6 +27,11 @@ _AGENT_READ_TOPICS = {
     '/_agent',
     '$SYS/client-disconnections',
 }
+# Subscription checks use the wildcard filters, but message delivery is checked
+# against the concrete topic.
+_APPLIANCE_DELIVERY_RE = re.compile(
+    r'^/appliance/[A-Za-z0-9]+/(publish|subscribe)$')
+_NAT_DELIVERY_RE = re.compile(r'^/_nat_/[A-Za-z0-9-]+$')
 _ACL_DENIAL_LOG = ExpiringDict(max_age_seconds=300, max_len=5000)
 
 
@@ -39,7 +44,10 @@ def _accepted_topics(acc: int):
 
 
 def _agent_topic_allowed(topic: str, can_read: bool, can_write: bool) -> bool:
-    if can_read and topic in _AGENT_READ_TOPICS:
+    if can_read and (
+            topic in _AGENT_READ_TOPICS
+            or _APPLIANCE_DELIVERY_RE.fullmatch(topic)
+            or _NAT_DELIVERY_RE.fullmatch(topic)):
         return True
     if can_write:
         if topic == '/_agent' or topic.startswith('/_nat_/'):
@@ -214,7 +222,7 @@ def device_login():
 def _custom_login(email: str, password: str):
     # Skip login for AGENT as it will use another login option
     if email == "_agent":
-        _LOGGER.error("LOGIN_CHECK(custom)=> User \"%s\": skipping login via API, as it will use sql login logic.", email)
+        _LOGGER.debug("LOGIN_CHECK(custom)=> User \"%s\": skipping login via API, as it will use sql login logic.", email)
         dbhelper.store_event(event_type=EventType.AGENT_LOGIN_ATTEMPTED, details=f"Agent has tried to login to this API from {str(request.remote_addr)}. Atempt will be ignored.")
         return "ko", 401
 

@@ -238,6 +238,13 @@ class HttpApiCompatibilityTest(unittest.TestCase):
 
         self.assertEqual(acl('_agent', '/appliance/+/publish', 1, 'broker'),
                          (200, b'ok'))
+        # Delivery checks use concrete topics, not the wildcard filter.
+        self.assertEqual(acl('_agent', f'/appliance/{uuid}/subscribe', 1, 'broker'),
+                         (200, b'ok'))
+        self.assertEqual(acl('_agent', f'/appliance/{uuid}/publish', 1, 'broker'),
+                         (200, b'ok'))
+        self.assertEqual(acl('_agent', '/_nat_/test-id', 1, 'broker'),
+                         (200, b'ok'))
 
     def test_admin_configuration_is_local_only(self):
         with patch('blueprints.admin.service_manager.restart_service'):
