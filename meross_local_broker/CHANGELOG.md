@@ -1,3 +1,9 @@
+## 0.0.1-alpha89
+
+- Corrige `auth_opt_log_level` : la valeur reconnue par go-auth est `warn`
+  (et non `warning`). Les codes 403 ne sont plus répétés au niveau `info` ;
+  les refus ACL restent journalisés une fois par l'API avec le topic et `acc`.
+
 ## 0.0.1-alpha88
 
 - Remplace `bashio::addon.port` par `bashio::app.port` dans les services API et
