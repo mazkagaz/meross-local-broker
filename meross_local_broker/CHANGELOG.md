@@ -1,3 +1,12 @@
+## 0.0.1-alpha88
+
+- Remplace `bashio::addon.port` par `bashio::app.port` dans les services API et
+  MQTT (supprime l'avertissement de dépréciation).
+- Déclare `auth_opt_hasher pbkdf2`, supprimant l'avertissement go-auth
+  « unknown or empty hasher ».
+- Autorise les appareils à publier leurs messages `/_agent` et vérifie la
+  signature de ces messages comme les publications d'appareil.
+
 ## 0.0.1-alpha87
 
 - Corrige les refus ACL MQTT lors des désabonnements (`acc=8`) : ils suivent
