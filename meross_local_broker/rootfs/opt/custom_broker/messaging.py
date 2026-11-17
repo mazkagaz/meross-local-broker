@@ -16,11 +16,16 @@ def make_api_response(data: Optional[dict], api_status: ErrorCodes = ErrorCodes.
     }), status_code
 
 
-def verify_message_signature(signature: str, timestamp_millis: str, nonce: str, b64params: str):
-    if not all(isinstance(value, str) for value in (signature, timestamp_millis, nonce, b64params)):
+def verify_message_signature(signature: str, timestamp_millis, nonce, b64params: str):
+    # Clients send the timestamp as a JSON number (pairer, meross_iot) or as a
+    # string; the signature always uses its decimal representation.
+    if not isinstance(signature, str):
         return False
     message_hash = md5()
     datatosign = '%s%s%s%s' % (_SECRET, timestamp_millis, nonce, b64params)
     message_hash.update(datatosign.encode("utf8"))
     md5hash = message_hash.hexdigest()
-    return hmac.compare_digest(md5hash, signature)
+    try:
+        return hmac.compare_digest(md5hash, signature)
+    except TypeError:
+        return False

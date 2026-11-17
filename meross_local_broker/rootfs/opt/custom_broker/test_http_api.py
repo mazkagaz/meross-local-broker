@@ -92,6 +92,20 @@ class HttpApiCompatibilityTest(unittest.TestCase):
         response = self.client.post('/v1/Auth/signIn', json=[])
         self.assertEqual(response.status_code, 400)
 
+    def test_numeric_timestamp_signature_is_accepted(self):
+        from constants import _SECRET
+        payload = {'email': 'test@example.com', 'password': 'test-password'}
+        params = base64.b64encode(json.dumps(payload).encode()).decode()
+        timestamp = 1788750000  # JSON number, as sent by the Android pairer.
+        nonce = 'testnonce'
+        signature = hashlib.md5(
+            f'{_SECRET}{timestamp}{nonce}{params}'.encode()).hexdigest()
+        response = self.client.post('/v1/Auth/signIn', json={
+            'params': params, 'timestamp': timestamp,
+            'nonce': nonce, 'sign': signature})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.get_json()['apiStatus'], 0)
+
     def test_malformed_params_payload_returns_bad_request(self):
         from constants import _SECRET
         envelope = self.envelope({})
