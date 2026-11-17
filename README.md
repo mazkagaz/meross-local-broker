@@ -18,11 +18,21 @@ sans dépendre du cloud pour l'usage quotidien.
 | **Meross Local Pairer** | application Android d'appairage   | [mazkagaz/meross-local-pairer](https://github.com/mazkagaz/meross-local-pairer) |
 
 ```
-MRS100 ──MQTT/TLS──> add-on Meross Local Broker ──API/MQTT──> intégration HA
-                            ^
-                            │ appairage initial
-                       Meross Local Pairer (Android)
+Appareil Meross ──MQTT/TLS──> add-on Meross Local Broker ──API/MQTT──> intégration HA
+                                      ^
+                                      │ appairage initial
+                             Meross Local Pairer (Android)
 ```
+
+## Compatibilité
+
+Le broker fonctionne avec les appareils Meross qui acceptent un broker local.
+Le **MRS100** (volet roulant) est la cible principalement testée, mais les
+autres modèles doivent continuer à fonctionner comme avec le broker d'origine,
+et parfois mieux. Les retours de test sont précieux : ouvrez une
+[issue](https://github.com/mazkagaz/meross-local-broker/issues) en précisant le
+modèle, le firmware et les fonctions qui marchent ou non. Les demandes
+d'intégration spécifique sont bienvenues.
 
 ## Ports
 
@@ -40,7 +50,7 @@ l'ingress et les clients existants.
 
 - Home Assistant OS ou Supervised (l'add-on a besoin du Supervisor).
 - HACS installé, pour l'intégration Home Assistant.
-- Un MRS100 et un Wi-Fi **2,4 GHz en WPA2**.
+- Un appareil Meross à appairer et un Wi-Fi **2,4 GHz en WPA2**.
 - Un téléphone Android pour Meross Local Pairer.
 - Installations **amd64** ou **aarch64** uniquement (les architectures 32 bits
   ne sont plus construites).
@@ -81,19 +91,19 @@ curl -s -X PUT http://homeassistant.local:2003/_admin_/configuration \
 
 La réponse contient `userId` et `mqttKey`. Le `userId` vaut normalement `1`.
 
-### 3. Appairer le MRS100
+### 3. Appairer un appareil Meross
 
 Suivre la procédure de
 [Meross Local Pairer](https://github.com/mazkagaz/meross-local-pairer#appairage-pas-à-pas).
-L'application configure le MRS100 pour qu'il se connecte à cet add-on.
+L'application configure l'appareil pour qu'il se connecte à cet add-on.
 
-- **Firmware 7** : appairage par l'AP Wi-Fi `Meross_RS_*`.
-- **Firmware 8** : l'AP Wi-Fi n'est pas ouvert ; utiliser l'appairage
-  **Bluetooth LE** de Meross Local Pairer (`MRBL_…`).
+- **Sans Bluetooth LE** : appairage par l'AP Wi-Fi `Meross_*` de l'appareil.
+- **Avec Bluetooth LE** (publicité `MRBL_…`, notamment les MRS100 récents) :
+  utiliser l'appairage Bluetooth LE de Meross Local Pairer.
 
 Une fois l'appairage terminé :
 
-- l'add-on doit journaliser la connexion du MRS100 et son passage **ONLINE** ;
+- l'add-on doit journaliser la connexion de l'appareil et son passage **ONLINE** ;
 - la page **Paired devices** du panneau web doit afficher l'appareil.
 
 ### 4. Installer l'intégration Home Assistant
@@ -141,7 +151,10 @@ Le certificat du serveur est auto-signé. Deux options :
 
 ### 5. Vérifier
 
-Dans Home Assistant, l'appareil doit apparaître avec :
+Dans Home Assistant, l'appareil doit apparaître avec les entités
+correspondant à son type (prise, éclairage, volet, etc.).
+
+Pour un **MRS100**, l'intégration crée en plus :
 
 - une entité `cover` pour le volet ;
 - deux entités `number` pour les durées d'ouverture/fermeture ;
@@ -149,6 +162,9 @@ Dans Home Assistant, l'appareil doit apparaître avec :
 - un capteur **Calibration status**.
 
 ## Utilisation
+
+Les appareils se pilotent avec leurs entités Home Assistant habituelles. Pour
+le **MRS100** :
 
 - **Ouvrir/fermer** : entité `cover`.
 - **Durées** : entités `number` (10 à 120 secondes). Les valeurs sont
@@ -164,9 +180,9 @@ l'appareil et **révoque son MAC** : l'appareil garde ses identifiants MQTT, mai
 le broker refuse désormais sa connexion, donc il ne peut pas revenir tout seul.
 
 Un nouvel appairage réussi appelle `POST /v1/Device/claim` pour lever la
-révocation. L'appareil conserve le même UUID : dans Home Assistant, l'entité
-`cover`, les entités `number` et les automatisations existantes restent valides
-après un cycle oubli/réappairage.
+révocation. L'appareil conserve le même UUID : dans Home Assistant, ses entités
+et les automatisations existantes restent valides après un cycle
+oubli/réappairage.
 
 ## Réglage `device_timezone`
 
@@ -175,14 +191,14 @@ appareils. Laisser vide pour utiliser le fuseau de Home Assistant.
 
 ## Dépannage
 
-| Problème                            | Vérifier                                                                     |
-| ----------------------------------- | ---------------------------------------------------------------------------- |
-| L'add-on ne démarre pas             | architecture amd64/aarch64, logs du Supervisor, image GHCR publique          |
-| Aucun appareil dans l'add-on        | appairage Wi-Fi (FW7) ou Bluetooth (FW8), port MQTT 2001, Wi-Fi 2,4 GHz WPA2 |
-| L'intégration ne voit pas le broker | adresse HTTPS 2004 (ou HTTP 2003), compte local, certificat MQTT ignoré      |
-| Entités absentes                    | appareil ONLINE dans l'add-on, puis redémarrer l'intégration                 |
-| Durées non conservées               | logs `Stored roller-shutter config` / `Re-applied roller-shutter config`     |
-| Appareil déjà lié au cloud Meross   | réinitialiser l'appareil avant l'appairage local                             |
+| Problème                            | Vérifier                                                                 |
+| ----------------------------------- | ------------------------------------------------------------------------ |
+| L'add-on ne démarre pas             | architecture amd64/aarch64, logs du Supervisor, image GHCR publique      |
+| Aucun appareil dans l'add-on        | appairage Wi-Fi AP ou Bluetooth LE, port MQTT 2001, Wi-Fi 2,4 GHz WPA2   |
+| L'intégration ne voit pas le broker | adresse HTTPS 2004 (ou HTTP 2003), compte local, certificat MQTT ignoré  |
+| Entités absentes                    | appareil ONLINE dans l'add-on, puis redémarrer l'intégration             |
+| Durées non conservées               | logs `Stored roller-shutter config` / `Re-applied roller-shutter config` |
+| Appareil déjà lié au cloud Meross   | réinitialiser l'appareil avant l'appairage local                         |
 
 ## Documentation technique
 

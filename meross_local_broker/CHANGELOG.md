@@ -1,3 +1,13 @@
+## 0.0.1-alpha81
+
+- Present the broker as compatible with Meross devices in general instead of
+  focusing on the MRS100, and invite users to report test results and request
+  specific integrations.
+- Describe Bluetooth LE pairing instead of firmware 7/8 in the setup guidance.
+- Drop the obsolete "LAN-only broker" integration mode from the setup and
+  documentation: the integration only supports the local broker.
+- Restore the brown coffee icon on the About page.
+
 ## 0.0.1-alpha80
 
 - Fix switching between Setup and Pair devices: the section now follows route

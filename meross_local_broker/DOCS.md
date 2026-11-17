@@ -9,13 +9,21 @@ HTTP/HTTPS) pour Home Assistant. HTTPS est activé par défaut. Il est prévu po
 - [Meross Local Cloud](https://github.com/mazkagaz/meross-local-cloud) pour créer les
   entités Home Assistant.
 
+Le broker vise tous les appareils Meross qui acceptent un broker local. Le
+**MRS100** (volet roulant) est la cible principalement testée ; les autres
+modèles doivent continuer à fonctionner comme avec le broker d'origine.
+Merci de signaler vos tests en précisant le modèle, le firmware et les
+fonctions disponibles : ouvrez une issue sur le dépôt du broker. Les demandes
+d'intégration spécifique sont bienvenues.
+
 ## Démarrage
 
 1. Démarrer l'add-on.
 2. Ouvrir son panneau et créer un **compte local** (login et mot de passe).
 3. Ce compte est strictement local : aucun identifiant cloud Meross n’est utilisé.
 4. Appairer l'appareil avec Meross Local Pairer.
-5. Ajouter l'intégration Home Assistant en mode **LAN-only broker**.
+5. Ajouter l'intégration Home Assistant et la configurer avec le compte local.
+   Elle ne fonctionne qu'avec ce broker local ; aucun mode cloud n'est proposé.
 
 L'add-on expose :
 
@@ -63,19 +71,20 @@ ou `https://homeassistant.local:2004/ca.crt`.
 - Appareil connecté : ouvrir **Paired devices** dans le panneau web, ou
   `curl -k https://homeassistant.local:2004/_admin_/devices` depuis le réseau
   autorisé.
-- Journal de l'add-on : recherche de `ONLINE` et des messages
-  `Stored roller-shutter config` / `Re-applied roller-shutter config`.
+- Journal de l'add-on : recherche de `ONLINE`. Pour un MRS100, les messages
+  `Stored roller-shutter config` / `Re-applied roller-shutter config` confirment
+  la persistance des durées.
 - Le broker MQTT doit être joignable sur le port 2001.
 
 ## Dépannage
 
-| Problème                  | Vérifier                                                |
-| ------------------------- | ------------------------------------------------------- |
-| L'appareil n'apparaît pas | appairage effectué, Wi-Fi 2,4 GHz WPA2, port 2001       |
-| Authentification refusée  | identifiants du compte local, `UserId`/`mqttKey`        |
-| Entités absentes dans HA  | intégration en mode local, certificat MQTT ignoré       |
-| Consommation à zéro       | `device_timezone` renseigné ou fuseau HA correct        |
-| Durées perdues            | logs `Stored` / `Re-applied`, reconnexion de l'appareil |
+| Problème                  | Vérifier                                                            |
+| ------------------------- | ------------------------------------------------------------------- |
+| L'appareil n'apparaît pas | appairage effectué, Wi-Fi 2,4 GHz WPA2, port 2001                   |
+| Authentification refusée  | identifiants du compte local, `UserId`/`mqttKey`                    |
+| Entités absentes dans HA  | intégration configurée avec le compte local, certificat MQTT ignoré |
+| Consommation à zéro       | `device_timezone` renseigné ou fuseau HA correct                    |
+| Durées MRS100 perdues     | logs `Stored` / `Re-applied`, reconnexion de l'appareil             |
 
 ## Licence
 
