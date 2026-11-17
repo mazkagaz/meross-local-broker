@@ -1,3 +1,10 @@
+## 0.0.1-alpha85
+
+- Corrige la connexion des clients qui envoient l'horodatage de signature en
+  nombre JSON (pairer Android et `meross_iot`) : le contrôle de type ajouté en
+  alpha82 rejetait ces requêtes avec « Key verification failed ». Les deux
+  formats, nombre et chaîne, sont désormais acceptés.
+
 ## 0.0.1-alpha84
 
 - Corrige l'accès au panneau et à la configuration du compte local : le backend
