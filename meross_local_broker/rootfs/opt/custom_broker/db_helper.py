@@ -6,21 +6,27 @@
 from meross_iot.model.enums import OnlineStatus
 from logger import get_logger
 from typing import Optional, List, Dict
-from constants import BASE62_ALPHABET
+from constants import (BASE62_ALPHABET, TOKEN_ABSOLUTE_TTL, TOKEN_IDLE_TTL,
+                       TOKEN_TOUCH_INTERVAL)
 from database import db_session
-from sqlalchemy import func
+from sqlalchemy import func, or_
 from model.db_models import (UserToken, Device, User, DeviceChannel, SubDevice,
                              Event, Configuration, RollerShutterConfig, DeviceAbility,
                              RollerShutterStatus, RollerShutterAdjust, RevokedDevice)
 from datetime import datetime
-from utilities import _hash_password
+from hashlib import md5
+from utilities import hash_password, hash_token
 from model.enums import BridgeStatus, EventType
-from datetime import datetime
 import json
 import random
 
 
 l = get_logger(__name__)
+
+
+def _utcnow() -> datetime:
+    """Single clock entry point so tests can exercise token expiry."""
+    return datetime.utcnow()
 
 
 class DbHelper:
@@ -40,14 +46,14 @@ class DbHelper:
                 # Prefer using an empty KEY rather than a randomized one
                 user_key = ''
             salt = ''.join(random.choice(BASE62_ALPHABET) for i in range(16))
-            hashed_pass = _hash_password(salt=salt, password=password, pre_apply_md5=True)
+            hashed_pass = hash_password(md5(password.encode("utf8")).hexdigest())
             u = User(email=email, user_id=user_id, salt=salt, password=hashed_pass, mqtt_key=user_key)
             self._s.add(u)
             self._s.commit()
         else:
             l.warning(f"User %s already exists. Updating its password/email...", email)
             salt = u.salt
-            hashed_pass = _hash_password(salt=salt, password=password, pre_apply_md5=True)
+            hashed_pass = hash_password(md5(password.encode("utf8")).hexdigest())
             u.email = email
             u.password = hashed_pass
             u.password_upgraded = True
@@ -65,11 +71,30 @@ class DbHelper:
         self._s.add(user)
         self._s.commit()
 
-    def store_new_user_token(self, userid, token) -> UserToken:
-        token = UserToken(user_id=userid, token=token)
+    def store_new_user_token(self, userid, token_hash: str) -> UserToken:
+        now = _utcnow()
+        token = UserToken(
+            token_hash=token_hash,
+            user_id=userid,
+            created_at=now,
+            last_used_at=now,
+            absolute_expires_at=now + TOKEN_ABSOLUTE_TTL,
+        )
         self._s.add(token)
         self._s.commit()
+        self.purge_expired_tokens()
         return token
+
+    def purge_expired_tokens(self) -> None:
+        now = _utcnow()
+        idle_cutoff = now - TOKEN_IDLE_TTL
+        self._s.query(UserToken).filter(
+            or_(
+                UserToken.absolute_expires_at <= now,
+                UserToken.last_used_at <= idle_cutoff,
+            )
+        ).delete(synchronize_session=False)
+        self._s.commit()
 
     def associate_user_device(self, userid: int, mac: str, uuid: str, device_client_id: str) -> None:
         # Check if a device with that MAC already exists. If so, update its user_id.
@@ -87,19 +112,38 @@ class DbHelper:
         return self._s.query(User).filter(User.email == email).first()
 
     def remove_user_token(self, token: str) -> None:
-        token = self._s.query(UserToken).get(token)
-        if token is not None:
-            self._s.delete(token)
+        row = self._s.query(UserToken).filter(
+            UserToken.token_hash == hash_token(token)).first()
+        if row is not None:
+            self._s.delete(row)
             self._s.commit()
 
     def get_user_by_id(self, userid: int) -> Optional[User]:
         return self._s.query(User).filter(User.user_id == userid).first()
 
-    def get_user_by_token(self, token: str) -> Optional[User]:
-        ut = self._s.query(UserToken).filter(UserToken.token == token).first()
+    def get_user_by_token(self, token: str):
+        """Returns (user, None) or (None, reason) for invalid/expired tokens."""
+        ut = self._s.query(UserToken).filter(
+            UserToken.token_hash == hash_token(token)).first()
         if ut is None:
-            return None
-        return ut.user
+            return None, "token_invalid"
+
+        now = _utcnow()
+        if ut.absolute_expires_at is None or ut.absolute_expires_at <= now:
+            self._s.delete(ut)
+            self._s.commit()
+            return None, "token_expired"
+        if ut.last_used_at is None or ut.last_used_at + TOKEN_IDLE_TTL <= now:
+            self._s.delete(ut)
+            self._s.commit()
+            return None, "token_idle_expired"
+
+        if now - ut.last_used_at >= TOKEN_TOUCH_INTERVAL:
+            ut.last_used_at = now
+            self._s.add(ut)
+            self._s.commit()
+
+        return ut.user, None
 
     def find_user_owner_by_device_uuid(self, device_uuid: str) -> Optional[User]:
         dev = self._s.query(Device).filter(Device.uuid == device_uuid).first()
@@ -112,6 +156,12 @@ class DbHelper:
         if dev is None:
             return None
         return dev
+
+    def get_device_by_mac(self, mac: str) -> Optional[Device]:
+        if not mac:
+            return None
+        return self._s.query(Device).filter(
+            func.upper(Device.mac) == mac.upper()).first()
 
     def update_device(self, device: Device) -> Device:
         self._s.add(device)

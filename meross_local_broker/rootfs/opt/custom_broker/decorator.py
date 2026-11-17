@@ -1,8 +1,6 @@
 import base64
+import binascii
 import json
-
-from meross_iot.http_api import ErrorCodes
-from meross_iot.model.http.exception import HttpApiError
 
 from logger import get_logger
 import re
@@ -12,9 +10,9 @@ from flask import request, g
 
 from authentication import verify_token
 from messaging import verify_message_signature
-from model.exception import BadRequestError
+from model.exception import BadRequestError, TokenError
 
-TOKEN_EXTRACTOR = re.compile("^Basic ([a-zA-Z0-9]+)")
+TOKEN_EXTRACTOR = re.compile(r"Basic ([A-Za-z0-9_-]+)")
 l = get_logger(__name__)
 
 
@@ -27,19 +25,18 @@ def meross_http_api(original_function=None, login_required=True):
             if login_required:
                 auth_str = request.headers.get("Authorization")
                 if auth_str is None:
-                    raise HttpApiError(error_code=ErrorCodes.CODE_TOKEN_ERROR)
+                    raise TokenError("token_invalid")
 
-                res = TOKEN_EXTRACTOR.match(auth_str)
+                res = TOKEN_EXTRACTOR.fullmatch(auth_str)
                 if not res:
-                    raise HttpApiError(error_code=ErrorCodes.CODE_TOKEN_ERROR)
+                    raise TokenError("token_invalid")
 
                 token = res.group(1)
-                l.debug("User provided token: %s", token)
-                user = verify_token(token)
+                user, token_error = verify_token(token)
                 if user is None:
-                    raise HttpApiError(error_code=ErrorCodes.CODE_TOKEN_ERROR)
+                    raise TokenError(token_error or "token_invalid")
 
-                l.info("User %s recognized by token %s", user, token)
+                l.debug("API user %s authenticated", user.user_id)
 
                 g.user_token = token
                 g.user = user
@@ -55,13 +52,11 @@ def meross_http_api(original_function=None, login_required=True):
                 j = request.get_json()
                 if not isinstance(j, dict):
                     raise BadRequestError("Missing or invalid payload")
-                l.debug("Found input json (%s)", str(j))
                 params = j.get('params')
                 signature = j.get('sign')
                 timestamp = j.get('timestamp')
                 nonce = j.get('nonce')
             elif request.form is not None:
-                l.debug("Parsing input from form data: %s", str(request.form))
                 params = request.form.get('params')
                 signature = request.form.get('sign')
                 timestamp = request.form.get('timestamp')
@@ -81,8 +76,13 @@ def meross_http_api(original_function=None, login_required=True):
             if not verify_message_signature(signature, timestamp, nonce, params):
                 raise BadRequestError("Key verification failed")
 
-            jsondata = base64.standard_b64decode(params)
-            payload = json.loads(jsondata)
+            try:
+                jsondata = base64.standard_b64decode(params)
+                payload = json.loads(jsondata)
+            except (ValueError, binascii.Error, UnicodeDecodeError):
+                raise BadRequestError("Malformed params payload")
+            if not isinstance(payload, dict):
+                raise BadRequestError("Malformed params payload")
 
             return f(*args, **kwargs, api_payload=payload)
         return wrap

@@ -39,7 +39,7 @@ def sign_in(api_payload: Dict, *args, **kwargs):
     user, token = _user_login(email, password, providing_pre_hashed_password)
     _LOGGER.info("User: %s successfully logged in" % email)
     data = {
-        "token": str(token.token),
+        "token": token,
         "key": str(user.mqtt_key),
         "userid": str(user.user_id),
         "email": str(user.email),
@@ -81,7 +81,7 @@ def login(api_payload: Dict, *args, **kwargs):
     user, token = _user_login(email, password, False)
     _LOGGER.info("User: %s successfully logged in" % email)
     data = {
-        "token": str(token.token),
+        "token": token,
         "key": str(user.mqtt_key),
         "userid": str(user.user_id),
         "email": str(user.email)

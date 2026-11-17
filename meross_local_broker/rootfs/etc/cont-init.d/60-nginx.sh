@@ -30,14 +30,21 @@ sed -i "s/%%ingress_interface%%/${ingress_interface}/g" /etc/nginx/ingress.conf
 bashio::log.info "Substituting port with ${ingress_port}"
 sed -i "s/%%ingress_port%%/${ingress_port}/g" /etc/nginx/ingress.conf
 
-# Expose API logic
+# Admin API access. Production keeps it on the Home Assistant Supervisor
+# ingress only; local development can opt into a public admin API by enabling
+# both debug_mode and expose_admin_api.
+DEBUG_MODE=$(get_option 'debug_mode' 'false')
 EXPOSE_ADMIN_API=$(get_option 'expose_admin_api' 'false')
-if [[ $EXPOSE_ADMIN_API == "true" ]]; then
-    bashio::log.warning "Exposing nginx publicly due to expose_admin_api env variable."
-    sed -i "s#%%whitelisted_inbound_cidr%%#0.0.0.0/0#g" /etc/nginx/ingress.conf
+if [[ $EXPOSE_ADMIN_API == "true" && $DEBUG_MODE == "true" ]]; then
+    bashio::log.warning "Exposing nginx publicly because debug_mode and expose_admin_api are enabled."
+    ADMIN_CIDR="0.0.0.0/0"
 else
-    sed -i "s/%%whitelisted_inbound_cidr%%/172.30.32.2/g" /etc/nginx/ingress.conf
+    if [[ $EXPOSE_ADMIN_API == "true" ]]; then
+        bashio::log.warning "Ignoring expose_admin_api: debug_mode must be enabled as well."
+    fi
+    ADMIN_CIDR="172.30.32.2"
 fi
+sed -i "s#%%whitelisted_inbound_cidr%%#${ADMIN_CIDR}#g" /etc/nginx/ingress.conf
 
 # Optional HTTPS listener. Disabling it leaves port 2003 (plain HTTP) and the
 # MQTT/TLS listener on 2001 untouched.

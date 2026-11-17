@@ -29,12 +29,16 @@ L'add-on expose :
 
 - **2001/tcp** : broker MQTT (TLS, toujours actif) ;
 - **2003/tcp** : API HTTP et panneau web (ingress Home Assistant) ;
-- **2004/tcp** : API HTTPS (TLS, activée par défaut) ;
-- **10001/tcp** : débogage distant.
+- **2004/tcp** : API HTTPS (TLS, activée par défaut).
 
 Meross Local Pairer utilise **HTTPS sur 2004** par défaut. Le port **2003**
 reste utile pour l'ingress et les clients qui ne peuvent pas valider le
 certificat local.
+
+L'API d'administration du panneau web n'est accessible qu'à travers l'ingress
+Home Assistant, avec l'identité de l'utilisateur HA. Aucun port de débogage
+n'est publié : en `debug_mode`, debugpy écoute uniquement sur `127.0.0.1`
+dans le conteneur.
 
 ## Options
 
@@ -46,6 +50,13 @@ certificat local.
   démarrage (dépannage uniquement).
 - **`device_timezone`** : fuseau IANA poussé aux appareils (voir ci-dessous).
 - **`debug_mode`** : journaux détaillés.
+- **`mqtt_integrity_mode`** : `observe` (défaut) journalise les signatures,
+  horodatages ou rejeux invalides des appareils ; `enforce` les rejette.
+  Laisser `observe` au moins une version avant d'activer `enforce`.
+
+Chaque appareil MQTT est limité à ses propres topics
+(`/appliance/<uuid>/publish` et `/appliance/<uuid>/subscribe`) ; un compte
+applicatif ne peut publier que vers les appareils qu'il possède.
 
 ## Option `device_timezone`
 

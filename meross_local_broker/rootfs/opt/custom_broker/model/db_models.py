@@ -3,6 +3,7 @@
 # Licensed under the Apache License, Version 2.0. See NOTICE.
 # Modifications copyright 2026 the MRS100 fork contributors.
 
+from datetime import datetime
 from email.policy import default
 from optparse import Option
 from typing import Dict, Optional
@@ -42,7 +43,7 @@ class User(Base, Serializer):
     user_id = Column(Integer, primary_key=True)
     email = Column(String(64), unique=True, autoincrement=True)
     salt = Column(String(64))
-    password = Column(String(64))
+    password = Column(String(255))
     mqtt_key = Column(String(64))
     owned_devices = relationship("Device", back_populates="owner_user")
     password_upgraded = Column(Boolean, default=True)
@@ -68,20 +69,28 @@ class User(Base, Serializer):
 class UserToken(Base, Serializer):
     __tablename__ = 'user_tokens'
 
-    token = Column(String(32), primary_key=True)
-    user_id = Column(String, ForeignKey('users.user_id'))
+    token_hash = Column(String(64), primary_key=True)
+    user_id = Column(Integer, ForeignKey('users.user_id'))
     user = relationship("User")
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    last_used_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    absolute_expires_at = Column(DateTime, nullable=False)
 
-    def __init__(self, token: str, user_id: str, *args, **kwargs):
-        self.token = token
+    def __init__(self, token_hash: str, user_id: int, created_at: datetime,
+                 last_used_at: datetime, absolute_expires_at: datetime, *args, **kwargs):
+        self.token_hash = token_hash
         self.user_id = user_id
+        self.created_at = created_at
+        self.last_used_at = last_used_at
+        self.absolute_expires_at = absolute_expires_at
 
     def __repr__(self):
-        return '<UserToken %r (%r)>' % (self.token, self.user_id)
+        return '<UserToken user=%r>' % (self.user_id,)
 
     def serialize(self):
         d = Serializer.serialize(self)
         del d['user']
+        del d['tokenHash']
         return d
 
 

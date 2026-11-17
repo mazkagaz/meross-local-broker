@@ -23,6 +23,7 @@ from database import init_db
 from db_helper import dbhelper
 from logger import get_logger, set_logger_level
 from model.db_models import Device
+import mqtt_integrity
 from protocol import _build_mqtt_message
 from timezone_utils import build_time_payload, build_time_rules, needs_time_sync
 
@@ -37,8 +38,8 @@ l = get_logger(__name__)
 
 APPLIANCE_PUBLISH_TOPIC_RE = re.compile("/appliance/([a-zA-Z0-9]+)/publish")
 APPLIANCE_SUBSCRIBE_TOPIC_RE = re.compile("/appliance/([a-zA-Z0-9]+)/subscribe")
-DISCONNECTION_TOPIC_RE = re.compile("^\$SYS/client-disconnections$")
-_NAT_RE = re.compile("/_nat_/([a-zA-Z0-9\-]+)")
+DISCONNECTION_TOPIC_RE = re.compile(r"^\$SYS/client-disconnections$")
+_NAT_RE = re.compile(r"/_nat_/([a-zA-Z0-9\-]+)")
 _CLIENTID_RE = re.compile('^fmware:([a-zA-Z0-9]+)_[a-zA-Z0-9]+$')
 _DEVICE_UPDATE_CACHE_INTERVAL_SECONDS = 60
 # How often the agent polls Appliance.System.All from devices with stale info (devices reconnecting after a
@@ -119,7 +120,7 @@ class Broker:
         self._nat_table = ExpiringDict(max_age_seconds=30, max_len=50000)
 
     def setup(self):
-        l.debug("Connecting as %s : %s", self.username, self.password)
+        l.debug("Connecting MQTT client as %s", self.username)
         self.c.connect(host=self.hostname, port=self.port)
 
     def _on_connect(self, client, userdata, rc, other):
@@ -134,7 +135,7 @@ class Broker:
         self._issue_devices_discovery()
 
     def _on_message(self, client, userdata, msg):
-        l.debug(f"Local MQTT: received message on topic {msg.topic}: {str(msg.payload)}")
+        l.debug("Local MQTT: received message on topic %s", msg.topic)
         self._handle_message(topic=msg.topic, payload=msg.payload)
 
     def _on_disconnect(self, client, userdata, rc):
@@ -475,11 +476,23 @@ class Broker:
                    device_uuid, config.get('channel', row.channel))
         self._cover_config_reapply_ts[device_uuid] = now
 
+    def _check_device_message_integrity(self, device_uuid: str, payload: dict) -> bool:
+        if mqtt_integrity.MODE == "off":
+            return True
+        owner = dbhelper.find_user_owner_by_device_uuid(device_uuid)
+        if owner is None:
+            ok, reason = False, "unknown_device"
+        else:
+            ok, reason = mqtt_integrity.evaluate(device_uuid, payload, owner.mqtt_key)
+        if ok:
+            return True
+        if mqtt_integrity.should_log(device_uuid, reason):
+            l.warning("MQTT integrity check failed for device %s (%s, mode=%s)",
+                      device_uuid, reason, mqtt_integrity.MODE)
+        return not mqtt_integrity.enforced()
+
     def _handle_message(self, topic: str, payload: bytes):
         try:
-            # TODO: Implement message signature checks.
-            #  For now, we trust the message regardless of its signature.
-
             # Handling DISCONNECTION control messages
             disconnection_match = DISCONNECTION_TOPIC_RE.match(topic)
             if disconnection_match is not None:
@@ -518,6 +531,8 @@ class Broker:
             if match is not None:
                 device_uuid = match.group(1)
                 p = json.loads(payload)
+                if not self._check_device_message_integrity(device_uuid, p):
+                    return
                 self._handle_device_publication(device_uuid=device_uuid, topic=topic, payload=p)
                 return
 
@@ -528,7 +543,7 @@ class Broker:
                 return
 
         except Exception as ex:
-            l.exception("An error occurred while handling message %s received on topic %s", str(payload), str(topic))
+            l.exception("An error occurred while handling a message received on topic %s", str(topic))
 
     def _get_or_create_bridge(self, device_uuid: str) -> BrokerDeviceBridge:
         bridge: BrokerDeviceBridge = self._bridges.get(device_uuid)

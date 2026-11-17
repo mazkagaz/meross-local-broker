@@ -1,4 +1,5 @@
 from hashlib import md5
+import hmac
 from typing import Optional
 
 from flask import jsonify
@@ -16,8 +17,10 @@ def make_api_response(data: Optional[dict], api_status: ErrorCodes = ErrorCodes.
 
 
 def verify_message_signature(signature: str, timestamp_millis: str, nonce: str, b64params: str):
+    if not all(isinstance(value, str) for value in (signature, timestamp_millis, nonce, b64params)):
+        return False
     message_hash = md5()
     datatosign = '%s%s%s%s' % (_SECRET, timestamp_millis, nonce, b64params)
     message_hash.update(datatosign.encode("utf8"))
     md5hash = message_hash.hexdigest()
-    return md5hash == signature
+    return hmac.compare_digest(md5hash, signature)

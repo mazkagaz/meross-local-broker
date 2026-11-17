@@ -36,15 +36,19 @@ d'intégration spécifique sont bienvenues.
 
 ## Ports
 
-| Port          | Usage                            | Actif par défaut           |
-| ------------- | -------------------------------- | -------------------------- |
-| **2001/tcp**  | MQTT/TLS (appareils)             | oui                        |
-| **2003/tcp**  | API HTTP, ingress et panneau web | oui                        |
-| **2004/tcp**  | API HTTPS (TLS)                  | oui, via `enable_https`    |
-| **10001/tcp** | débogage distant                 | uniquement en `debug_mode` |
+| Port         | Usage                            | Actif par défaut        |
+| ------------ | -------------------------------- | ----------------------- |
+| **2001/tcp** | MQTT/TLS (appareils)             | oui                     |
+| **2003/tcp** | API HTTP, ingress et panneau web | oui                     |
+| **2004/tcp** | API HTTPS (TLS)                  | oui, via `enable_https` |
 
 Meross Local Pairer privilégie **HTTPS 2004**. HTTP 2003 reste disponible pour
 l'ingress et les clients existants.
+
+L'API d'administration (renommage/suppression depuis le panneau web, services,
+journaux) n'est accessible qu'à travers l'**ingress Home Assistant**, avec
+l'identité de l'utilisateur HA. Aucun port de débogage n'est publié : en
+`debug_mode`, debugpy écoute uniquement sur `127.0.0.1` dans le conteneur.
 
 ## Avant de commencer
 
@@ -134,6 +138,11 @@ en HTTP simple pour l'ingress Home Assistant et les anciens clients.
 
 L'option **`enable_https`** (activée par défaut) contrôle le listener 2004 :
 la désactiver ne touche ni MQTT/TLS sur 2001, ni HTTP sur 2003.
+
+Les publications des appareils sont contrôlées (signature, fraîcheur,
+anti-rejeu) et chaque appareil ne peut utiliser que ses propres topics.
+L'option **`mqtt_integrity_mode`** vaut `observe` par défaut (écarts
+journalisés) ; passer à `enforce` après une période de vérification.
 
 Le certificat du serveur est auto-signé. Deux options :
 

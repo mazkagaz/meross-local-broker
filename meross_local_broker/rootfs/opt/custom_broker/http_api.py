@@ -4,6 +4,7 @@ from flask import Flask
 from flask_cors import CORS
 from meross_iot.http_api import ErrorCodes
 from meross_iot.model.http.exception import HttpApiError
+from werkzeug.exceptions import HTTPException
 
 from blueprints.admin import admin_blueprint
 from blueprints.auth import auth_blueprint
@@ -15,7 +16,7 @@ from blueprints.profile import profile_blueprint
 from database import db_session, init_db
 from logger import get_logger
 from messaging import make_api_response
-from model.exception import BadRequestError
+from model.exception import BadRequestError, RateLimitError, TokenError
 
 # _LOGOUT_URL = "/v1/Profile/logout"
 
@@ -23,7 +24,17 @@ from model.exception import BadRequestError
 _LOGGER = get_logger("http_api")
 
 app = Flask(__name__)
-CORS(app)  # TODO: Fix this. Maybe we can restrict the origin access. In case we use an nginx, this might be superfluous
+
+# The web UI is served same-origin through Home Assistant ingress, so CORS is
+# off by default. Native clients do not need it either. Set
+# CORS_ALLOWED_ORIGINS=origin1,origin2 only for a deliberate cross-origin use.
+_cors_origins = [
+    origin.strip()
+    for origin in getenv("CORS_ALLOWED_ORIGINS", "").split(",")
+    if origin.strip()
+]
+if _cors_origins:
+    CORS(app, resources={r"/*": {"origins": _cors_origins}})
 
 # Register flask blueprints
 app.register_blueprint(auth_blueprint, url_prefix="/v1/Auth")
@@ -44,18 +55,48 @@ def shutdown_session(exception=None):
     db_session.remove()
 
 
+@app.errorhandler(HTTPException)
+def handle_http_status_exception(e):
+    """Return Flask HTTP errors (404, 405, ...) without an HTML body."""
+    return make_api_response(data=None, info=e.name, api_status=ErrorCodes.CODE_GENERIC_ERROR, status_code=e.code)
+
+
 @app.errorhandler(Exception)
 def handle_exception(e):
     """Uncaught Exception handler"""
-    _LOGGER.exception("Uncaught exception: %s", str(e))
-    return make_api_response(data=None, info=str(e), api_status=ErrorCodes.CODE_GENERIC_ERROR, status_code=500)
+    _LOGGER.exception("Uncaught exception")
+    return make_api_response(data=None, info="Internal server error", api_status=ErrorCodes.CODE_GENERIC_ERROR,
+                             status_code=500)
 
 
 @app.errorhandler(BadRequestError)
 def handle_bad_exception(e):
     """Bad Request handler"""
-    _LOGGER.exception("BadRequest error: %s", e.msg)
+    _LOGGER.warning("BadRequest error: %s", e.msg)
     return make_api_response(data=None, info=e.msg, api_status=ErrorCodes.CODE_GENERIC_ERROR, status_code=400)
+
+
+@app.errorhandler(TokenError)
+def handle_token_error(e):
+    """Expired or invalid session token: clients must log in again.
+
+    meross_iot (used by the HA integration) raises before reading the body on
+    any non-200 response, so the Meross status code stays HTTP 200 to keep the
+    re-authentication flow working. The distinct reason is exposed in `info`.
+    """
+    return make_api_response(data=None, info=e.info,
+                             api_status=ErrorCodes.CODE_TOKEN_ERROR,
+                             status_code=200)
+
+
+@app.errorhandler(RateLimitError)
+def handle_rate_limit_error(e):
+    """Too many failed login attempts."""
+    response, status = make_api_response(data=None, info="Too many login attempts",
+                                         api_status=ErrorCodes.CODE_GENERIC_ERROR,
+                                         status_code=429)
+    response.headers["Retry-After"] = str(e.retry_after)
+    return response, status
 
 
 @app.errorhandler(HttpApiError)

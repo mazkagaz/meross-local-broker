@@ -1,5 +1,6 @@
 """API compatibility checks. Run with: python3 -m unittest test_http_api."""
 import base64
+from datetime import datetime, timedelta
 import hashlib
 import json
 import tempfile
@@ -9,6 +10,8 @@ from unittest.mock import patch
 
 
 class HttpApiCompatibilityTest(unittest.TestCase):
+    INGRESS = {'X-Ingress-Path': '/api/hassio_ingress/test'}
+
     @classmethod
     def setUpClass(cls):
         # Rebind before importing the API, whose import initializes the database.
@@ -44,8 +47,12 @@ class HttpApiCompatibilityTest(unittest.TestCase):
         self.user_id = str(self.user.user_id)
         self.mqtt_key = self.user.mqtt_key
         self.client = self.app.test_client()
+        from rate_limit import login_rate_limiter
+        login_rate_limiter.reset()
 
     def tearDown(self):
+        from rate_limit import login_rate_limiter
+        login_rate_limiter.reset()
         self.database.db_session.remove()
 
     @staticmethod
@@ -85,11 +92,82 @@ class HttpApiCompatibilityTest(unittest.TestCase):
         response = self.client.post('/v1/Auth/signIn', json=[])
         self.assertEqual(response.status_code, 400)
 
-    def test_missing_token_returns_meross_token_error(self):
+    def test_malformed_params_payload_returns_bad_request(self):
+        from constants import _SECRET
+        envelope = self.envelope({})
+        envelope['params'] = 'not-base64!'
+        envelope['sign'] = hashlib.md5(
+            f"{_SECRET}{envelope['timestamp']}{envelope['nonce']}{envelope['params']}".encode()
+        ).hexdigest()
+        response = self.client.post('/v1/Auth/signIn', json=envelope)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.get_json()['info'], 'Malformed params payload')
+
+    def test_account_password_uses_argon2id(self):
+        self.assertTrue(self.user.password.startswith('$argon2id$'))
+        self.assertNotIn('test-password', self.user.password)
+
+    def test_legacy_token_table_is_replaced_without_keeping_sessions(self):
+        from sqlalchemy import text
+        engine = self.database.engine
+        engine.execute(text('DROP TABLE user_tokens'))
+        engine.execute(text('CREATE TABLE user_tokens (token VARCHAR(32) PRIMARY KEY, user_id VARCHAR)'))
+        engine.execute(text("INSERT INTO user_tokens VALUES ('legacy-token', '1')"))
+
+        self.database.init_db()
+
+        columns = {row[1] for row in engine.execute(
+            text('SELECT * FROM pragma_table_info("user_tokens")'))}
+        self.assertIn('token_hash', columns)
+        self.assertNotIn('token', columns)
+        self.assertEqual(engine.execute(text('SELECT COUNT(*) FROM user_tokens')).scalar(), 0)
+
+    def test_tokens_are_stored_hashed(self):
+        from model.db_models import UserToken
+        token = self.sign_in().get_json()['data']['token']
+        self.database.db_session.remove()
+        from db_helper import dbhelper
+        stored = dbhelper._s.query(UserToken).first()
+        self.assertIsNotNone(stored)
+        self.assertNotEqual(stored.token_hash, token)
+        self.assertEqual(len(stored.token_hash), 64)
+
+    def test_idle_and_absolute_token_expiry(self):
+        token = self.sign_in().get_json()['data']['token']
+        headers = {'Authorization': f'Basic {token}'}
+
+        future = datetime.utcnow() + timedelta(days=8)
+        with patch('db_helper._utcnow', return_value=future):
+            response = self.client.post('/v1/Device/devList', json=self.envelope({}),
+                                        headers=headers)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.get_json()['info'], 'token_idle_expired')
+
+        token = self.sign_in().get_json()['data']['token']
+        headers = {'Authorization': f'Basic {token}'}
+        future = datetime.utcnow() + timedelta(days=31)
+        with patch('db_helper._utcnow', return_value=future):
+            response = self.client.post('/v1/Device/devList', json=self.envelope({}),
+                                        headers=headers)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.get_json()['info'], 'token_expired')
+
+    def test_login_rate_limit_returns_429(self):
+        for _ in range(5):
+            response = self.client.post('/v1/Auth/signIn', json=self.envelope({
+                'email': 'test@example.com', 'password': 'wrong-password'}))
+            self.assertEqual(response.status_code, 200)
+        response = self.client.post('/v1/Auth/signIn', json=self.envelope({
+            'email': 'test@example.com', 'password': 'wrong-password'}))
+        self.assertEqual(response.status_code, 429)
+        self.assertIn('Retry-After', response.headers)
+
+    def test_missing_token_returns_token_error(self):
         from meross_iot.http_api import ErrorCodes
         response = self.client.post('/v1/Device/devList', json=self.envelope({}))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.get_json()['apiStatus'], ErrorCodes.CODE_TOKEN_ERROR.value)
+        self.assertEqual(response.get_json()['info'], 'token_invalid')
 
     def test_mqtt_app_auth_accepts_valid_and_denies_invalid_password(self):
         password = hashlib.md5(f'{self.user_id}{self.mqtt_key}'.encode()).hexdigest()
@@ -107,10 +185,35 @@ class HttpApiCompatibilityTest(unittest.TestCase):
                 self.assertEqual((response.status_code, response.data), (403, b'ko'))
 
     def test_mqtt_acl_json(self):
-        response = self.client.post('/_devs_/acl', json={
-            'username': self.user_id, 'topic': '/appliance/test/publish',
-            'acc': 2, 'clientid': 'app:test'})
-        self.assertEqual((response.status_code, response.data), (200, b'ok'))
+        from db_helper import dbhelper
+        mac, uuid = 'AA:BB:CC:DD:EE:10', 'acldeviceuuid'
+        dbhelper.associate_user_device(self.user.user_id, mac=mac, uuid=uuid,
+                                       device_client_id='client')
+
+        def acl(username, topic, acc, clientid):
+            response = self.client.post('/_devs_/acl', json={
+                'username': username, 'topic': topic, 'acc': acc,
+                'clientid': clientid})
+            return response.status_code, response.data
+
+        self.assertEqual(acl(mac, f'/appliance/{uuid}/publish', 2,
+                             f'fmware:{uuid}_0'), (200, b'ok'))
+        self.assertEqual(acl(mac, f'/appliance/{uuid}/subscribe', 1,
+                             f'fmware:{uuid}_0'), (200, b'ok'))
+        self.assertEqual(acl(mac, '/appliance/otheruuid/publish', 2,
+                             f'fmware:{uuid}_0'), (403, b'ko'))
+        self.assertEqual(acl(mac, f'/appliance/{uuid}/publish', 2,
+                             'fmware:otheruuid_0'), (403, b'ko'))
+
+        self.assertEqual(acl(self.user_id, f'/app/{self.user_id}/subscribe', 1,
+                             f'app:{self.user_id}'), (200, b'ok'))
+        self.assertEqual(acl(self.user_id, f'/appliance/{uuid}/subscribe', 2,
+                             f'app:{self.user_id}'), (200, b'ok'))
+        self.assertEqual(acl(self.user_id, '/appliance/otheruuid/subscribe', 2,
+                             f'app:{self.user_id}'), (403, b'ko'))
+
+        self.assertEqual(acl('_agent', '/appliance/+/publish', 1, 'broker'),
+                         (200, b'ok'))
 
     def test_admin_configuration_is_local_only(self):
         with patch('blueprints.admin.service_manager.restart_service'):
@@ -118,14 +221,14 @@ class HttpApiCompatibilityTest(unittest.TestCase):
                 'email': 'local-user',
                 'password': 'local-secret',
                 'enableMerossLink': True,
-            })
+            }, headers=self.INGRESS)
         self.assertEqual(response.status_code, 200)
         data = response.get_json()
         self.assertEqual(data['email'], 'local-user')
 
         from db_helper import dbhelper
         self.assertFalse(dbhelper.get_configuration().enable_meross_link)
-        configuration = self.client.get('/_admin_/configuration').get_json()
+        configuration = self.client.get('/_admin_/configuration', headers=self.INGRESS).get_json()
         self.assertFalse(configuration['enableMerossLink'])
 
         login = self.envelope({'email': 'local-user', 'password': 'local-secret'})
@@ -137,11 +240,11 @@ class HttpApiCompatibilityTest(unittest.TestCase):
         from db_helper import dbhelper
         dbhelper.associate_user_device(self.user.user_id, mac='AA:BB:CC:DD:EE:FF',
                                        uuid='test-device-uuid', device_client_id='client')
-        response = self.client.delete('/_admin_/devices/test-device-uuid')
+        response = self.client.delete('/_admin_/devices/test-device-uuid', headers=self.INGRESS)
         self.assertEqual(response.status_code, 204)
         self.assertIsNone(dbhelper.get_device_by_uuid('test-device-uuid'))
         self.assertTrue(dbhelper.is_device_revoked('AA:BB:CC:DD:EE:FF'))
-        response = self.client.delete('/_admin_/devices/test-device-uuid')
+        response = self.client.delete('/_admin_/devices/test-device-uuid', headers=self.INGRESS)
         self.assertEqual(response.status_code, 400)
 
     def device_login(self, mac, uuid):
@@ -250,10 +353,10 @@ class HttpApiCompatibilityTest(unittest.TestCase):
         from meross_iot.model.enums import OnlineStatus
         dbhelper.update_device_status('rename-device-uuid', OnlineStatus.UNKNOWN)
         response = self.client.put('/_admin_/devices/rename-device-uuid',
-                                   json={'dev_name': 'Volet cuisine'})
+                                   json={'dev_name': 'Volet cuisine'}, headers=self.INGRESS)
         self.assertEqual(response.status_code, 400)
         response = self.client.put('/_admin_/devices/rename-device-uuid',
-                                   json={'dev_name': 'Volet salon'})
+                                   json={'dev_name': 'Volet salon'}, headers=self.INGRESS)
         self.assertEqual(response.status_code, 200)
 
         other = dbhelper.add_update_user(
@@ -268,21 +371,25 @@ class HttpApiCompatibilityTest(unittest.TestCase):
         self.assertNotEqual(response.get_json()['apiStatus'], 0)
         self.assertIsNone(dbhelper.get_device_by_uuid('rename-other-device').dev_name)
 
-    def test_admin_json_and_cors_preflight(self):
-        response = self.client.get('/_admin_/devices', headers={'Origin': 'http://localhost'})
+    def test_admin_requires_ingress_and_cors_is_restricted(self):
+        response = self.client.get('/_admin_/devices')
+        self.assertEqual(response.status_code, 403)
+
+        response = self.client.get('/_admin_/devices', headers={
+            **self.INGRESS, 'Origin': 'http://localhost'})
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.get_json(), [])
-        self.assertEqual(response.headers['Access-Control-Allow-Origin'], 'http://localhost')
+        self.assertNotIn('Access-Control-Allow-Origin', response.headers)
+
         response = self.client.options('/v1/Auth/signIn', headers={
             'Origin': 'http://localhost', 'Access-Control-Request-Method': 'POST',
             'Access-Control-Request-Headers': 'Content-Type'})
         self.assertEqual(response.status_code, 200)
-        self.assertIn('POST', response.headers['Access-Control-Allow-Methods'])
-        self.assertIn('Content-Type', response.headers['Access-Control-Allow-Headers'])
+        self.assertNotIn('Access-Control-Allow-Origin', response.headers)
 
     def test_legacy_double_hashed_password_is_upgraded(self):
         from db_helper import dbhelper
-        from utilities import _hash_password
+        from utilities import is_argon2_hash, verify_password
 
         self.database.db_session.remove()
         user = dbhelper.get_user_by_email('test@example.com')
@@ -297,8 +404,9 @@ class HttpApiCompatibilityTest(unittest.TestCase):
         self.assertEqual(response.get_json()['apiStatus'], 0)
 
         self.database.db_session.remove()
-        self.assertEqual(dbhelper.get_user_by_email('test@example.com').password,
-                         _hash_password(salt=salt, password='test-password', pre_apply_md5=True))
+        upgraded = dbhelper.get_user_by_email('test@example.com').password
+        self.assertTrue(is_argon2_hash(upgraded))
+        self.assertTrue(verify_password(upgraded, effective))
 
     def test_database_reinitialization_preserves_account(self):
         self.database.db_session.remove()

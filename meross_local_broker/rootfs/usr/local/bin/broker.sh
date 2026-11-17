@@ -14,6 +14,10 @@ else
   debug=""
 fi
 
+# MQTT message integrity: observe logs mismatches, enforce drops them.
+MQTT_INTEGRITY_MODE=$(get_option 'mqtt_integrity_mode' 'observe')
+export MQTT_INTEGRITY_MODE
+
 # Generate a random password for agent user
 # Timezone pushed to devices (Appliance.System.Time). Falls back to the Home Assistant timezone (TZ env).
 DEVICE_TIMEZONE=$(get_option 'device_timezone' '')

@@ -1,9 +1,12 @@
 """Loggers setup and utilities"""
 import logging
+import os
 import sys
 
 
-logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG, stream=sys.stdout)
+_LEVEL = getattr(logging, os.environ.get("LOG_LEVEL", "INFO").upper(), logging.INFO)
+
+logging.basicConfig(format='%(levelname)s:%(message)s', level=_LEVEL, stream=sys.stdout)
 
 
 def get_logger(name: str):

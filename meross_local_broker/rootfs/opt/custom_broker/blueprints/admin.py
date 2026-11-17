@@ -1,9 +1,18 @@
+"""Admin API.
+
+nginx exposes this blueprint only to the Home Assistant Supervisor, and every
+request must carry the ingress identity headers added by Home Assistant. Public
+access is limited to explicit local debugging.
+"""
+import os
 from logger import get_logger
 from typing import Dict, List
 
 from flask import jsonify, request
 from flask import Blueprint
+from meross_iot.http_api import ErrorCodes
 from db_helper import dbhelper
+from messaging import make_api_response
 from model.enums import EventType
 from model.db_models import Device
 from model.exception import BadRequestError
@@ -15,9 +24,28 @@ from datetime import datetime
 
 admin_blueprint = Blueprint('admin', __name__)
 _LOGGER = get_logger(__name__)
+_ALLOW_INGRESSLESS = os.getenv("ADMIN_ALLOW_INGRESSLESS", "false").lower() == "true"
 
 
-# TODO: check super-admin role...
+@admin_blueprint.before_request
+def _require_ingress_identity():
+    """Only accept authenticated Home Assistant ingress requests.
+
+    X-Ingress-Path and X-Remote-User-Id are set by the Supervisor; requests
+    sent directly to the add-on do not contain them.
+    """
+    if _ALLOW_INGRESSLESS:
+        return None
+    if request.headers.get("X-Ingress-Path") or request.headers.get("X-Remote-User-Id"):
+        return None
+    return make_api_response(
+        data=None,
+        info="Admin API is only available through Home Assistant ingress",
+        api_status=ErrorCodes.CODE_GENERIC_ERROR,
+        status_code=403,
+    )
+
+
 @admin_blueprint.route('/devices', methods=['GET'])
 def list_devices() -> List[Dict]:
     """ List all devices """
@@ -25,7 +53,6 @@ def list_devices() -> List[Dict]:
     return jsonify(Device.serialize_list(devices))
 
 
-# TODO: check super-admin role...
 @admin_blueprint.route('/devices/<uuid>', methods=['PUT'])
 def update_device(uuid: str) -> Dict:
     """ Update the given device """
@@ -77,7 +104,6 @@ def forget_device(uuid: str):
     return '', 204
 
 
-# TODO: check super-admin role...
 @admin_blueprint.route('/subdevices', methods=['GET'])
 def list_subdevices() -> List[Dict]:
     """ List all subdevices """
@@ -85,7 +111,6 @@ def list_subdevices() -> List[Dict]:
     return jsonify(Device.serialize_list(subdevices))
 
 
-# TODO: check super-admin role...
 @admin_blueprint.route('/services', methods=['GET'])
 def list_services() -> List[Dict]:
     """ List services """
@@ -93,7 +118,6 @@ def list_services() -> List[Dict]:
     return jsonify([s.serialize() for s in services])
 
 
-# TODO: check super-admin role...
 @admin_blueprint.route('/services/<service_name>/execute/<command>', methods=['POST'])
 def execute_service_command(service_name: str, command: str):
     """ Executes a command on a service """
@@ -102,7 +126,7 @@ def execute_service_command(service_name: str, command: str):
         return_code, stdout = service_manager.start_service(service_name)
     elif cmd == "stop":
         return_code, stdout = service_manager.stop_service(service_name)
-    elif command == "restart":
+    elif cmd == "restart":
         return_code, stdout = service_manager.restart_service(service_name)
     else:
         raise BadRequestError(msg="Invalid command specified.")
@@ -112,14 +136,12 @@ def execute_service_command(service_name: str, command: str):
     })
 
 
-# TODO: check super-admin role...
 @admin_blueprint.route('/services/<service_name>/log', methods=['GET'])
 def get_service_log(service_name: str):
     """ Returns the log of the given service """
     return jsonify(service_manager.get_log(service_name))
 
 
-# TODO: check super-admin role...
 @admin_blueprint.route('/configuration', methods=['GET'])
 def get_account():
     """ Returns the configured account """
@@ -131,7 +153,6 @@ def get_account():
     return jsonify(configuration.serialize())
 
 
-# TODO: check super-admin role...
 @admin_blueprint.route('/configuration', methods=['PUT'])
 def set_account():
     """ Configures the Meross Account to be use as authentication method """
@@ -150,7 +171,7 @@ def set_account():
     user = setup_account(email=login, password=password)
 
     # As soon as the Account is set, we need to restart the mosquitto and the broker services
-    _LOGGER.warn("Restarting broker & MQTT services (due to account configuration changes)")
+    _LOGGER.warning("Restarting broker & MQTT services (due to account configuration changes)")
     service_manager.restart_service("Local Agent")
     service_manager.restart_service("MQTT Service")
 
@@ -158,7 +179,6 @@ def set_account():
     return jsonify(user.serialize())
 
 
-# TODO: check super-admin role...
 @admin_blueprint.route('/events', methods=['GET'])
 def get_events():
     """ Returns the latest events """

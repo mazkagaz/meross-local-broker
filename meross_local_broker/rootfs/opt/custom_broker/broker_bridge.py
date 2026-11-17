@@ -84,7 +84,7 @@ class BrokerDeviceBridge:
 
     def _on_message(self, client, userdata, msg):
         # Forward the message to the local broker
-        l.debug("Meross MQTT -> Device Bridge (%s), topic: %s, message: %s", self._uuid, str(msg.topic), str(msg.payload))
+        l.debug("Meross MQTT -> Device Bridge (%s), topic: %s", self._uuid, str(msg.topic))
         self._broker_ref.forward_device_command_locally(topic=msg.topic, payload=msg.payload, originating_bridge_uuid=self._uuid)
 
     def _on_unsubscribe(self, *args, **kwargs):
@@ -108,5 +108,5 @@ class BrokerDeviceBridge:
 
     def send_message(self, topic: str, payload: bytearray):
         with self._l:
-            l.debug("Device Bridge (%s) -> Meross MQTT, topic: %s, message %s", self._uuid, str(topic), str(payload))
+            l.debug("Device Bridge (%s) -> Meross MQTT, topic: %s", self._uuid, str(topic))
             r = self._c.publish(topic=topic, payload=payload)
