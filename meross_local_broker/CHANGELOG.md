@@ -1,3 +1,13 @@
+## 0.0.1-alpha87
+
+- Corrige les refus ACL MQTT lors des désabonnements (`acc=8`) : ils suivent
+  désormais la politique de lecture. Chaque type de refus est journalisé une
+  fois avec utilisateur, clientid, topic et acc, au lieu de saturer les logs.
+- Réduit le bruit : les requêtes `/_devs_/acl` ne sont plus journalisées par
+  Werkzeug et go-auth passe au niveau `warning`.
+- Panneau web : fenêtre de logs revue avec copie par ligne, copie complète,
+  pause, retour à la ligne, téléchargement et défilement intelligent.
+
 ## 0.0.1-alpha86
 
 - `devList` renvoie `bindTime` sous forme d'entier (0 si inconnu), supprimant
