@@ -4,6 +4,21 @@
 # ==============================================================================
 bashio::log.info "Starting the nginx daemon"
 
+# s6 does not offer systemd-style After= readiness. Wait for the API socket so
+# the ingress does not emit transient 502s while the container starts.
+API_READY=false
+for _ in $(seq 1 60); do
+    if timeout 1 bash -c 'exec 3<>/dev/tcp/127.0.0.1/2002' 2>/dev/null; then
+        API_READY=true
+        break
+    fi
+    sleep 1
+done
+if [[ $API_READY != "true" ]]; then
+    bashio::log.warning \
+        "Local API did not listen on 127.0.0.1:2002 within 60s; starting nginx anyway."
+fi
+
 # Create required folders
 exec 2>&1
 exec nginx -c /etc/nginx/ingress.conf
