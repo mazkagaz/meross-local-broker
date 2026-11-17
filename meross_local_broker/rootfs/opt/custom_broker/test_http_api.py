@@ -207,6 +207,11 @@ class HttpApiCompatibilityTest(unittest.TestCase):
 
         self.assertEqual(acl(self.user_id, f'/app/{self.user_id}/subscribe', 1,
                              f'app:{self.user_id}'), (200, b'ok'))
+        # meross_iot also subscribes to its per-app command-response topic.
+        self.assertEqual(acl(self.user_id, f'/app/{self.user_id}-testappid/subscribe', 1,
+                             f'app:testappid'), (200, b'ok'))
+        self.assertEqual(acl(self.user_id, '/app/otheruser-testappid/subscribe', 1,
+                             'app:testappid'), (403, b'ko'))
         self.assertEqual(acl(self.user_id, f'/appliance/{uuid}/subscribe', 2,
                              f'app:{self.user_id}'), (200, b'ok'))
         self.assertEqual(acl(self.user_id, '/appliance/otheruuid/subscribe', 2,

@@ -76,7 +76,11 @@ def _resolve_app_user(username: str):
 
 
 def _app_topic_allowed(user, topic: str, can_read: bool, can_write: bool) -> bool:
-    if can_read and topic == f'/app/{user.user_id}/subscribe':
+    user_topic_prefix = f'/app/{user.user_id}'
+    if can_read and (
+            topic == f'{user_topic_prefix}/subscribe'
+            or (topic.startswith(f'{user_topic_prefix}-')
+                and topic.endswith('/subscribe'))):
         return True
     if can_write and topic.startswith('/appliance/') and topic.endswith('/subscribe'):
         device_uuid = topic[len('/appliance/'):-len('/subscribe')]
