@@ -267,6 +267,16 @@ class HttpApiCompatibilityTest(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.get_json()['apiStatus'], 0)
 
+    def test_service_log_status_classification(self):
+        from s6 import ServiceInfo
+        self.assertEqual(ServiceInfo.log_status_from_lines([]), 'empty')
+        self.assertEqual(ServiceInfo.log_status_from_lines(['INFO: ok']), 'ok')
+        self.assertEqual(ServiceInfo.log_status_from_lines(['WARNING: slow']), 'warning')
+        self.assertEqual(ServiceInfo.log_status_from_lines(['ERROR: failed']), 'error')
+        self.assertEqual(
+            ServiceInfo.log_status_from_lines(['WARNING: slow', 'ERROR: failed']),
+            'error')
+
     def test_devlist_returns_integer_bind_time(self):
         from db_helper import dbhelper
         dbhelper.associate_user_device(

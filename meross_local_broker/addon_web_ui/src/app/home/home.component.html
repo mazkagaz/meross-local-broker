@@ -5,10 +5,16 @@
       *ngFor="let service of services"
       type="button"
       class="status-tile"
-      [matTooltip]="service.description + ' — click to view live logs'"
+      [matTooltip]="service.description + ' — ' + logStatusText(service) + ' — click to view live logs'"
       (click)="openServiceLogs(service)"
     >
-      <span class="status-dot" [class.ok]="isRunning(service)" [class.ko]="!isRunning(service)"></span>
+      <span
+        class="status-dot"
+        [class.ok]="statusClass(service) === 'ok'"
+        [class.warn]="statusClass(service) === 'warn'"
+        [class.ko]="statusClass(service) === 'ko'"
+        [class.idle]="statusClass(service) === 'idle'"
+      ></span>
       <span class="status-tile-label">{{ serviceShortName(service) }}</span>
     </button>
   </div>

@@ -7,6 +7,7 @@ from asyncio import subprocess
 from subprocess import Popen, PIPE
 from typing import Dict, Optional, List, Tuple
 from os import path
+import re
 from db_helper import dbhelper
 from model.exception import BadRequestError
 from model.enums import EventType
@@ -43,12 +44,14 @@ class ServiceDescriptor:
 
 
 class ServiceInfo:
-    def __init__(self, descriptor: ServiceDescriptor, up: bool, ready: bool, pid: int, exit_code: int = None) -> None:
+    def __init__(self, descriptor: ServiceDescriptor, up: bool, ready: bool, pid: int,
+                 exit_code: int = None, log_status: str = "empty") -> None:
         self._descriptor = descriptor
         self._up = up
         self._ready = ready
         self._pid = pid
         self._exit_code = exit_code
+        self._log_status = log_status
     
     @property
     def descriptor(self) -> ServiceDescriptor:
@@ -81,8 +84,20 @@ class ServiceInfo:
             "description": self.descriptor.description,
             "status": self.status,
             "exitCode": self.exit_code,
-            "pid": self.pid
+            "pid": self.pid,
+            "logStatus": self._log_status
         }
+
+    @staticmethod
+    def log_status_from_lines(lines: List[str]) -> str:
+        cleaned = [line.strip() for line in lines if line and line.strip()]
+        if not cleaned:
+            return "empty"
+        if any(re.search(r"\b(error|fatal|critical|crit)\b", line, re.I) for line in cleaned):
+            return "error"
+        if any(re.search(r"\b(warn|warning)\b", line, re.I) for line in cleaned):
+            return "warning"
+        return "ok"
 
 
 class ServiceManager:
@@ -102,7 +117,14 @@ class ServiceManager:
         up, ready, pid, exitcode = stdout.split()
         pid = int (pid) if pid is not None else None
         exitcode = int (exitcode) if exitcode is not None else None
-        return ServiceInfo(descriptor=service_descriptor, up=up.lower()=='true', ready=ready.lower()=='true', pid=pid, exit_code=exitcode)
+        try:
+            log_status = ServiceInfo.log_status_from_lines(
+                self.get_log(service_name, tail=200))
+        except Exception:
+            log_status = "empty"
+        return ServiceInfo(descriptor=service_descriptor, up=up.lower()=='true',
+                           ready=ready.lower()=='true', pid=pid, exit_code=exitcode,
+                           log_status=log_status)
 
     def get_services_info(self) -> List[ServiceInfo]:
         return [self.get_service_info(s) for s in self._SERVICE_DIRS]

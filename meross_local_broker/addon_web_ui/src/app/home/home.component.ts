@@ -104,6 +104,32 @@ export class HomeComponent implements AfterViewInit, OnInit, OnDestroy {
     return service.status === 'RUNNING';
   }
 
+  statusClass(service: ServiceStatus): 'ok' | 'warn' | 'ko' | 'idle' {
+    if (service.logStatus === 'error') {
+      return 'ko';
+    }
+    if (service.logStatus === 'warning') {
+      return 'warn';
+    }
+    if (service.logStatus === 'ok' && this.isRunning(service)) {
+      return 'ok';
+    }
+    return 'idle';
+  }
+
+  logStatusText(service: ServiceStatus): string {
+    switch (service.logStatus) {
+      case 'error':
+        return 'errors in logs';
+      case 'warning':
+        return 'warnings in logs';
+      case 'ok':
+        return this.isRunning(service) ? 'ok' : 'stopped';
+      default:
+        return 'no logs';
+    }
+  }
+
   serviceShortName(service: ServiceStatus): string {
     return service.name.replace(' Service', '').replace('Local ', '');
   }

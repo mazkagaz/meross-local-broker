@@ -4,4 +4,5 @@ export interface ServiceStatus {
   readonly exitCode: number;
   readonly pid: number;
   readonly description: string;
+  readonly logStatus: 'empty' | 'ok' | 'warning' | 'error';
 }
