@@ -1,18 +1,15 @@
 """Admin API.
 
-nginx exposes this blueprint only to the Home Assistant Supervisor, and every
-request must carry the ingress identity headers added by Home Assistant. Public
-access is limited to explicit local debugging.
+nginx exposes this blueprint only to the Home Assistant Supervisor; public
+access is limited to explicit local debugging. Keep the network restriction in
+nginx rather than depending on request headers.
 """
-import os
 from logger import get_logger
 from typing import Dict, List
 
 from flask import jsonify, request
 from flask import Blueprint
-from meross_iot.http_api import ErrorCodes
 from db_helper import dbhelper
-from messaging import make_api_response
 from model.enums import EventType
 from model.db_models import Device
 from model.exception import BadRequestError
@@ -24,26 +21,6 @@ from datetime import datetime
 
 admin_blueprint = Blueprint('admin', __name__)
 _LOGGER = get_logger(__name__)
-_ALLOW_INGRESSLESS = os.getenv("ADMIN_ALLOW_INGRESSLESS", "false").lower() == "true"
-
-
-@admin_blueprint.before_request
-def _require_ingress_identity():
-    """Only accept authenticated Home Assistant ingress requests.
-
-    X-Ingress-Path and X-Remote-User-Id are set by the Supervisor; requests
-    sent directly to the add-on do not contain them.
-    """
-    if _ALLOW_INGRESSLESS:
-        return None
-    if request.headers.get("X-Ingress-Path") or request.headers.get("X-Remote-User-Id"):
-        return None
-    return make_api_response(
-        data=None,
-        info="Admin API is only available through Home Assistant ingress",
-        api_status=ErrorCodes.CODE_GENERIC_ERROR,
-        status_code=403,
-    )
 
 
 @admin_blueprint.route('/devices', methods=['GET'])

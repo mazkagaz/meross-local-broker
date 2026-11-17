@@ -376,12 +376,11 @@ class HttpApiCompatibilityTest(unittest.TestCase):
         self.assertNotEqual(response.get_json()['apiStatus'], 0)
         self.assertIsNone(dbhelper.get_device_by_uuid('rename-other-device').dev_name)
 
-    def test_admin_requires_ingress_and_cors_is_restricted(self):
-        response = self.client.get('/_admin_/devices')
-        self.assertEqual(response.status_code, 403)
-
+    def test_admin_is_restricted_by_nginx_and_cors_is_restricted(self):
+        # nginx enforces the Supervisor-only network restriction; the backend
+        # must not depend on ingress headers, which broke the panel in alpha82.
         response = self.client.get('/_admin_/devices', headers={
-            **self.INGRESS, 'Origin': 'http://localhost'})
+            'Origin': 'http://localhost'})
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.get_json(), [])
         self.assertNotIn('Access-Control-Allow-Origin', response.headers)
