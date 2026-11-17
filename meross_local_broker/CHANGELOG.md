@@ -1,3 +1,10 @@
+## 0.0.1-alpha83
+
+- Corrige l'ACL MQTT de l'intégration Home Assistant : le topic de réponse
+  `/app/<userId>-<appId>/subscribe` est désormais autorisé en lecture pour le
+  compte concerné. Sans cela, les accusés de réception des commandes envoyées
+  via l'intégration n'étaient plus reçus.
+
 ## 0.0.1-alpha82
 
 Sécurité de l'API, des sessions et du broker MQTT.
