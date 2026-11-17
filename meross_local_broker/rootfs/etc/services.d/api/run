@@ -18,14 +18,19 @@ if [[ $ADVERTISE == "true" ]]; then
         https_port=$(bashio::app.port 2004)
         https_port=${https_port:-"2004"}
     fi
-    host_ips=$(/opt/custom_broker/supervisor_network.py 2>/dev/null || true)
+    host_err=$(mktemp)
+    host_ips=$(/opt/custom_broker/supervisor_network.py 2>"$host_err" || true)
 
     txt_args=("http_port=$http_port" "https_port=$https_port")
     if [[ -n $host_ips ]]; then
         txt_args+=("host=$host_ips")
     else
         bashio::log.warning "No LAN IPv4 address found; advertising without host TXT record."
+        if [[ -s $host_err ]]; then
+            bashio::log.warning "supervisor_network: $(cat "$host_err")"
+        fi
     fi
+    rm -f "$host_err"
     bashio::log.info "API mDNS: service_port=$api_port http_port=$http_port https_port=$https_port host=$host_ips"
     /opt/custom_broker/mdns_register.py register meross_local_api meross_local_api _meross-api._tcp $api_port --update-if-present --set "${txt_args[@]}"
 else
