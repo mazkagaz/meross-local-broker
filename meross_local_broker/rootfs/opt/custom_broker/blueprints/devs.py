@@ -63,7 +63,7 @@ def _device_topic_allowed(username: str, clientid: str, topic: str,
         return False
     if can_read and topic == f'/appliance/{device_uuid}/subscribe':
         return True
-    if can_write and topic == f'/appliance/{device_uuid}/publish':
+    if can_write and topic in (f'/appliance/{device_uuid}/publish', '/_agent'):
         return True
     return False
 

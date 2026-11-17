@@ -539,6 +539,11 @@ class Broker:
             # Handling messages pushed to /_agent dedicated topic
             if topic == AGENT_TOPIC:
                 p = json.loads(payload)
+                from_device = (p.get('header') or {}).get('from')
+                origin_match = APPLIANCE_PUBLISH_TOPIC_RE.fullmatch(from_device or '')
+                if origin_match is not None and not self._check_device_message_integrity(
+                        origin_match.group(1), p):
+                    return
                 self._handle_message_to_agent(topic=topic, payload=p)
                 return
 

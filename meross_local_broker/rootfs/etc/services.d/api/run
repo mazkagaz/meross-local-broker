@@ -10,12 +10,12 @@ if [[ $ADVERTISE == "true" ]]; then
 
     # Publish the address phones can actually reach. The add-on address lives
     # in the Docker network, so ask the Supervisor for the host interfaces.
-    http_port=$(bashio::addon.port 2003)
+    http_port=$(bashio::app.port 2003)
     http_port=${http_port:-"2003"}
     enable_https=$(get_option 'enable_https' 'true')
     https_port=0
     if [[ $enable_https == "true" ]]; then
-        https_port=$(bashio::addon.port 2004)
+        https_port=$(bashio::app.port 2004)
         https_port=${https_port:-"2004"}
     fi
     host_ips=$(/opt/custom_broker/supervisor_network.py 2>/dev/null || true)

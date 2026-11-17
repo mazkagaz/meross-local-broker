@@ -217,6 +217,8 @@ class HttpApiCompatibilityTest(unittest.TestCase):
         # Unsubscribe checks use acc=8 and must follow the read policy.
         self.assertEqual(acl(mac, f'/appliance/{uuid}/subscribe', 8,
                              f'fmware:{uuid}_0'), (200, b'ok'))
+        # Devices publish System.All/agent messages to /_agent.
+        self.assertEqual(acl(mac, '/_agent', 2, f'fmware:{uuid}_0'), (200, b'ok'))
         self.assertEqual(acl(mac, '/appliance/otheruuid/publish', 2,
                              f'fmware:{uuid}_0'), (403, b'ko'))
         self.assertEqual(acl(mac, f'/appliance/{uuid}/publish', 2,
