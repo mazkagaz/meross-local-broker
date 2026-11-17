@@ -1,3 +1,13 @@
+## 0.0.1-alpha91
+
+- L'API tourne sous **Waitress** au lieu du serveur de développement Flask :
+  plus d'avertissement « development server », et plus de logs de requête par
+  défaut.
+- Ajout de `hassio_api` : l'add-on peut interroger les interfaces réseau du
+  Supervisor et publier l'adresse LAN dans les TXT mDNS. La découverte
+  automatique du broker fonctionne à nouveau.
+- Si aucune adresse LAN n'est trouvée, le motif est journalisé.
+
 ## 0.0.1-alpha90
 
 - Autorise l'agent interne à lire les topics concrets
