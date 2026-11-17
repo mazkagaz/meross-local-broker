@@ -1,3 +1,9 @@
+## 0.0.1-alpha86
+
+- `devList` renvoie `bindTime` sous forme d'entier (0 si inconnu), supprimant
+  les avertissements `Provided bind_time is not int neither datetime` de
+  `meross_iot` dans l'intégration Home Assistant.
+
 ## 0.0.1-alpha85
 
 - Corrige la connexion des clients qui envoient l'horodatage de signature en
