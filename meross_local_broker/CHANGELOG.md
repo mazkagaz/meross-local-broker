@@ -1,3 +1,10 @@
+## 0.0.1-alpha94
+
+- Empêche la mise en cache de l'interface (`Cache-Control: no-store`) : les
+  mises à jour de l'UI (diodes, logs) sont visibles sans vidage manuel du cache.
+- L'état des diodes analyse 500 lignes de logs par service au lieu de 200,
+  afin de conserver plus longtemps une erreur transitoire.
+
 ## 0.0.1-alpha93
 
 - Les diodes d'état des services reflètent désormais les logs : **grise** si
