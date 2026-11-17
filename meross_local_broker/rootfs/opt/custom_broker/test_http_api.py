@@ -214,6 +214,9 @@ class HttpApiCompatibilityTest(unittest.TestCase):
                              f'fmware:{uuid}_0'), (200, b'ok'))
         self.assertEqual(acl(mac, f'/appliance/{uuid}/subscribe', 1,
                              f'fmware:{uuid}_0'), (200, b'ok'))
+        # Unsubscribe checks use acc=8 and must follow the read policy.
+        self.assertEqual(acl(mac, f'/appliance/{uuid}/subscribe', 8,
+                             f'fmware:{uuid}_0'), (200, b'ok'))
         self.assertEqual(acl(mac, '/appliance/otheruuid/publish', 2,
                              f'fmware:{uuid}_0'), (403, b'ko'))
         self.assertEqual(acl(mac, f'/appliance/{uuid}/publish', 2,

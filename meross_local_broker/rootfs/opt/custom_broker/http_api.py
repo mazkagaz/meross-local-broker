@@ -1,3 +1,4 @@
+import logging
 from os import getenv
 
 from flask import Flask
@@ -24,6 +25,16 @@ from model.exception import BadRequestError, RateLimitError, TokenError
 _LOGGER = get_logger("http_api")
 
 app = Flask(__name__)
+
+
+class _AclRequestFilter(logging.Filter):
+    """Drop per-request ACL log lines; denials are logged with details."""
+
+    def filter(self, record):
+        return "/_devs_/acl" not in record.getMessage()
+
+
+logging.getLogger("werkzeug").addFilter(_AclRequestFilter())
 
 # The web UI is served same-origin through Home Assistant ingress, so CORS is
 # off by default. Native clients do not need it either. Set

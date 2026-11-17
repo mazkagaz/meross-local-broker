@@ -6,6 +6,7 @@ from typing import Tuple
 
 from authentication import _upgrade_password_if_legacy, verify_account_password
 from db_helper import dbhelper
+from expiringdict import ExpiringDict
 from flask import Blueprint, request
 from logger import get_logger
 from meross_iot.model.enums import OnlineStatus
@@ -26,11 +27,13 @@ _AGENT_READ_TOPICS = {
     '/_agent',
     '$SYS/client-disconnections',
 }
+_ACL_DENIAL_LOG = ExpiringDict(max_age_seconds=300, max_len=5000)
 
 
 def _accepted_topics(acc: int):
-    # mosquitto/go-auth use 1 for read, 2 for write and may use 4 for subscribe.
-    can_read = bool(acc & 1) or bool(acc & 4)
+    # 1 = read, 2 = write, 4 = subscribe, 8 = unsubscribe. Unsubscribing does
+    # not expose data, so it follows the read policy.
+    can_read = bool(acc & 1) or bool(acc & 4) or bool(acc & 8)
     can_write = bool(acc & 2)
     return can_read, can_write
 
@@ -121,9 +124,21 @@ def device_acl():
         user = _resolve_app_user(username)
         allowed = user is not None and _app_topic_allowed(user, topic, can_read, can_write)
 
-    _LOGGER.debug("DEVICE_ACL=> username: %s, topic: %s, acc: %s, clientid: %s, allowed: %s",
-                  str(username), str(topic), str(acc), str(clientid), allowed)
-    return ("ok", 200) if allowed else ("ko", 403)
+    if allowed:
+        _LOGGER.debug("DEVICE_ACL=> allowed username=%s topic=%s acc=%s clientid=%s",
+                      str(username), str(topic), str(acc), str(clientid))
+        return "ok", 200
+
+    denial_key = f"{username}|{clientid}|{acc}|{topic}"
+    if denial_key not in _ACL_DENIAL_LOG:
+        _ACL_DENIAL_LOG[denial_key] = True
+        _LOGGER.warning(
+            "DEVICE_ACL denied username=%s clientid=%s topic=%s acc=%s",
+            str(username), str(clientid), str(topic), str(acc))
+    else:
+        _LOGGER.debug("DEVICE_ACL=> denied username=%s topic=%s acc=%s clientid=%s",
+                      str(username), str(topic), str(acc), str(clientid))
+    return "ko", 403
 
 
 @devs_blueprint.route('/superuser', methods=['POST'])
