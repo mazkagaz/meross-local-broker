@@ -1,3 +1,10 @@
+## 0.0.1-alpha96
+
+- nginx transmet `X-Forwarded-Proto` et Flask utilise `ProxyFix` : l'API
+  annonce désormais `https://…:2004` derrière le listener TLS, au lieu de
+  `http://…:2004`. Corrige la connexion de l'intégration Home Assistant, qui
+  appelait `/v1/log/user` en clair sur le port chiffré (400 renvoyé par nginx).
+
 ## 0.0.1-alpha95
 
 - nginx attend que l'API écoute sur `127.0.0.1:2002` (60 s max) avant de

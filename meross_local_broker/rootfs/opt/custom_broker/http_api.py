@@ -6,6 +6,7 @@ from flask_cors import CORS
 from meross_iot.http_api import ErrorCodes
 from meross_iot.model.http.exception import HttpApiError
 from werkzeug.exceptions import HTTPException
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 from blueprints.admin import admin_blueprint
 from blueprints.auth import auth_blueprint
@@ -25,6 +26,9 @@ from model.exception import BadRequestError, RateLimitError, TokenError
 _LOGGER = get_logger("http_api")
 
 app = Flask(__name__)
+# nginx terminates TLS and forwards the original scheme so that request.scheme
+# and the login response domain stay https on the 2004 listener.
+app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1)
 
 
 class _AclRequestFilter(logging.Filter):
