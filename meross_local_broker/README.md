@@ -2,8 +2,9 @@
 
 ![Meross Local Broker](logo.png)
 
-Add-on Home Assistant non officiel qui fournit un broker Meross local (MQTT +
-API HTTP) pour les appareils appairés sur le réseau local.
+Add-on Home Assistant non officiel qui fournit un broker Meross local
+(MQTT/TLS + API HTTP/HTTPS, HTTPS activé par défaut) pour les appareils appairés
+sur le réseau local.
 
 - Installation et utilisation : voir le
   [README du dépôt](https://github.com/mazkagaz/meross-local-broker#readme).

@@ -42,8 +42,8 @@ body .mat-dialog-container {
 }
 
 body .mat-toolbar.mat-primary {
-  background-color: var(--app-header-background-color, var(--primary-color, #03a9f4));
-  color: var(--app-header-text-color, var(--text-primary-color, #fff));
+  background-color: var(--app-header-background-color, var(--primary-background-color, #fafafa));
+  color: var(--app-header-text-color, var(--primary-text-color, #212121));
 }
 
 body .mat-raised-button.mat-primary:not([disabled]),

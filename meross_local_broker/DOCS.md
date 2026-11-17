@@ -1,7 +1,8 @@
 # Meross Local Broker
 
-Cet add-on remplace le cloud Meross par un broker local (MQTT + API HTTP) pour
-Home Assistant. Il est prévu pour être utilisé avec :
+Cet add-on remplace le cloud Meross par un broker local (MQTT/TLS + API
+HTTP/HTTPS) pour Home Assistant. HTTPS est activé par défaut. Il est prévu pour
+être utilisé avec :
 
 - [Meross Local Pairer](https://github.com/mazkagaz/meross-local-pairer) pour appairer
   un appareil Meross ;
@@ -18,9 +19,25 @@ Home Assistant. Il est prévu pour être utilisé avec :
 
 L'add-on expose :
 
-- **2001/tcp** : broker MQTT (TLS) ;
-- **2003/tcp** : API HTTP et panneau web ;
+- **2001/tcp** : broker MQTT (TLS, toujours actif) ;
+- **2003/tcp** : API HTTP et panneau web (ingress Home Assistant) ;
+- **2004/tcp** : API HTTPS (TLS, activée par défaut) ;
 - **10001/tcp** : débogage distant.
+
+Meross Local Pairer utilise **HTTPS sur 2004** par défaut. Le port **2003**
+reste utile pour l'ingress et les clients qui ne peuvent pas valider le
+certificat local.
+
+## Options
+
+- **`enable_https`** (activé par défaut) : active le listener HTTPS 2004,
+  partagé avec le certificat MQTT. Le désactiver ne touche ni MQTT/TLS sur
+  2001 ni HTTP sur 2003.
+- **`advertise`** : publie le broker et les ports API via mDNS.
+- **`reinit_db`** : efface le compte local et les appareils appairés au
+  démarrage (dépannage uniquement).
+- **`device_timezone`** : fuseau IANA poussé aux appareils (voir ci-dessous).
+- **`debug_mode`** : journaux détaillés.
 
 ## Option `device_timezone`
 
@@ -31,9 +48,21 @@ le fuseau de Home Assistant.
 Sans fuseau, certains appareils de mesure (prises mss310, mss210p, etc.) ne
 remontent ni tension, ni courant, ni consommation.
 
+## HTTPS et certificat
+
+Les ports **2001** (MQTT/TLS) et **2004** (HTTPS) utilisent la même autorité de
+certification locale, stockée dans `/data/mqtt/certs`. Le certificat serveur est
+auto-signé et contient `homeassistant.local`, `localhost` et `127.0.0.1`.
+Meross Local Pairer épingle le certificat au premier contact ; l'intégration
+Home Assistant peut ignorer sa validation (option « Skip HTTP certificate
+validation »). La CA est téléchargeable sur `http://homeassistant.local:2003/ca.crt`
+ou `https://homeassistant.local:2004/ca.crt`.
+
 ## Vérifications rapides
 
-- Appareil connecté : `curl http://homeassistant.local:2003/_admin_/devices`.
+- Appareil connecté : ouvrir **Paired devices** dans le panneau web, ou
+  `curl -k https://homeassistant.local:2004/_admin_/devices` depuis le réseau
+  autorisé.
 - Journal de l'add-on : recherche de `ONLINE` et des messages
   `Stored roller-shutter config` / `Re-applied roller-shutter config`.
 - Le broker MQTT doit être joignable sur le port 2001.

@@ -24,6 +24,18 @@ MRS100 ──MQTT/TLS──> add-on Meross Local Broker ──API/MQTT──> in
                        Meross Local Pairer (Android)
 ```
 
+## Ports
+
+| Port          | Usage                            | Actif par défaut           |
+| ------------- | -------------------------------- | -------------------------- |
+| **2001/tcp**  | MQTT/TLS (appareils)             | oui                        |
+| **2003/tcp**  | API HTTP, ingress et panneau web | oui                        |
+| **2004/tcp**  | API HTTPS (TLS)                  | oui, via `enable_https`    |
+| **10001/tcp** | débogage distant                 | uniquement en `debug_mode` |
+
+Meross Local Pairer privilégie **HTTPS 2004**. HTTP 2003 reste disponible pour
+l'ingress et les clients existants.
+
 ## Avant de commencer
 
 - Home Assistant OS ou Supervised (l'add-on a besoin du Supervisor).
@@ -82,7 +94,7 @@ L'application configure le MRS100 pour qu'il se connecte à cet add-on.
 Une fois l'appairage terminé :
 
 - l'add-on doit journaliser la connexion du MRS100 et son passage **ONLINE** ;
-- `curl http://homeassistant.local:2003/_admin_/devices` doit afficher l'appareil.
+- la page **Paired devices** du panneau web doit afficher l'appareil.
 
 ### 4. Installer l'intégration Home Assistant
 
@@ -93,14 +105,14 @@ du broker.
 
 Champs usuels :
 
-| Champ                            | Valeur                                                                    |
-| -------------------------------- | ------------------------------------------------------------------------- |
-| HTTP API Endpoint                | `http://homeassistant.local:2003` (ou `https://homeassistant.local:2004`) |
-| MQTT Address                     | `homeassistant.local:2001`                                                |
-| Local login                      | le compte local, par exemple `meross-local`                               |
-| Password                         | le mot de passe local                                                     |
-| Skip MQTT certificate validation | coché                                                                     |
-| Skip HTTP certificate validation | coché avec `https://` et le certificat local                              |
+| Champ                            | Valeur                                                                           |
+| -------------------------------- | -------------------------------------------------------------------------------- |
+| HTTP API Endpoint                | `https://homeassistant.local:2004` (défaut) ou `http://homeassistant.local:2003` |
+| MQTT Address                     | `homeassistant.local:2001`                                                       |
+| Local login                      | le compte local, par exemple `meross-local`                                      |
+| Password                         | le mot de passe local                                                            |
+| Skip MQTT certificate validation | coché                                                                            |
+| Skip HTTP certificate validation | coché avec `https://` et le certificat local                                     |
 
 Si `homeassistant.local` ne répond pas, utiliser l'adresse IP de Home Assistant.
 
@@ -167,7 +179,7 @@ appareils. Laisser vide pour utiliser le fuseau de Home Assistant.
 | ----------------------------------- | ---------------------------------------------------------------------------- |
 | L'add-on ne démarre pas             | architecture amd64/aarch64, logs du Supervisor, image GHCR publique          |
 | Aucun appareil dans l'add-on        | appairage Wi-Fi (FW7) ou Bluetooth (FW8), port MQTT 2001, Wi-Fi 2,4 GHz WPA2 |
-| L'intégration ne voit pas le broker | adresse HTTP 2003, compte local, certificat MQTT ignoré                      |
+| L'intégration ne voit pas le broker | adresse HTTPS 2004 (ou HTTP 2003), compte local, certificat MQTT ignoré      |
 | Entités absentes                    | appareil ONLINE dans l'add-on, puis redémarrer l'intégration                 |
 | Durées non conservées               | logs `Stored roller-shutter config` / `Re-applied roller-shutter config`     |
 | Appareil déjà lié au cloud Meross   | réinitialiser l'appareil avant l'appairage local                             |

@@ -1,3 +1,17 @@
+## 0.0.1-alpha80
+
+- Fix switching between Setup and Pair devices: the section now follows route
+  data instead of being fixed when the page first opens.
+- Follow the Home Assistant theme inside ingress by importing the parent
+  theme variables (header, cards, text, dark mode). Standalone installs keep
+  the HA default colours as fallbacks.
+- Devices no longer stay UNKNOWN after a broker restart. Online statuses are
+  reset during container init, before mosquitto accepts connections, so the
+  ONLINE status set by device authentication is no longer overwritten by the
+  broker agent.
+- Add-on documentation and option descriptions now cover the HTTPS API on
+  port 2004 (enabled by default), HTTP on 2003, and the `enable_https` option.
+
 ## 0.0.1-alpha79
 
 - Re-publish the alpha78 Web UI with the final theme polish: Home Assistant

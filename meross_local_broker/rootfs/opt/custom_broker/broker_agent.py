@@ -613,8 +613,9 @@ def main():
     # Init or setup DB
     init_db()
 
-    # Set all devices to unknown online status
-    dbhelper.reset_device_online_status()
+    # Online statuses are reset in cont-init before mosquitto starts. Resetting
+    # here would erase the ONLINE status that devices set while authenticating
+    # during the add-on startup.
 
     # This fork is local-only. Ignore any legacy enable_meross_link value
     # that may remain in an existing database.
