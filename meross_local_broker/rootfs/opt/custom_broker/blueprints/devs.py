@@ -71,8 +71,16 @@ def _device_topic_allowed(username: str, clientid: str, topic: str,
         return False
     if can_read and topic == f'/appliance/{device_uuid}/subscribe':
         return True
-    if can_write and topic in (f'/appliance/{device_uuid}/publish', '/_agent'):
-        return True
+    if can_write:
+        if topic in (f'/appliance/{device_uuid}/publish', '/_agent'):
+            return True
+        # Devices answer commands on the app response topic carried in the
+        # request "from" header. Restrict that write to the owner's topics.
+        owner_prefix = f'/app/{device.user_id}'
+        if topic == f'{owner_prefix}/subscribe':
+            return True
+        if topic.startswith(f'{owner_prefix}-') and topic.endswith('/subscribe'):
+            return True
     return False
 
 

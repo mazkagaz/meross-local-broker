@@ -1,3 +1,12 @@
+## 0.0.1-alpha97
+
+- ACL MQTT : un appareil peut publier les réponses de commande sur les topics
+  de l'application propriétaire (`/app/<userId>/subscribe` et
+  `/app/<userId>-<appId>/subscribe`). Sans cette autorisation, les ACK étaient
+  rejetés en 403 et l'intégration Home Assistant expirait sur
+  `Appliance.System.Ability`. L'écriture reste limitée aux topics de
+  l'utilisateur qui possède l'appareil.
+
 ## 0.0.1-alpha96
 
 - nginx transmet `X-Forwarded-Proto` et Flask utilise `ProxyFix` : l'API

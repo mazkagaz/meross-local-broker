@@ -219,6 +219,14 @@ class HttpApiCompatibilityTest(unittest.TestCase):
                              f'fmware:{uuid}_0'), (200, b'ok'))
         # Devices publish System.All/agent messages to /_agent.
         self.assertEqual(acl(mac, '/_agent', 2, f'fmware:{uuid}_0'), (200, b'ok'))
+        # Devices answer commands on the app response topic; only the owner's
+        # app topics are accepted.
+        self.assertEqual(acl(mac, f'/app/{self.user_id}-testappid/subscribe', 2,
+                             f'fmware:{uuid}_0'), (200, b'ok'))
+        self.assertEqual(acl(mac, f'/app/{self.user_id}/subscribe', 2,
+                             f'fmware:{uuid}_0'), (200, b'ok'))
+        self.assertEqual(acl(mac, '/app/otheruser-testappid/subscribe', 2,
+                             f'fmware:{uuid}_0'), (403, b'ko'))
         self.assertEqual(acl(mac, '/appliance/otheruuid/publish', 2,
                              f'fmware:{uuid}_0'), (403, b'ko'))
         self.assertEqual(acl(mac, f'/appliance/{uuid}/publish', 2,
