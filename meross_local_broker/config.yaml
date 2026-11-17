@@ -1,5 +1,5 @@
 name: "Meross Local Broker"
-version: "0.0.1-alpha95"
+version: "0.0.1-alpha96"
 description: "LAN-only Meross broker (MQTT/TLS + HTTP/HTTPS API, HTTPS by default) for Home Assistant."
 slug: "meross_local_broker"
 image: "ghcr.io/mazkagaz/{arch}-meross_local_broker"
