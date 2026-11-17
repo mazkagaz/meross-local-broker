@@ -1,3 +1,9 @@
+## 0.0.1-alpha84
+
+- Corrige l'accès au panneau et à la configuration du compte local : le backend
+  n'exige plus les en-têtes d'identité ingress sur `/_admin_`, qui bloquaient
+  les requêtes du panneau. nginx conserve la restriction au Supervisor.
+
 ## 0.0.1-alpha83
 
 - Corrige l'ACL MQTT de l'intégration Home Assistant : le topic de réponse
