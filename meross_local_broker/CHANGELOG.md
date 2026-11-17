@@ -1,3 +1,32 @@
+## 0.0.1-alpha82
+
+Sécurité de l'API, des sessions et du broker MQTT.
+
+- Journaux expurgés et niveau INFO par défaut : plus de tokens, corps de
+  requêtes, mots de passe ou hashes d'appareils. Les logs détaillés restent
+  disponibles en `debug_mode`.
+- Débogage strictement local : debugpy écoute uniquement sur `127.0.0.1` et le
+  port 10001 n'est plus publié.
+- API d'administration limitée à l'ingress Home Assistant, avec vérification
+  des en-têtes d'identité HA. Exposition publique possible uniquement avec
+  `debug_mode` et `expose_admin_api`.
+- CORS désactivé par défaut ; réponses d'erreur génériques côté client.
+- Sessions : tokens stockés uniquement hachés (SHA-256), expiration absolue de
+  30 jours et inactivité de 7 jours, sans refresh token. Toutes les sessions
+  existantes sont invalidées : le pairer et l'intégration doivent se
+  reconnecter. Les erreurs de jeton conservent le format Meross
+  (`CODE_TOKEN_ERROR`) avec un motif précis (`token_invalid`, `token_expired`,
+  `token_idle_expired`) pour rester compatibles avec `meross_iot`.
+- Protection contre le brute force : limitation des échecs de connexion par IP
+  et par compte, avec `Retry-After`.
+- Mots de passe de compte hachés avec **Argon2id** ; les anciens hashes sont
+  vérifiés une dernière fois puis migrés automatiquement à la connexion.
+- MQTT : chaque appareil est limité à ses propres topics et chaque compte
+  applicatif à ses appareils. Vérification de signature, fraîcheur et
+  anti-rejeu des publications, avec la nouvelle option
+  `mqtt_integrity_mode` : `observe` par défaut (journalisation), `enforce`
+  pour rejeter les messages invalides.
+
 ## 0.0.1-alpha81
 
 - Present the broker as compatible with Meross devices in general instead of
