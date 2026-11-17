@@ -19,7 +19,7 @@ if [[ $ADVERTISE == "true" ]]; then
         https_port=${https_port:-"2004"}
     fi
     host_err=$(mktemp)
-    host_ips=$(/opt/custom_broker/supervisor_network.py 2>"$host_err" || true)
+    host_ips=$(python3 /opt/custom_broker/supervisor_network.py 2>"$host_err" || true)
 
     txt_args=("http_port=$http_port" "https_port=$https_port")
     if [[ -n $host_ips ]]; then
