@@ -154,6 +154,8 @@ class Device(Base, Serializer):
         d['channels'] = DeviceChannel.serialize_list(self.channels)
         d['childSubdevices'] = SubDevice.serialize_list(self.child_subdevices)
         d['bridgeStatus'] = self.bridge_status.name
+        # meross_iot warns for None/string bind times and ignores the value.
+        d['bindTime'] = int(self.bind_time) if self.bind_time is not None else 0
         return d
 
 
