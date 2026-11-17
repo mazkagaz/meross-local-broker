@@ -255,6 +255,19 @@ class HttpApiCompatibilityTest(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.get_json()['apiStatus'], 0)
 
+    def test_devlist_returns_integer_bind_time(self):
+        from db_helper import dbhelper
+        dbhelper.associate_user_device(
+            self.user.user_id, mac='AA:BB:CC:DD:EE:20',
+            uuid='bindtimedevice', device_client_id='client')
+        token = self.sign_in().get_json()['data']['token']
+        response = self.client.post(
+            '/v1/Device/devList', json=self.envelope({}),
+            headers={'Authorization': f'Basic {token}'})
+        devices = response.get_json()['data']
+        self.assertEqual(len(devices), 1)
+        self.assertIsInstance(devices[0]['bindTime'], int)
+
     def test_admin_can_forget_device(self):
         from db_helper import dbhelper
         dbhelper.associate_user_device(self.user.user_id, mac='AA:BB:CC:DD:EE:FF',
