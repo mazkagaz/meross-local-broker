@@ -119,9 +119,25 @@ class Broker:
 
         self._nat_table = ExpiringDict(max_age_seconds=30, max_len=50000)
 
-    def setup(self):
+    def setup(self, max_wait: float = 60):
+        """Connect to Mosquitto, waiting for it to accept TLS connections.
+
+        The previous approach probed the port with a raw TCP connect and closed
+        it immediately, which made Mosquitto log "unexpected eof while
+        reading" at every startup. Retrying the real TLS connection avoids
+        that spurious error.
+        """
         l.debug("Connecting MQTT client as %s", self.username)
-        self.c.connect(host=self.hostname, port=self.port)
+        deadline = time.time() + max_wait
+        while True:
+            try:
+                self.c.connect(host=self.hostname, port=self.port)
+                return
+            except OSError as ex:
+                if time.time() >= deadline:
+                    raise
+                l.info("MQTT broker not ready yet (%s), retrying", ex)
+                time.sleep(1)
 
     def _on_connect(self, client, userdata, rc, other):
         l.debug("Connected to broker, rc=%s", str(rc))

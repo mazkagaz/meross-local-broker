@@ -43,8 +43,7 @@ echo "$AGENT_USERNAME:$AGENT_PBKDF2">/etc/mosquitto/auth.pw
 #echo -e "user $AGENT_USERNAME\ntopic read /appliance/+/publish\ntopic write /app/+/subscribe">/etc/mosquitto/auth.acl
 echo -e "user $AGENT_USERNAME\ntopic readwrite #">/etc/mosquitto/auth.acl
 
-# Wait until mqtt is ready is available
-bashio::log.info "Waiting MQTT server..."
-bashio::net.wait_for 2001
-
+# broker_agent retries its TLS connection until Mosquitto is ready. Avoid a
+# raw TCP probe here: it closes before the TLS handshake and makes Mosquitto
+# log "unexpected eof while reading" at every startup.
 exec python3 broker_agent.py --port 2001 --host localhost --username "$AGENT_USERNAME" --password "$AGENT_PASSWORD" --cert-ca "/data/mqtt/certs/ca.crt" "${timezone_args[@]}" $debug

@@ -1,3 +1,12 @@
+## 0.0.1-alpha98
+
+- Démarrage : l'agent ne sonde plus le port 2001 en TCP brut
+  (`bashio::net.wait_for`). Cette sonde fermait la connexion avant la poignée
+  de main TLS, ce qui faisait journaliser à Mosquitto
+  `unexpected eof while reading` à chaque démarrage. L'agent retente désormais
+  sa vraie connexion TLS (1 s d'intervalle, 60 s max) jusqu'à ce que Mosquitto
+  soit prêt.
+
 ## 0.0.1-alpha97
 
 - ACL MQTT : un appareil peut publier les réponses de commande sur les topics

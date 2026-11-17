@@ -179,5 +179,24 @@ class AgentMessageHandlingTest(unittest.TestCase):
         self.assertEqual(fake_db.device.online_status, OnlineStatus.ONLINE)
 
 
+class BrokerSetupRetryTest(unittest.TestCase):
+    def test_setup_retries_until_the_tls_connection_succeeds(self):
+        broker = broker_agent.Broker(hostname="localhost", port=2001, username="u",
+                                     password="p", cert_ca=None, enable_bridging=False)
+        attempts = []
+
+        def connect(**kwargs):
+            attempts.append(kwargs)
+            if len(attempts) < 3:
+                raise ConnectionRefusedError(111, "Connection refused")
+
+        broker.c = SimpleNamespace(connect=connect)
+        with mock.patch("broker_agent.time.sleep") as sleep:
+            broker.setup(max_wait=10)
+
+        self.assertEqual(len(attempts), 3)
+        self.assertEqual(sleep.call_count, 2)
+
+
 if __name__ == "__main__":
     unittest.main()
