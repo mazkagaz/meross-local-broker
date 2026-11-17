@@ -1,3 +1,11 @@
+## 0.0.1-alpha90
+
+- Autorise l'agent interne à lire les topics concrets
+  `/appliance/<uuid>/publish|subscribe` et `/_nat_/<id>` utilisés par les
+  contrôles de livraison MQTT, en plus des wildcards d'abonnement. Corrige les
+  403 `username=_agent ... acc=1` et rétablit la réception des messages appareil.
+- Le login `_agent` attendu par le backend HTTP n'est plus journalisé en erreur.
+
 ## 0.0.1-alpha89
 
 - Corrige `auth_opt_log_level` : la valeur reconnue par go-auth est `warn`
