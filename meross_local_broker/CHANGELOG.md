@@ -1,3 +1,9 @@
+## 0.0.1-alpha92
+
+- Corrige l'appel à `supervisor_network.py` (`Permission denied`) : le script
+  est exécuté via `python3` et dispose du bit exécutable. Le TXT mDNS `host`
+  est de nouveau renseigné, rétablissant la découverte automatique.
+
 ## 0.0.1-alpha91
 
 - L'API tourne sous **Waitress** au lieu du serveur de développement Flask :
