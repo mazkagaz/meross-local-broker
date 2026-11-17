@@ -1,3 +1,9 @@
+## 0.0.1-alpha95
+
+- nginx attend que l'API écoute sur `127.0.0.1:2002` (60 s max) avant de
+  démarrer, évitant les 502 transitoires et les fausses erreurs au démarrage.
+  s6 n'utilise pas systemd : l'ordre est assuré par une attente de disponibilité.
+
 ## 0.0.1-alpha94
 
 - Empêche la mise en cache de l'interface (`Cache-Control: no-store`) : les
