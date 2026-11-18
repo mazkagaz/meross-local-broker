@@ -36,14 +36,15 @@ d'intégration spécifique sont bienvenues.
 
 ## Ports
 
-| Port         | Usage                            | Actif par défaut        |
-| ------------ | -------------------------------- | ----------------------- |
-| **2001/tcp** | MQTT/TLS (appareils)             | oui                     |
-| **2003/tcp** | API HTTP, ingress et panneau web | oui                     |
-| **2004/tcp** | API HTTPS (TLS)                  | oui, via `enable_https` |
+| Port         | Usage                                     | Actif par défaut        |
+| ------------ | ----------------------------------------- | ----------------------- |
+| **2001/tcp** | MQTT/TLS (appareils)                      | oui                     |
+| **2003/tcp** | API HTTP **ingress Supervisor seulement** | oui                     |
+| **2004/tcp** | API HTTPS (TLS)                           | oui, via `enable_https` |
 
-Meross Local Pairer privilégie **HTTPS 2004**. HTTP 2003 reste disponible pour
-l'ingress et les clients existants.
+Le port **2003** n'est plus accessible depuis le LAN : il sert uniquement à
+l'**ingress Home Assistant** (panneau web et administration via le Supervisor).
+Les clients LAN (intégration HA, pairer) utilisent exclusivement **HTTPS 2004**.
 
 L'API d'administration (renommage/suppression depuis le panneau web, services,
 journaux) n'est accessible qu'à travers l'**ingress Home Assistant**, avec
@@ -88,7 +89,7 @@ En cas de besoin, la même opération peut être faite en ligne de commande
 (remplacer l'adresse et le mot de passe) :
 
 ```bash
-curl -s -X PUT http://homeassistant.local:2003/_admin_/configuration \
+curl -sk -X PUT https://homeassistant.local:2004/_admin_/configuration \
   -H 'Content-Type: application/json' \
   -d '{"email":"meross-local","password":"MotDePasseLocal"}'
 ```
@@ -119,25 +120,29 @@ du broker.
 
 Champs usuels :
 
-| Champ                            | Valeur                                                                           |
-| -------------------------------- | -------------------------------------------------------------------------------- |
-| HTTP API Endpoint                | `https://homeassistant.local:2004` (défaut) ou `http://homeassistant.local:2003` |
-| MQTT Address                     | `homeassistant.local:2001`                                                       |
-| Local login                      | le compte local, par exemple `meross-local`                                      |
-| Password                         | le mot de passe local                                                            |
-| Skip MQTT certificate validation | coché                                                                            |
-| Skip HTTP certificate validation | coché avec `https://` et le certificat local                                     |
+| Champ             | Valeur                                           |
+| ----------------- | ------------------------------------------------ |
+| HTTP API Endpoint | `https://homeassistant.local:2004` (obligatoire) |
+| MQTT Address      | `homeassistant.local:2001`                       |
+| Local login       | le compte local, par exemple `meross-local`      |
+| Password          | le mot de passe local                            |
+
+Le broker doit être en **alpha99 ou plus récent** : l'intégration récupère et
+épingle sa CA (`/ca.crt`). Les options « ignorer la validation » n'existent plus.
 
 Si `homeassistant.local` ne répond pas, utiliser l'adresse IP de Home Assistant.
 
 ### TLS
 
 Le listener MQTT **2001** et le listener HTTPS **2004** partagent la même
-autorité de certification locale (`/data/mqtt/certs`). Le port **2003** reste
-en HTTP simple pour l'ingress Home Assistant et les anciens clients.
+autorité de certification locale (`/data/mqtt/certs`). Cette CA est valide
+(`CA:TRUE`) et le certificat serveur contient les IP LAN. Le port **2003** est
+en HTTP simple mais **réservé à l'ingress du Supervisor** ; le LAN passe par
+HTTPS 2004.
 
-L'option **`enable_https`** (activée par défaut) contrôle le listener 2004 :
-la désactiver ne touche ni MQTT/TLS sur 2001, ni HTTP sur 2003.
+L'option **`enable_https`** (activée par défaut) contrôle le listener 2004.
+La désactiver laisse MQTT/TLS sur 2001 et l'ingress sur 2003, mais **aucun
+client LAN ne peut plus se connecter** (intégration et pairer exigent HTTPS).
 
 Les publications des appareils sont contrôlées (signature, fraîcheur,
 anti-rejeu) et chaque appareil ne peut utiliser que ses propres topics.
@@ -147,16 +152,11 @@ journalisés) ; passer à `enforce` après une période de vérification.
 Le certificat du serveur est auto-signé. Deux options :
 
 - **valider le certificat** : récupérer la CA sur
-  `http://homeassistant.local:2003/ca.crt` (ou
-  `https://homeassistant.local:2004/ca.crt`), comparer son empreinte avec
+  `https://homeassistant.local:2004/ca.crt`, comparer son empreinte avec
   celle du fichier `/data/mqtt/certs/ca.crt`, puis l'importer côté client.
-  Les certificats générés depuis `alpha71` contiennent
-  `homeassistant.local`, `localhost` et `127.0.0.1` ; avec une autre adresse,
-  désactiver la validation ou régénérer les certificats en supprimant
-  `/data/mqtt/certs`.
-- **ignorer la validation** : cocher les options « Skip … certificate
-  validation » de l'intégration. Le trafic reste chiffré, mais le pairer
-  épingle le certificat au premier usage.
+  Depuis **alpha99**, la CA est valide (`CA:TRUE`) et le certificat serveur
+  contient les adresses IPv4 LAN : l'intégration et le pairer vérifient la
+  chaîne. Les options « ignorer la validation » ont été supprimées.
 
 ### 5. Vérifier
 
@@ -204,7 +204,7 @@ appareils. Laisser vide pour utiliser le fuseau de Home Assistant.
 | ----------------------------------- | ------------------------------------------------------------------------ |
 | L'add-on ne démarre pas             | architecture amd64/aarch64, logs du Supervisor, image GHCR publique      |
 | Aucun appareil dans l'add-on        | appairage Wi-Fi AP ou Bluetooth LE, port MQTT 2001, Wi-Fi 2,4 GHz WPA2   |
-| L'intégration ne voit pas le broker | adresse HTTPS 2004 (ou HTTP 2003), compte local, certificat MQTT ignoré  |
+| L'intégration ne voit pas le broker | adresse HTTPS 2004, compte local, broker alpha99+                        |
 | Entités absentes                    | appareil ONLINE dans l'add-on, puis redémarrer l'intégration             |
 | Durées non conservées               | logs `Stored roller-shutter config` / `Re-applied roller-shutter config` |
 | Appareil déjà lié au cloud Meross   | réinitialiser l'appareil avant l'appairage local                         |

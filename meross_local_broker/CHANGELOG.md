@@ -1,3 +1,12 @@
+## 0.0.1-alpha100
+
+- Le port **2003** (HTTP) n'est plus exposé sur le LAN : il est réservé à
+  l'ingress du Supervisor (défense en profondeur par ACL nginx) et son mapping
+  hôte est supprimé. Les clients LAN doivent utiliser **HTTPS 2004**.
+- mDNS : `http_port` n'est plus publié ; le SRV `_meross-api._tcp` pointe sur
+  le port HTTPS.
+- Documentation mise à jour (ingress, HTTPS obligatoire côté LAN).
+
 ## 0.0.1-alpha99
 
 - TLS : la CA locale est désormais valide (`basicConstraints=critical,CA:TRUE`,

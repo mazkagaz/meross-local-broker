@@ -9,11 +9,9 @@ arch:
 init: false
 ports:
   2001/tcp: 2001
-  2003/tcp: 2003
   2004/tcp: 2004
 ports_description:
   2001/tcp: "MQTT Broker port (TLS)"
-  2003/tcp: "HTTP API port"
   2004/tcp: "HTTPS API port (TLS)"
 ingress: true
 ingress_port: 2003
