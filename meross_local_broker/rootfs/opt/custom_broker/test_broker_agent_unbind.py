@@ -5,7 +5,9 @@ Run with: python3 -m unittest test_broker_agent_unbind
 """
 import hashlib
 import json
+import tempfile
 import unittest
+from pathlib import Path
 from types import SimpleNamespace
 from unittest import mock
 
@@ -109,6 +111,55 @@ class ProcessPendingUnbindsTest(unittest.TestCase):
         discovery.assert_called_once_with()
         self.assertEqual(db.deleted, [DEVICE_UUID])
         self.assertEqual(len(broker.c.published), 1)
+
+
+class ObjectDeletedRegressionTest(unittest.TestCase):
+    """The purge must not read attributes of rows it has just deleted."""
+
+    @classmethod
+    def setUpClass(cls):
+        import database
+        from sqlalchemy import create_engine
+
+        temporary = tempfile.TemporaryDirectory()
+        cls.addClassCleanup(temporary.cleanup)
+        engine = create_engine(f"sqlite:///{Path(temporary.name) / 'agent.db'}")
+        cls.addClassCleanup(engine.dispose)
+        original_bind = database.db_session.session_factory.kw['bind']
+        database.db_session.remove()
+        database.db_session.configure(bind=engine)
+        cls.addClassCleanup(database.db_session.configure, bind=original_bind)
+        cls.addClassCleanup(database.db_session.remove)
+        engine_patch = mock.patch.object(database, 'engine', engine)
+        engine_patch.start()
+        cls.addClassCleanup(engine_patch.stop)
+        cls.database = database
+
+    def setUp(self):
+        self.database.db_session.remove()
+        self.database.Base.metadata.drop_all(bind=self.database.engine)
+        self.database.init_db()
+        from db_helper import dbhelper
+        dbhelper.add_update_user(
+            email='agent@example.com', password='test-password',
+            user_id=USER_ID, user_key=MQTT_KEY)
+
+    def tearDown(self):
+        self.database.db_session.remove()
+
+    def test_purge_does_not_read_the_deleted_row(self):
+        from db_helper import dbhelper
+        dbhelper.add_pending_unbind(device_uuid=DEVICE_UUID, user_id=USER_ID)
+        broker = make_broker()
+
+        published = broker.process_pending_unbinds()
+
+        self.assertEqual(published, [DEVICE_UUID])
+        self.assertEqual(dbhelper.get_pending_unbinds(), [])
+        topic, message = broker.c.published[0]
+        self.assertEqual(topic, f"/app/{USER_ID}/subscribe")
+        self.assertEqual(
+            message["header"]["namespace"], "Appliance.Control.Unbind")
 
 
 if __name__ == "__main__":

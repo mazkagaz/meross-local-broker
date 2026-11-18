@@ -202,21 +202,28 @@ class Broker:
         deleting it from the broker database alone leaves the HA entities behind.
         """
         published = []
-        for pending in dbhelper.get_pending_unbinds():
-            user = dbhelper.get_user_by_id(pending.user_id)
-            if user is None:
-                dbhelper.delete_pending_unbind(pending.device_uuid)
-                continue
-            msg, _ = _build_mqtt_message(
-                method="PUSH",
-                namespace="Appliance.Control.Unbind",
-                payload={},
-                dev_key=user.mqtt_key,
-                header_from=f"/appliance/{pending.device_uuid}/publish")
-            self.c.publish(topic=f"/app/{user.user_id}/subscribe", payload=msg)
-            dbhelper.delete_pending_unbind(pending.device_uuid)
-            l.info("Published unbind for device %s", pending.device_uuid)
-            published.append(pending.device_uuid)
+        with self._lock:
+            # Read the primitive values first: deleting a row commits, which
+            # expires the ORM instances and makes later attribute reads raise
+            # ObjectDeletedError.
+            pending = [(row.device_uuid, row.user_id)
+                       for row in dbhelper.get_pending_unbinds()]
+            for device_uuid, user_id in pending:
+                user = dbhelper.get_user_by_id(user_id)
+                if user is None:
+                    dbhelper.delete_pending_unbind(device_uuid)
+                    continue
+                msg, _ = _build_mqtt_message(
+                    method="PUSH",
+                    namespace="Appliance.Control.Unbind",
+                    payload={},
+                    dev_key=user.mqtt_key,
+                    header_from=f"/appliance/{device_uuid}/publish")
+                self.c.publish(topic=f"/app/{user.user_id}/subscribe",
+                               payload=msg)
+                dbhelper.delete_pending_unbind(device_uuid)
+                l.info("Published unbind for device %s", device_uuid)
+                published.append(device_uuid)
         return published
 
     def start_periodic_refresh(self, interval_seconds: int = _DEVICE_REFRESH_INTERVAL_SECONDS) -> Thread:

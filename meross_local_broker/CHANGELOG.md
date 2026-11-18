@@ -1,3 +1,11 @@
+## 0.0.1-alpha102
+
+- Correctif : la purge des unbinds en attente relisait `device_uuid` sur la
+  ligne qu'elle venait de supprimer. SQLAlchemy levait alors
+  `ObjectDeletedError` et l'agent journalisait `Periodic device refresh failed` après chaque oubli. Les valeurs sont lues avant la suppression et
+  la purge est sérialisée par le verrou de l'agent. L'Unbind était déjà publié
+  correctement ; seule la journalisation échouait.
+
 ## 0.0.1-alpha101
 
 - Oubli d'un appareil (`/v1/Device/delete` et suppression depuis le panneau
