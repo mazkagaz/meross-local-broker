@@ -75,6 +75,7 @@ def delete_device(api_payload: Dict, *args, **kwargs):
     dbhelper.revoke_device(device_mac)
     if not dbhelper.delete_device(device_uuid):
         raise BadRequestError("Device could not be deleted")
+    dbhelper.add_pending_unbind(device_uuid=device_uuid, user_id=user.user_id)
     _LOGGER.info("User %s forgot device %s (%s)", user, device_uuid, device_mac)
     return make_api_response(data={'uuid': device_uuid, 'deleted': True})
 

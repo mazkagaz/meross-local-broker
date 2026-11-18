@@ -1,3 +1,14 @@
+## 0.0.1-alpha101
+
+- Oubli d'un appareil (`/v1/Device/delete` et suppression depuis le panneau
+  web) : le broker met l'événement en file et l'agent publie un
+  `Appliance.Control.Unbind` sur `/app/<userId>/subscribe`, signé avec la clé
+  du propriétaire. L'intégration Home Assistant supprime alors l'appareil et
+  ses entités au lieu de laisser des entités fantômes.
+- La publication est tentée à la (re)connexion de l'agent et à chaque cycle
+  de rafraîchissement (60 s) ; une entrée sans propriétaire est simplement
+  abandonnée.
+
 ## 0.0.1-alpha100
 
 - Le port **2003** (HTTP) n'est plus exposé sur le LAN : il est réservé à

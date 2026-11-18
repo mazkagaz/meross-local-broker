@@ -306,6 +306,10 @@ class HttpApiCompatibilityTest(unittest.TestCase):
         self.assertEqual(response.status_code, 204)
         self.assertIsNone(dbhelper.get_device_by_uuid('test-device-uuid'))
         self.assertTrue(dbhelper.is_device_revoked('AA:BB:CC:DD:EE:FF'))
+        pending = [p for p in dbhelper.get_pending_unbinds()
+                   if p.device_uuid == 'test-device-uuid']
+        self.assertEqual(len(pending), 1)
+        self.assertEqual(pending[0].user_id, int(self.user_id))
         response = self.client.delete('/_admin_/devices/test-device-uuid', headers=self.INGRESS)
         self.assertEqual(response.status_code, 400)
 
@@ -354,6 +358,8 @@ class HttpApiCompatibilityTest(unittest.TestCase):
             headers={'Authorization': f'Basic {token}'})
         self.assertEqual(response.get_json()['apiStatus'], 0)
         self.assertIsNone(dbhelper.get_device_by_uuid('owned-device'))
+        self.assertEqual([p.device_uuid for p in dbhelper.get_pending_unbinds()],
+                         ['owned-device'])
 
         other = dbhelper.add_update_user(
             email='other@example.com', password='other-password',
@@ -368,6 +374,8 @@ class HttpApiCompatibilityTest(unittest.TestCase):
             headers={'Authorization': f'Basic {token}'})
         self.assertNotEqual(response.get_json()['apiStatus'], 0)
         self.assertIsNotNone(dbhelper.get_device_by_uuid('not-owned'))
+        self.assertEqual([p.device_uuid for p in dbhelper.get_pending_unbinds()],
+                         ['owned-device'])
 
     def test_authenticated_user_can_rename_owned_device(self):
         from db_helper import dbhelper

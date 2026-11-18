@@ -75,8 +75,11 @@ def forget_device(uuid: str):
     if device is None:
         raise BadRequestError(msg=f"Device with UUID {uuid} does not exist")
     dbhelper.revoke_device(device.mac)
+    user_id = device.user_id
     if not dbhelper.delete_device(uuid):
         raise BadRequestError(msg=f"Device with UUID {uuid} does not exist")
+    if user_id is not None:
+        dbhelper.add_pending_unbind(device_uuid=uuid, user_id=user_id)
     _LOGGER.warning("Device %s (%s) has been forgotten and revoked", uuid, device.mac)
     return '', 204
 

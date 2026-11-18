@@ -12,7 +12,8 @@ from database import db_session
 from sqlalchemy import func, or_
 from model.db_models import (UserToken, Device, User, DeviceChannel, SubDevice,
                              Event, Configuration, RollerShutterConfig, DeviceAbility,
-                             RollerShutterStatus, RollerShutterAdjust, RevokedDevice)
+                             RollerShutterStatus, RollerShutterAdjust, RevokedDevice,
+                             PendingUnbind)
 from datetime import datetime
 from hashlib import md5
 from utilities import hash_password, hash_token
@@ -180,6 +181,25 @@ class DbHelper:
 
     def get_all_devices(self) -> List[Device]:
         return self._s.query(Device).all()
+
+    def add_pending_unbind(self, device_uuid: str, user_id: int) -> None:
+        row = self._s.query(PendingUnbind).filter(
+            PendingUnbind.device_uuid == device_uuid).first()
+        if row is None:
+            row = PendingUnbind(device_uuid=device_uuid)
+            self._s.add(row)
+        row.user_id = int(user_id)
+        row.created_at = datetime.now()
+        self._s.commit()
+
+    def get_pending_unbinds(self):
+        return self._s.query(PendingUnbind).all()
+
+    def delete_pending_unbind(self, device_uuid: str) -> None:
+        self._s.query(PendingUnbind).filter(
+            PendingUnbind.device_uuid == device_uuid).delete(
+                synchronize_session=False)
+        self._s.commit()
 
     def delete_device(self, device_uuid: str) -> bool:
         device = self.get_device_by_uuid(device_uuid)

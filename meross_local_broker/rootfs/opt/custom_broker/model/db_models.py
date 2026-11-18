@@ -220,6 +220,15 @@ class DeviceAbility(Base, Serializer):
     updated_at = Column(DateTime)
 
 
+class PendingUnbind(Base, Serializer):
+    """Device unbound by the user; the agent publishes the Unbind push."""
+    __tablename__ = 'pending_unbinds'
+
+    device_uuid = Column(String, primary_key=True)
+    user_id = Column(Integer, nullable=False)
+    created_at = Column(DateTime)
+
+
 class RollerShutterStatus(Base, Serializer):
     """Last reported roller-shutter position/state per channel."""
     __tablename__ = 'roller_shutter_status'

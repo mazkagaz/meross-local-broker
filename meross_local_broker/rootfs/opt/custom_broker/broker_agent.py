@@ -149,6 +149,7 @@ class Broker:
         l.debug("Subscribed to relevant topics")
         l.info("Re-loading connected device status.")
         self._issue_devices_discovery()
+        self.process_pending_unbinds()
 
     def _on_message(self, client, userdata, msg):
         l.debug("Local MQTT: received message on topic %s", msg.topic)
@@ -194,12 +195,37 @@ class Broker:
                 refreshed.append(device.uuid)
         return refreshed
 
+    def process_pending_unbinds(self) -> List[str]:
+        """Announce removed devices so clients drop them instead of keeping ghosts.
+
+        meross_iot only releases a device on an Appliance.Control.Unbind push;
+        deleting it from the broker database alone leaves the HA entities behind.
+        """
+        published = []
+        for pending in dbhelper.get_pending_unbinds():
+            user = dbhelper.get_user_by_id(pending.user_id)
+            if user is None:
+                dbhelper.delete_pending_unbind(pending.device_uuid)
+                continue
+            msg, _ = _build_mqtt_message(
+                method="PUSH",
+                namespace="Appliance.Control.Unbind",
+                payload={},
+                dev_key=user.mqtt_key,
+                header_from=f"/appliance/{pending.device_uuid}/publish")
+            self.c.publish(topic=f"/app/{user.user_id}/subscribe", payload=msg)
+            dbhelper.delete_pending_unbind(pending.device_uuid)
+            l.info("Published unbind for device %s", pending.device_uuid)
+            published.append(pending.device_uuid)
+        return published
+
     def start_periodic_refresh(self, interval_seconds: int = _DEVICE_REFRESH_INTERVAL_SECONDS) -> Thread:
         def _loop():
             while True:
                 time.sleep(interval_seconds)
                 try:
                     self.refresh_stale_devices()
+                    self.process_pending_unbinds()
                 except Exception:
                     l.exception("Periodic device refresh failed")
 
