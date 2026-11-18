@@ -1,3 +1,17 @@
+## 0.0.1-alpha99
+
+- TLS : la CA locale est désormais valide (`basicConstraints=critical,CA:TRUE`,
+  `keyUsage=keyCertSign,cRLSign`) et peut être vérifiée par les clients. Les
+  anciennes CA invalides sont détectées et régénérées automatiquement, avec
+  sauvegarde dans `/data/mqtt/certs.bak-*` (option `auto_regenerate_legacy_ca`).
+- Le certificat serveur inclut les adresses IPv4 LAN dans ses SAN et n'est
+  re-signé que lorsque ces adresses changent. La vérification du nom d'hôte
+  devient possible.
+- La passphrase de la CA est aléatoire et stockée dans
+  `/data/mqtt/certs/ca.pass` (600) ; plus de passphrase codée en dur.
+- Migration : un reset du certificat épinglé (pairer, import manuel) est
+  nécessaire une fois.
+
 ## 0.0.1-alpha98
 
 - Démarrage : l'agent ne sonde plus le port 2001 en TCP brut

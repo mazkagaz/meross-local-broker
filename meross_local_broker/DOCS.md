@@ -70,12 +70,21 @@ remontent ni tension, ni courant, ni consommation.
 ## HTTPS et certificat
 
 Les ports **2001** (MQTT/TLS) et **2004** (HTTPS) utilisent la même autorité de
-certification locale, stockée dans `/data/mqtt/certs`. Le certificat serveur est
-auto-signé et contient `homeassistant.local`, `localhost` et `127.0.0.1`.
-Meross Local Pairer épingle le certificat au premier contact ; l'intégration
-Home Assistant peut ignorer sa validation (option « Skip HTTP certificate
-validation »). La CA est téléchargeable sur `http://homeassistant.local:2003/ca.crt`
-ou `https://homeassistant.local:2004/ca.crt`.
+certification locale, stockée dans `/data/mqtt/certs`. Cette CA est valide
+(`basicConstraints=CA:TRUE`) et peut être importée pour vérifier le broker.
+
+Le certificat serveur contient `homeassistant.local`, `localhost`, `127.0.0.1`
+et les adresses IPv4 LAN détectées. Il est re-signé automatiquement quand ces
+adresses changent. Meross Local Pairer épingle le certificat au premier
+contact : après une mise à jour du broker ou un changement d'adresse, le pin
+peut devoir être réinitialisé dans les réglages de l'application.
+
+La passphrase de la CA est aléatoire et stockée dans
+`/data/mqtt/certs/ca.pass`. Les anciennes CA invalides sont remplacées
+automatiquement, avec une sauvegarde dans `/data/mqtt/certs.bak-*` ; l'option
+`auto_regenerate_legacy_ca` permet de désactiver cette migration. La CA est
+téléchargeable sur `http://homeassistant.local:2003/ca.crt` ou
+`https://homeassistant.local:2004/ca.crt`.
 
 ## Vérifications rapides
 

@@ -29,6 +29,7 @@ options:
   debug_mode: false
   device_timezone: ""
   enable_https: true
+  auto_regenerate_legacy_ca: true
   mqtt_integrity_mode: "observe"
 schema:
   reinit_db: "bool"
@@ -36,4 +37,5 @@ schema:
   debug_mode: "bool"
   device_timezone: "str?"
   enable_https: "bool"
+  auto_regenerate_legacy_ca: "bool"
   mqtt_integrity_mode: "list(observe|enforce)"
