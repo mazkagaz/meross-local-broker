@@ -193,6 +193,12 @@ révocation. L'appareil conserve le même UUID : dans Home Assistant, ses entit�
 et les automatisations existantes restent valides après un cycle
 oubli/réappairage.
 
+Après un oubli, l'agent publie l'événement `Appliance.Control.Unbind` qui
+supprime les entités côté Home Assistant. Cette publication a lieu au plus tard
+**60 secondes** après la suppression (ou immédiatement à la reconnexion de
+l'agent) : c'est le délai normal pendant lequel les entités peuvent encore
+apparaître.
+
 ## Réglage `device_timezone`
 
 L'option `device_timezone` pousse le fuseau et les règles d'heure d'été aux

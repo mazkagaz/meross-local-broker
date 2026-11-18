@@ -7,7 +7,9 @@
   ses entités au lieu de laisser des entités fantômes.
 - La publication est tentée à la (re)connexion de l'agent et à chaque cycle
   de rafraîchissement (60 s) ; une entrée sans propriétaire est simplement
-  abandonnée.
+  abandonnée. Le délai maximal entre la suppression et la disparition des
+  entités Home Assistant est donc de 60 secondes (ou immédiat à la reconnexion
+  de l'agent).
 
 ## 0.0.1-alpha100
 
