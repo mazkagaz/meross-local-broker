@@ -266,6 +266,12 @@ appareils. Laisser vide pour utiliser le fuseau de Home Assistant.
 - [BUILDING.md](BUILDING.md) — construction de l'image et publication.
 - [RELEASE_NOTES.md](RELEASE_NOTES.md) — évolutions depuis le fork et notes de
   version stable.
+- [docs/D0-ARCHITECTURE.md](docs/D0-ARCHITECTURE.md) — architecture cible
+  (profils déclaratifs, un produit / deux artefacts).
+- [docs/device-profiles.schema.json](docs/device-profiles.schema.json) — schéma
+  de profil v0 et exemples dans [docs/profiles/](docs/profiles/).
+- [docs/CAPTURE-FORMAT.md](docs/CAPTURE-FORMAT.md) — format du mode capture et
+  cycle de validation d'un nouveau modèle.
 - [MRS100_PATCH.md](MRS100_PATCH.md) — archive technique du patch initial.
 
 ## Origine et licence
