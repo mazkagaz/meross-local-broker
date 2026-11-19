@@ -80,14 +80,24 @@ def parse_args():
     return parser.parse_args()
 
 
+def _owner_app_topic(user_id, topic) -> Optional[str]:
+    """Return ``topic`` when it is an app response topic of ``user_id``."""
+    if not isinstance(topic, str):
+        return None
+    match = _APP_RESPONSE_TOPIC_RE.fullmatch(topic)
+    if match is None or match.group(1) != str(user_id):
+        return None
+    return topic
+
+
 def _app_forward_topics(user_id, payload: dict,
-                        legacy_user_topic_acks: bool = True) -> List[str]:
+                        legacy_user_topic_acks: bool = True,
+                        response_topic: Optional[str] = None) -> List[str]:
     """Topics where a device publication must be delivered for one owner.
 
-    Command ACKs go to the requesting app topic carried in ``header.from``.
-    The temporary compatibility mode also copies them to the user topic; PUSH
-    notifications always use the user topic. Never trust the header to reach
-    another account.
+    Command ACKs are routed to the app response topic recorded from the
+    original request; PUSH notifications always use the user topic. The
+    temporary compatibility mode also copies ACKs to the user topic.
     """
     default = f"/app/{user_id}/subscribe"
     header = payload.get("header") if isinstance(payload, dict) else None
@@ -95,15 +105,10 @@ def _app_forward_topics(user_id, payload: dict,
         return [default]
     if header.get("method") not in _ACK_METHODS:
         return [default]
-    from_topic = header.get("from")
-    if not isinstance(from_topic, str):
+    target = _owner_app_topic(user_id, response_topic)
+    if target is None or target == default:
         return [default]
-    match = _APP_RESPONSE_TOPIC_RE.fullmatch(from_topic)
-    if match is None or match.group(1) != str(user_id):
-        return [default]
-    if from_topic == default:
-        return [default]
-    return [default, from_topic] if legacy_user_topic_acks else [from_topic]
+    return [default, target] if legacy_user_topic_acks else [target]
 
 
 def guess_subdevice_type(subdevices_data: Dict):
@@ -151,6 +156,9 @@ class Broker:
         self._bridges = {}
 
         self._nat_table = ExpiringDict(max_age_seconds=30, max_len=50000)
+        # messageId -> app response topic of the requesting client
+        self._app_response_topics = ExpiringDict(
+            max_age_seconds=120, max_len=50000)
 
     def setup(self, max_wait: float = 60):
         """Connect to Mosquitto, waiting for it to accept TLS connections.
@@ -340,8 +348,13 @@ class Broker:
         # `/app/<userId>/subscribe`; publish to both when they differ.
         l.debug("Local MQTT -> Local MQTT: forwarding push notification received from device %s to user %s",
                 device_uuid, user)
+        header = payload.get("header") or {}
+        response_topic = None
+        if header.get("method") in _ACK_METHODS:
+            response_topic = self._app_response_topics.pop(
+                header.get("messageId"), None)
         for topic in _app_forward_topics(
-                user.user_id, payload, LEGACY_USER_TOPIC_ACKS):
+                user.user_id, payload, LEGACY_USER_TOPIC_ACKS, response_topic):
             self.c.publish(topic=topic, payload=json.dumps(payload))
 
         # In case there is a bridged remote connection, forward the event to the remote broker as well
@@ -512,6 +525,25 @@ class Broker:
             else:
                 l.debug("No MQTT Bridge found for device %s, nothing to stop.", uuid)
 
+    def _remember_app_response(self, device_uuid: str, payload: dict) -> None:
+        """Remember where the requesting client waits for the response.
+
+        Devices answer with ``header.from = /appliance/<uuid>/publish``, so the
+        app response topic can only come from the original request.
+        """
+        header = payload.get('header') or {}
+        if header.get('method') not in ('GET', 'SET'):
+            return
+        message_id = header.get('messageId')
+        if not isinstance(message_id, str) or not message_id:
+            return
+        owner = dbhelper.find_user_owner_by_device_uuid(device_uuid)
+        if owner is None:
+            return
+        target = _owner_app_topic(owner.user_id, header.get('from'))
+        if target is not None:
+            self._app_response_topics[message_id] = target
+
     def _handle_app_to_device_message(self, device_uuid: str, payload: dict) -> None:
         """Observe commands that the app/HA publishes to a device.
 
@@ -519,6 +551,7 @@ class Broker:
         official cloud re-applies signalOpen/signalClose. We persist the
         desired config here and replay it after System.All/reconnect.
         """
+        self._remember_app_response(device_uuid, payload)
         header = payload.get('header', {}) or {}
         if header.get('from') == '/_agent':
             return

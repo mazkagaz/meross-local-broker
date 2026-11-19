@@ -1,3 +1,11 @@
+## 1.1.2
+
+- Correctif du routage des ACK : les appareils répondent avec
+  `header.from = /appliance/<uuid>/publish`, pas avec le topic applicatif. Le
+  broker mémorise désormais, par `messageId`, le topic de réponse de la requête
+  d'origine (validé comme appartenant au propriétaire) et y délivre l'ACK.
+  Le mode temporaire `legacy_user_topic_acks` s'applique à ce routage.
+
 ## 1.1.1
 
 - Routage des réponses d'appareil : en plus de `/app/<userId>/subscribe`, une

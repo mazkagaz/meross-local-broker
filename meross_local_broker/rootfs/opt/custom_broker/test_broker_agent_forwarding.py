@@ -6,12 +6,23 @@ Run with: python3 -m unittest test_broker_agent_forwarding
 """
 
 import unittest
+from types import SimpleNamespace
+from unittest import mock
 
+import broker_agent
 from broker_agent import _app_forward_topics
 
 
-def message(from_topic, method="GETACK"):
-    return {"header": {"from": from_topic, "method": method}, "payload": {}}
+def message(from_topic, method="GETACK", message_id="mid"):
+    return {
+        "header": {
+            "from": from_topic, "method": method, "messageId": message_id},
+        "payload": {},
+    }
+
+
+def request(from_topic, method="GET", message_id="mid"):
+    return message(from_topic, method=method, message_id=message_id)
 
 
 class AppForwardTopicsTest(unittest.TestCase):
@@ -21,42 +32,70 @@ class AppForwardTopicsTest(unittest.TestCase):
                 1, message("/appliance/uuid/publish", method="PUSH")),
             ["/app/1/subscribe"])
 
-    def test_command_ack_also_goes_to_the_app_topic(self):
+    def test_command_ack_follows_the_recorded_response_topic(self):
         self.assertEqual(
-            _app_forward_topics(1, message("/app/1-abc123/subscribe")),
+            _app_forward_topics(
+                1, message("/appliance/uuid/publish"),
+                response_topic="/app/1-abc123/subscribe"),
             ["/app/1/subscribe", "/app/1-abc123/subscribe"])
 
     def test_legacy_mode_can_be_disabled(self):
         self.assertEqual(
             _app_forward_topics(
-                1, message("/app/1-abc123/subscribe"),
-                legacy_user_topic_acks=False),
+                1, message("/appliance/uuid/publish"),
+                legacy_user_topic_acks=False,
+                response_topic="/app/1-abc123/subscribe"),
             ["/app/1-abc123/subscribe"])
 
-    def test_legacy_mode_falls_back_when_from_is_invalid(self):
+    def test_device_response_header_from_is_not_used_as_a_topic(self):
         self.assertEqual(
             _app_forward_topics(
-                1, message("/appliance/uuid/publish", method="PUSH"),
-                legacy_user_topic_acks=False),
-            ["/app/1/subscribe"])
-
-    def test_same_topic_is_published_once(self):
-        self.assertEqual(
-            _app_forward_topics(1, message("/app/1/subscribe")),
+                1, message("/app/1-abc123/subscribe")),
             ["/app/1/subscribe"])
 
     def test_another_user_topic_is_never_used(self):
         self.assertEqual(
-            _app_forward_topics(1, message("/app/2-abc123/subscribe")),
+            _app_forward_topics(
+                1, message("/appliance/uuid/publish"),
+                response_topic="/app/2-abc123/subscribe"),
             ["/app/1/subscribe"])
 
-    def test_invalid_or_missing_from_falls_back_to_the_user_topic(self):
+    def test_missing_response_topic_falls_back_to_the_user_topic(self):
         self.assertEqual(
-            _app_forward_topics(1, message("http://evil/app/1/subscribe")),
+            _app_forward_topics(1, message("/appliance/uuid/publish")),
             ["/app/1/subscribe"])
+
+
+class RememberAppResponseTest(unittest.TestCase):
+    def test_records_the_requesting_app_topic(self):
+        broker = broker_agent.Broker(
+            hostname="localhost", port=2001, username="u", password="p",
+            cert_ca=None, enable_bridging=False, device_timezone=None)
+        db = SimpleNamespace(
+            find_user_owner_by_device_uuid=lambda uuid: SimpleNamespace(
+                user_id=1))
+        with mock.patch.object(broker_agent, "dbhelper", db):
+            broker._remember_app_response(
+                "uuid", request("/app/1-abc123/subscribe", message_id="m1"))
+
         self.assertEqual(
-            _app_forward_topics(1, {"payload": {}}),
-            ["/app/1/subscribe"])
+            broker._app_response_topics["m1"], "/app/1-abc123/subscribe")
+
+    def test_ignores_a_foreign_or_missing_topic(self):
+        broker = broker_agent.Broker(
+            hostname="localhost", port=2001, username="u", password="p",
+            cert_ca=None, enable_bridging=False, device_timezone=None)
+        db = SimpleNamespace(
+            find_user_owner_by_device_uuid=lambda uuid: SimpleNamespace(
+                user_id=1))
+        with mock.patch.object(broker_agent, "dbhelper", db):
+            broker._remember_app_response(
+                "uuid", request("/app/2-abc123/subscribe", message_id="m1"))
+            broker._remember_app_response(
+                "uuid", request("/_agent", message_id="m2"))
+
+        self.assertNotIn("m1", broker._app_response_topics)
+        self.assertNotIn("m2", broker._app_response_topics)
 
 
 if __name__ == "__main__":
