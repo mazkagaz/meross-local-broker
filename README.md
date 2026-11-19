@@ -199,6 +199,15 @@ supprime les entités côté Home Assistant. Cette publication a lieu au plus ta
 l'agent) : c'est le délai normal pendant lequel les entités peuvent encore
 apparaître.
 
+## Journaux
+
+Le panneau du broker affiche quatre diodes, une par service. Cliquer sur une
+diode ouvre la page **Journaux** sur l'onglet du service choisi ; la flèche
+Retour ramène à l'accueil. La page propose la recherche (surlignage) et le
+filtre par niveau, la copie des lignes visibles, le téléchargement du journal
+complet, le suivi/pause et le retour à la ligne. Seul l'onglet affiché interroge
+l'API.
+
 ## Réglage `device_timezone`
 
 L'option `device_timezone` pousse le fuseau et les règles d'heure d'été aux

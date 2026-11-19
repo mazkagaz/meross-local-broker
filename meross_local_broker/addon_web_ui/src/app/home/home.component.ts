@@ -13,7 +13,6 @@ import { Configuration } from '@app/model/configuration';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ServiceStatus } from '@app/model/service';
 import { ServiceStore } from '@app/providers/service';
-import { ServiceLogsDialogComponent } from './service-logs-dialog.component';
 
 export interface SetNameDialogData {
   device: Device;
@@ -31,6 +30,7 @@ export class HomeComponent implements AfterViewInit, OnInit, OnDestroy {
   deviceSource = new MatTableDataSource<Device>([]);
   subdeviceSource = new MatTableDataSource<Subdevice>([]);
   services: ServiceStatus[] = [];
+  logsService: ServiceStatus = null;
   autoUpdate = true;
   unconfigured = true;
   private pollSubscription = new Subscription();
@@ -135,7 +135,11 @@ export class HomeComponent implements AfterViewInit, OnInit, OnDestroy {
   }
 
   openServiceLogs(service: ServiceStatus): void {
-    this.dialog.open(ServiceLogsDialogComponent, { data: { service } });
+    this.logsService = service;
+  }
+
+  closeServiceLogs(): void {
+    this.logsService = null;
   }
 
   assignName(device: Device) {

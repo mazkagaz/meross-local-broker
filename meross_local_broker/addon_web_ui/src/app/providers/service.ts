@@ -10,7 +10,6 @@ import { share, switchMap } from 'rxjs/operators';
 export class ServiceStore {
   // Internal handlers
   private _services: BehaviorSubject<ServiceStatus[]> = new BehaviorSubject([]);
-  private _logSubjects: Map<string, BehaviorSubject<string[]>> = new Map<string, BehaviorSubject<string[]>>();
   private REFRESH_TIME: number = 10000;
 
   // Exposed observable
@@ -35,31 +34,16 @@ export class ServiceStore {
   }
 
   /**
-   * Subscribes to the logs of a given service.
-   * @param serviceName
+   * Polls the logs of a given service while the returned observable is
+   * subscribed. Unsubscribing stops the polling, so only the visible tab of
+   * the log page queries the API.
    */
   public followServiceLogs(serviceName: string): Observable<string[]> {
-    // We hold a BehaviorSubbject for every serviceName.
-    // Every time a new subscriber wants to consume logs for a specific
-    // service, we build/retrieve the appropriate BehaviorSubject
-    // and start the polling.
-    let subject = this._logSubjects.get(serviceName);
-    if (!subject) {
-      // Create the behavior subject
-      subject = new BehaviorSubject([]);
-
-      // Setup the interval updater
-      interval(this.REFRESH_TIME).subscribe(() =>
-        this.fetchServiceLogs(serviceName).subscribe((logLines) => subject.next(logLines))
-      );
-
-      // Get initial data and fill the subject
-      this.fetchServiceLogs(serviceName).subscribe((logLines) => subject.next(logLines));
-
-      this._logSubjects.set(serviceName, subject);
-    }
-
-    // In case the subject already exists, return it directly.
-    return subject.asObservable();
+    return new Observable<string[]>((subscriber) => {
+      const poll = () => this.fetchServiceLogs(serviceName).subscribe((lines) => subscriber.next(lines));
+      poll();
+      const timer = interval(this.REFRESH_TIME).subscribe(() => poll());
+      return () => timer.unsubscribe();
+    });
   }
 }

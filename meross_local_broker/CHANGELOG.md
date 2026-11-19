@@ -1,3 +1,12 @@
+## 0.0.1-alpha104
+
+- Panneau web : un clic sur une diode ouvre une page **Journaux** pleine page
+  à quatre onglets, positionnée sur le service cliqué, avec flèche Retour.
+  Recherche avec surlignage, filtre par niveau, copie des lignes visibles,
+  téléchargement du journal complet, pause/suivi et retour à la ligne.
+- Seul l'onglet affiché interroge l'API : changer d'onglet ou quitter la page
+  arrête le flux précédent.
+
 ## 0.0.1-alpha103
 
 - Déconnexion d'un appareil oublié : l'événement

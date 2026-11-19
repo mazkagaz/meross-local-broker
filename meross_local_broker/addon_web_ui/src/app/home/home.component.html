@@ -1,4 +1,11 @@
-<div class="container" fxFlex fxLayout="column">
+<app-service-logs-page
+  *ngIf="logsService"
+  [services]="services"
+  [initialService]="logsService.name"
+  (closed)="closeServiceLogs()"
+></app-service-logs-page>
+
+<div *ngIf="!logsService" class="container" fxFlex fxLayout="column">
   <img class="banner" src="assets/images/meross-local-broker-banner.jpeg" alt="Meross Local Broker" />
   <div class="status-tiles" *ngIf="services.length > 0">
     <button
