@@ -134,3 +134,32 @@ Appareil ──MQTT/TLS──> Broker ──profils/révisions──> Intégrati
 - D3 : entités et migration des identités.
 - D4 : UX avancée (édition, capture, `update`) sans changer le parcours de base.
 - D5 : parité, trames dorées, suppression de `meross_iot`.
+- D5.1 : nettoyage des topics ACK (voir ci-dessous).
+
+### Transition des topics ACK
+
+De 1.0.0 à D5, le broker publie une réponse d'appareil **deux fois** : sur
+`/app/<userId>/subscribe` (clients historiques, PUSH, `meross_iot`) et sur le
+topic `header.from` (`/app/<userId>-<appId>/subscribe`) attendu par
+`merossclient`.
+
+**Toggle temporaire** : `legacy_user_topic_acks` (broker 1.1.1, défaut
+`true`) permet de couper la copie sur le topic utilisateur pendant les tests,
+sans supprimer le code. Il est explicitement **supprimé en D5.1** avec
+`patch_mqtt_acks_on_user_topic`.
+
+Nettoyage prévu en **D5.1**, une fois les entités migrées :
+
+1. **Broker** : PUSH (`PUSH`) sur `/app/<userId>/subscribe` uniquement ; ACK
+   (`GETACK`, `SETACK`, `ERROR`) sur le topic `header.from` du propriétaire
+   uniquement. Repli sur le topic utilisateur seulement si `from` est absent ou
+   invalide (compatibilité de dernier recours, documentée).
+2. **Intégration** : suppression de `patch_mqtt_acks_on_user_topic` et de ses
+   tests, une fois toutes les commandes passées par le client vendorisé.
+3. **Tests** : trames dorées ACK/PUSH, absence d'ACK sur le topic utilisateur,
+   non-régression du client standard.
+4. **Version** : broker 1.2.0 (changement de routage) et intégration 2.5.0
+   (suppression du patch), avec note dans `RELEASE_NOTES.md`.
+
+Condition d'entrée : D3 terminé (plus aucune commande métier via
+`meross_iot`) et validation sur matériel réel.

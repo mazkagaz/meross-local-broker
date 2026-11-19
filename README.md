@@ -223,13 +223,14 @@ Avec l'intégration **2.3.2 ou plus récente** :
 Les options se règlent dans **Paramètres → Applications → Meross Local Broker →
 Configuration**. Le détail figure dans [DOCS.md](meross_local_broker/DOCS.md).
 
-| Option                | Défaut    | Rôle                                                      |
-| --------------------- | --------- | --------------------------------------------------------- |
-| `advertise`           | `true`    | publication mDNS du broker et de l'API HTTPS              |
-| `debug_mode`          | `false`   | journaux détaillés                                        |
-| `device_timezone`     | vide      | fuseau (+ DST) poussé aux appareils ; vide = fuseau HA    |
-| `mqtt_integrity_mode` | `observe` | contrôle signature/fraîcheur/anti-rejeu des publications  |
-| `reinit_db`           | `false`   | efface compte local et appareils au démarrage (dépannage) |
+| Option                   | Défaut    | Rôle                                                      |
+| ------------------------ | --------- | --------------------------------------------------------- |
+| `advertise`              | `true`    | publication mDNS du broker et de l'API HTTPS              |
+| `debug_mode`             | `false`   | journaux détaillés                                        |
+| `device_timezone`        | vide      | fuseau (+ DST) poussé aux appareils ; vide = fuseau HA    |
+| `mqtt_integrity_mode`    | `observe` | contrôle signature/fraîcheur/anti-rejeu des publications  |
+| `legacy_user_topic_acks` | `true`    | ACK aussi sur le topic utilisateur (temporaire)           |
+| `reinit_db`              | `false`   | efface compte local et appareils au démarrage (dépannage) |
 
 ## Journaux
 

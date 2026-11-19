@@ -6,6 +6,7 @@
 import argparse
 import json
 import logging
+import os
 import re
 import ssl
 import time
@@ -40,6 +41,12 @@ APPLIANCE_PUBLISH_TOPIC_RE = re.compile("/appliance/([a-zA-Z0-9]+)/publish")
 APPLIANCE_SUBSCRIBE_TOPIC_RE = re.compile("/appliance/([a-zA-Z0-9]+)/subscribe")
 DISCONNECTION_TOPIC_RE = re.compile(r"^\$SYS/client-disconnections$")
 _NAT_RE = re.compile(r"/_nat_/([a-zA-Z0-9\-]+)")
+_APP_RESPONSE_TOPIC_RE = re.compile(r"^/app/(\d+)(?:-[A-Za-z0-9]+)?/subscribe$")
+_ACK_METHODS = {"GETACK", "SETACK", "ERROR"}
+# Temporary compatibility option (removed in D5.1): keep ACKs on the user topic.
+LEGACY_USER_TOPIC_ACKS = os.getenv(
+    "LEGACY_USER_TOPIC_ACKS", "true").strip().lower() not in {
+        "0", "false", "no", "off"}
 _CLIENTID_RE = re.compile('^fmware:([a-zA-Z0-9]+)_[a-zA-Z0-9]+$')
 _DEVICE_UPDATE_CACHE_INTERVAL_SECONDS = 60
 # How often the agent polls Appliance.System.All from devices with stale info (devices reconnecting after a
@@ -71,6 +78,32 @@ def parse_args():
     parser.set_defaults(debug=False)
     parser.set_defaults(enable_bridging=False)
     return parser.parse_args()
+
+
+def _app_forward_topics(user_id, payload: dict,
+                        legacy_user_topic_acks: bool = True) -> List[str]:
+    """Topics where a device publication must be delivered for one owner.
+
+    Command ACKs go to the requesting app topic carried in ``header.from``.
+    The temporary compatibility mode also copies them to the user topic; PUSH
+    notifications always use the user topic. Never trust the header to reach
+    another account.
+    """
+    default = f"/app/{user_id}/subscribe"
+    header = payload.get("header") if isinstance(payload, dict) else None
+    if not isinstance(header, dict):
+        return [default]
+    if header.get("method") not in _ACK_METHODS:
+        return [default]
+    from_topic = header.get("from")
+    if not isinstance(from_topic, str):
+        return [default]
+    match = _APP_RESPONSE_TOPIC_RE.fullmatch(from_topic)
+    if match is None or match.group(1) != str(user_id):
+        return [default]
+    if from_topic == default:
+        return [default]
+    return [default, from_topic] if legacy_user_topic_acks else [from_topic]
 
 
 def guess_subdevice_type(subdevices_data: Dict):
@@ -301,10 +334,15 @@ class Broker:
             if set_adjust is not None:
                 set_adjust(device_uuid=device_uuid, payload=payload.get('payload', {}) or {})
 
-        # Forward the device push notification to the app channel
+        # Forward the device publication to the app channel. Cloud-compatible
+        # clients wait for command ACKs on the "from" topic carried in the
+        # header (`/app/<userId>-<appId>/subscribe`), while pushes are read on
+        # `/app/<userId>/subscribe`; publish to both when they differ.
         l.debug("Local MQTT -> Local MQTT: forwarding push notification received from device %s to user %s",
                 device_uuid, user)
-        self.c.publish(topic=f"/app/{user.user_id}/subscribe", payload=json.dumps(payload))
+        for topic in _app_forward_topics(
+                user.user_id, payload, LEGACY_USER_TOPIC_ACKS):
+            self.c.publish(topic=topic, payload=json.dumps(payload))
 
         # In case there is a bridged remote connection, forward the event to the remote broker as well
         if self.bridging_enabled:

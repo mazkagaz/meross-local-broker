@@ -1,3 +1,14 @@
+## 1.1.1
+
+- Routage des réponses d'appareil : en plus de `/app/<userId>/subscribe`, une
+  publication dont le `header.from` est un topic applicatif
+  (`/app/<userId>-<appId>/subscribe`) est aussi délivrée sur ce topic, comme le
+  fait le cloud Meross. Les clients standard (merossclient) reçoivent ainsi
+  leurs ACK. Seul le topic du propriétaire de l'appareil est accepté.
+- Nouvelle option temporaire `legacy_user_topic_acks` (défaut `true`) pour
+  désactiver la copie des ACK sur le topic utilisateur pendant les tests. Elle
+  sera supprimée avec le nettoyage D5.1.
+
 ## 1.1.0
 
 - Catalogue de profils d'appareils (lecture seule) : profils livrés MRS100,
