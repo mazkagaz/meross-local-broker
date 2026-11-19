@@ -452,8 +452,13 @@ class Broker:
         device_match = _CLIENTID_RE.fullmatch(client_id)
         if device_match:
             uuid = device_match.group(1)
-            dbhelper.update_device_status(device_uuid=uuid, status=OnlineStatus.OFFLINE)
-            l.info("Device %s has disconnected from broker", uuid)
+            if dbhelper.get_device_by_uuid(device_uuid=uuid) is None:
+                # The device was forgotten while its MQTT session was open.
+                l.info("Device %s disconnected after being forgotten", uuid)
+            else:
+                dbhelper.update_device_status(
+                    device_uuid=uuid, status=OnlineStatus.OFFLINE)
+                l.info("Device %s has disconnected from broker", uuid)
 
             # Clear last timestamp update
             if uuid in self._devices_sys_info_timestamp:

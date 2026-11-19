@@ -1,3 +1,9 @@
+## 0.0.1-alpha103
+
+- Déconnexion d'un appareil oublié : l'événement
+  `$SYS/client-disconnections` est ignoré proprement quand l'appareil n'existe
+  plus en base. L'agent ne lève plus `Device … was not present into the database` après un oubli.
+
 ## 0.0.1-alpha102
 
 - Correctif : la purge des unbinds en attente relisait `device_uuid` sur la
