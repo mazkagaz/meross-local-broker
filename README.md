@@ -270,6 +270,8 @@ appareils. Laisser vide pour utiliser le fuseau de Home Assistant.
 - [docs/D0-ARCHITECTURE.md](docs/D0-ARCHITECTURE.md) — architecture cible
   (profils déclaratifs, un produit / deux artefacts).
 - [docs/D2-PLAN.md](docs/D2-PLAN.md) — schéma 2, moteur et parité du catalogue.
+- [docs/PROFILE-AUTHORING.md](docs/PROFILE-AUTHORING.md) — écrire et valider un
+  profil d’appareil.
 - [docs/device-profiles.schema.json](docs/device-profiles.schema.json) — schéma
   de profil 2 et exemples dans [docs/profiles/](docs/profiles/).
 - [docs/CAPTURE-FORMAT.md](docs/CAPTURE-FORMAT.md) — format du mode capture et
