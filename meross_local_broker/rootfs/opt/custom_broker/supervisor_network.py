@@ -1,4 +1,6 @@
 #!/usr/bin/python3
+# Modified or added for the MRS100 fork of ha-meross-local-broker (2026-11).
+# Upstream: https://github.com/albertogeniola/ha-meross-local-broker (Apache-2.0).
 """Print the LAN IPv4 addresses Home Assistant can be reached on.
 
 The add-on runs in its own Docker network, so its own address is not usable by

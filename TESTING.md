@@ -3,68 +3,73 @@
 This repository is an unofficial fork. Please report issues with the add-on
 log, the device model/hardware/firmware, and the pairing method.
 
-## What can be tested without an MRS100
+## What can be tested without a Meross device
 
 - Build the Docker image (`BUILDING.md`).
-- Run the unit tests (MRS100 message handling, timezone sync, HTTP API).
-- Start the add-on locally or in Home Assistant and verify that existing Meross
+- Run the unit tests (HTTP API, MQTT integrity, timezone sync, MRS100 message
+  handling, Unbind publication, disconnect handling).
+- Start the add-on locally or in Home Assistant and verify that already-paired
   devices still behave as before.
 
-The MRS100-specific paths (channel discovery, `RollerShutter.Adjust/Position`
-caching, `signalOpen`/`signalClose` persistence) require a real MRS100 (or a
-compatible roller-shutter device) connected to the local broker.
+Device paths (channel discovery, `RollerShutter.Adjust/Position` caching,
+`signalOpen`/`signalClose` persistence, calibration) require a real device
+connected to the local broker.
 
 ## Unit tests
 
+The pins live in
+`meross_local_broker/rootfs/opt/custom_broker/requirements.txt`:
+
 ```bash
 python3 -m venv .venv
-.venv/bin/pip install paho-mqtt==1.5.1 expiringdict SQLAlchemy==1.4.54 \
-  meross_iot==0.4.7.5 Flask==3.1.3 Werkzeug==3.1.8 flask-cors==6.0.5 'setuptools<81'
+.venv/bin/pip install -r meross_local_broker/rootfs/opt/custom_broker/requirements.txt
 cd meross_local_broker/rootfs/opt/custom_broker
-PYTHONPATH=. ../../../../.venv/bin/python -m unittest \
-  test_mrs100_roller_shutter test_broker_agent_timezone test_http_api \
-  test_supervisor_network
+PYTHONPATH=. ../../../../.venv/bin/python -m unittest discover -p 'test_*.py'
 ```
 
-Expected: 38 tests OK.
+Expected: **74 tests OK**. Modules: `test_http_api`, `test_mqtt_integrity`,
+`test_supervisor_network`, `test_timezone_utils`, `test_mrs100_roller_shutter`,
+`test_broker_agent_timezone`, `test_broker_agent_unbind`,
+`test_broker_agent_disconnect`.
+
+The Docker image runs `test_http_api` as a build gate.
 
 ## Hardware test checklist
 
-1. Install the add-on (custom add-on repository or local build). Configure a
-   local account in the add-on Web UI (e.g. `meross@local`); disable Meross
-   Link for local-only operation.
-2. Retrieve the local account `userId`/`key` (add-on data volume
-   `/data/database.db`, users table) if your pairing tool wants manual
-   credentials. Alternatively point
-   [Meross Local Pairer](https://github.com/mazkagaz/meross-local-pairer) at the local
-   API (`http://homeassistant.local:2003`) and log in with the local account.
-3. Pair the MRS100 to the local broker with Meross Local Pairer (or any client
-   that sends `Appliance.Config.Key` plus `Appliance.Config.Wifi` on firmware 7,
-   or `Appliance.Config.WifiX` over BLE on firmware 8).
-4. Confirm the device connects: add-on log should show the device online and
-   the broker should see `/appliance/<uuid>/publish`.
-5. Install the companion
+1. Install the add-on (custom add-on repository or local build). Create the
+   local account in the add-on Web UI (e.g. `meross-local`).
+2. Pair the device with
+   [Meross Local Pairer](https://github.com/mazkagaz/meross-local-pairer).
+   The app and the integration use **HTTPS 2004 only**; port 2003 is reserved
+   for the Home Assistant Supervisor ingress and is unreachable from the LAN.
+   - Firmware 7: pairing through the device AP (`Meross_*`).
+   - Firmware 8 / Bluetooth LE: pairing through the `MRBL_*` advertisement.
+3. Confirm the device connects: the add-on log shows the device online and the
+   broker receives `/appliance/<uuid>/publish`.
+4. Install the companion
    [Meross Local Cloud integration](https://github.com/mazkagaz/meross-local-cloud)
-   and point it at the local API/MQTT; confirm the cover entity appears.
-6. Set open/close timings from HA or Meross Local Pairer. Reconnect the device and
-   verify the add-on log:
-   - `Stored roller-shutter config ...`
-   - `Re-applied roller-shutter config ...`
-7. Read `/v1/Device/devList` (authenticated) and confirm:
-   - `ability`
-   - `rollerShutter.config`
-   - `rollerShutter.position`
-   - `rollerShutter.adjust`
+   and configure it with the broker address, HTTPS 2004, MQTT 2001 and the
+   local account. Confirm the expected entities appear.
+5. For a roller shutter: set open/close durations (10–120 s), run the
+   calibration buttons and follow the calibration status sensor's allowed
+   values (`in_progress`, `success`, `timeout`, `motor_blocked`, `failed_N`).
+   Reconnect the device and verify the durations persist.
+6. Test forget: use **Forget device** in the Web UI or the pairer. Within
+   60 seconds the integration must remove the device and its entities, and the
+   agent log must not report `Periodic device refresh failed`.
+7. Open the **Logs** page from a status diode: the selected tab follows the
+   clicked service, search and level filters work, and switching tabs stops the
+   previous stream.
+8. Read `/v1/Device/devList` (authenticated) and confirm `ability` and, for a
+   roller shutter, `rollerShutter.config/position/adjust`.
 
 ## Known validation gaps
 
-- The replay of `signalOpen`/`signalClose` has only been unit-tested; it needs
-  a real device to confirm the timing persists across reconnects.
-- The official app sends `payload.config` as an object (`MRSConfig`);
-  `meross_iot` can send `{"config": {...}}`. Verify the device accepts the
-  replayed shape before changing the library.
-- Multi-channel cover devices are not fully covered: channel 0 is the primary
-  target.
+- Models other than the MRS100 are community-tested; report the model,
+  firmware and working functions.
+- Multi-channel cover devices: channel 0 is the primary target.
+- `mqtt_integrity_mode` stays in `observe` until device logs are clean; then
+  `enforce` can be evaluated.
 
 ## Scope
 

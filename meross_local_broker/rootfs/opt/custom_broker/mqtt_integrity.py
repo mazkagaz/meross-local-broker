@@ -1,3 +1,5 @@
+# Modified or added for the MRS100 fork of ha-meross-local-broker (2026-11).
+# Upstream: https://github.com/albertogeniola/ha-meross-local-broker (Apache-2.0).
 """Signature, freshness and replay checks for device MQTT publications.
 
 The default mode is observation: mismatches are logged but still processed.
@@ -12,7 +14,7 @@ from typing import Optional, Tuple
 from expiringdict import ExpiringDict
 
 MODE = os.getenv("MQTT_INTEGRITY_MODE", "observe").strip().lower()
-if MODE not in {"observe", "enforce", "off"}:
+if MODE not in {"observe", "enforce"}:
     MODE = "observe"
 
 try:

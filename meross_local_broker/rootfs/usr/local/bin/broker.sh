@@ -1,4 +1,6 @@
 #!/usr/bin/with-contenv bashio
+# Modified or added for the MRS100 fork of ha-meross-local-broker (2026-11).
+# Upstream: https://github.com/albertogeniola/ha-meross-local-broker (Apache-2.0).
 
 CONFIG_PATH=/data/options.json
 
@@ -37,10 +39,7 @@ AGENT_PASSWORD=$(openssl rand -base64 32)
 AGENT_PBKDF2=$(/usr/share/mosquitto/pw -p $AGENT_PASSWORD)
 echo "$AGENT_USERNAME:$AGENT_PBKDF2">/etc/mosquitto/auth.pw
 
-# Grant to the _agent user permissions to:
-# - read from /appliance/+/publish
-# - write to /app/+/subscribe
-#echo -e "user $AGENT_USERNAME\ntopic read /appliance/+/publish\ntopic write /app/+/subscribe">/etc/mosquitto/auth.acl
+# Static ACL for the files backend; go-auth checks the HTTP backend first.
 echo -e "user $AGENT_USERNAME\ntopic readwrite #">/etc/mosquitto/auth.acl
 
 # broker_agent retries its TLS connection until Mosquitto is ready. Avoid a

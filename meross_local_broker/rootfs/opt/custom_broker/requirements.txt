@@ -1,3 +1,5 @@
+# Modified or added for the MRS100 fork of ha-meross-local-broker (2026-11).
+# Upstream: https://github.com/albertogeniola/ha-meross-local-broker (Apache-2.0).
 argon2-cffi==25.1.0
 Flask==3.1.3
 waitress==3.0.2
@@ -10,5 +12,4 @@ meross_iot==0.4.7.5
 expiringdict==1.2.1
 dbus-python==1.2.18
 packaging
-debugpy
 backports.zoneinfo==0.2.1; python_version < "3.9"

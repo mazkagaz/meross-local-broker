@@ -1,3 +1,19 @@
+## 0.0.1-alpha106
+
+- Nettoyage de la surface publique avant la version stable :
+  - suppression de `enable_https` (HTTPS 2004 toujours actif, seul port LAN
+    annoncé en mDNS) ;
+  - suppression de `auto_regenerate_legacy_ca` (une CA legacy ou invalide est
+    toujours régénérée) ;
+  - suppression de l'option interne morte `expose_admin_api` ;
+  - `debug_mode` ne fait plus que passer les journaux en `DEBUG` : debugpy, le
+    mode debug Flask et la dépendance `debugpy` sont retirés ;
+  - le mode d'intégrité MQTT `off` (non exposé dans le schéma) est retiré.
+- Traductions complétées pour `mqtt_integrity_mode` et texte mDNS corrigé.
+- Documentation entièrement revue (README, DOCS, TESTING, BUILDING, MRS100,
+  MODIFICATIONS) et notes de version consolidées dans `RELEASE_NOTES.md`.
+- En-têtes de modification Apache 2.0 ajoutés aux fichiers issus de l'upstream.
+
 ## 0.0.1-alpha105
 
 - Panneau web, page Journaux : les champs de recherche et de niveau passent à
@@ -420,6 +436,18 @@ Sécurité de l'API, des sessions et du broker MQTT.
 - Build only amd64 and aarch64; the 32-bit architectures are no longer supported by the builder.
 - Keep the Web UI build before the Docker image build.
 
+## 0.0.1-alpha54
+
+- Premier commit du fork MRS100.
+- Découverte du canal volet roulant (digest `System.All`, ability
+  `RollerShutter.State`, ou type MRS100).
+- Persistance de `Appliance.RollerShutter.Config` et réapplication après
+  reconnexion/`System.All`, comme le cloud Meross.
+- Cache de `RollerShutter.Position/State`, `RollerShutter.Adjust` et
+  `Appliance.System.Ability`.
+- `devList` expose l'ability et les métadonnées `rollerShutter`.
+- Corrections Python 3 (import `hashlib`, suppression d'`asyncore`).
+
 ## 0.0.1-alpha53
 
 - Fix the alpha52 startup crash by upgrading Flask to 3.1.3, Werkzeug to 3.1.8, and Flask-CORS to 6.0.5.
@@ -442,9 +470,6 @@ Sécurité de l'API, des sessions et du broker MQTT.
 - Dropped support for armhf platform
 - Improved s6 restart procedure
 - Updated dependency with meross_iot low level library
-
-## 0.0.1-alpha46
-
 - Add new endpoint to support latest version of MerossIot library version
 
 ## 0.0.1-alpha45

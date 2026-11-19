@@ -1,3 +1,5 @@
+# Modified or added for the MRS100 fork of ha-meross-local-broker (2026-11).
+# Upstream: https://github.com/albertogeniola/ha-meross-local-broker (Apache-2.0).
 # https://developers.home-assistant.io/docs/add-ons/repository#repository-configuration
 name: Meross Local Broker
 url: "https://github.com/mazkagaz/meross-local-broker"

@@ -1,3 +1,5 @@
+// Modified or added for the MRS100 fork of ha-meross-local-broker (2026-11).
+// Upstream: https://github.com/albertogeniola/ha-meross-local-broker (Apache-2.0).
 import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';

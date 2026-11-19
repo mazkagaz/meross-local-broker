@@ -34,13 +34,23 @@ et parfois mieux. Les retours de test sont précieux : ouvrez une
 modèle, le firmware et les fonctions qui marchent ou non. Les demandes
 d'intégration spécifique sont bienvenues.
 
+## Compatibilité des versions
+
+| Brique                         | Version minimale | Remarques                                       |
+| ------------------------------ | ---------------- | ----------------------------------------------- |
+| Broker                         | alpha99          | TLS/CA valide, HTTPS obligatoire côté LAN       |
+| Broker                         | alpha101         | publication `Appliance.Control.Unbind`          |
+| Broker                         | alpha104         | page Journaux du panneau web                    |
+| Intégration Meross Local Cloud | 2.3.2            | réconciliation des appareils et réparation 48 h |
+| Meross Local Pairer            | 2.0.8            | découverte et appairage HTTPS uniquement        |
+
 ## Ports
 
-| Port         | Usage                                     | Actif par défaut        |
-| ------------ | ----------------------------------------- | ----------------------- |
-| **2001/tcp** | MQTT/TLS (appareils)                      | oui                     |
-| **2003/tcp** | API HTTP **ingress Supervisor seulement** | oui                     |
-| **2004/tcp** | API HTTPS (TLS)                           | oui, via `enable_https` |
+| Port         | Usage                                     | Actif par défaut |
+| ------------ | ----------------------------------------- | ---------------- |
+| **2001/tcp** | MQTT/TLS (appareils)                      | oui              |
+| **2003/tcp** | API HTTP **ingress Supervisor seulement** | oui              |
+| **2004/tcp** | API HTTPS (TLS)                           | oui              |
 
 Le port **2003** n'est plus accessible depuis le LAN : il sert uniquement à
 l'**ingress Home Assistant** (panneau web et administration via le Supervisor).
@@ -48,8 +58,8 @@ Les clients LAN (intégration HA, pairer) utilisent exclusivement **HTTPS 2004**
 
 L'API d'administration (renommage/suppression depuis le panneau web, services,
 journaux) n'est accessible qu'à travers l'**ingress Home Assistant**, avec
-l'identité de l'utilisateur HA. Aucun port de débogage n'est publié : en
-`debug_mode`, debugpy écoute uniquement sur `127.0.0.1` dans le conteneur.
+l'identité de l'utilisateur HA. Aucun port de débogage n'est publié : le mode
+`debug_mode` ne fait qu'activer les journaux détaillés.
 
 ## Avant de commencer
 
@@ -118,19 +128,22 @@ Suivre la procédure de
 L'intégration s'installe avec **HACS**, puis se configure avec le compte local
 du broker.
 
-Champs usuels :
+Le formulaire demande l'adresse du broker (sans `https://`), les ports HTTPS et
+MQTT, puis le compte local. Les ports sont préremplis par la découverte mDNS.
 
-| Champ             | Valeur                                           |
-| ----------------- | ------------------------------------------------ |
-| HTTP API Endpoint | `https://homeassistant.local:2004` (obligatoire) |
-| MQTT Address      | `homeassistant.local:2001`                       |
-| Local login       | le compte local, par exemple `meross-local`      |
-| Password          | le mot de passe local                            |
+| Champ             | Valeur usuelle                                  |
+| ----------------- | ----------------------------------------------- |
+| Adresse du broker | `homeassistant.local` ou l'IP de Home Assistant |
+| Port HTTPS        | `2004`                                          |
+| Port MQTT         | `2001`                                          |
+| Identifiant local | le compte local, par exemple `meross-local`     |
+| Mot de passe      | le mot de passe local                           |
+| Code MFA          | seulement si le compte local l'exige            |
 
 Le broker doit être en **alpha99 ou plus récent** : l'intégration récupère et
 épingle sa CA (`/ca.crt`). Les options « ignorer la validation » n'existent plus.
-
-Si `homeassistant.local` ne répond pas, utiliser l'adresse IP de Home Assistant.
+Les options de l'intégration (mode de communication, User-Agent) vivent dans
+**Paramètres → Appareils et services → Meross Local Cloud → Configurer**.
 
 ### TLS
 
@@ -140,23 +153,22 @@ autorité de certification locale (`/data/mqtt/certs`). Cette CA est valide
 en HTTP simple mais **réservé à l'ingress du Supervisor** ; le LAN passe par
 HTTPS 2004.
 
-L'option **`enable_https`** (activée par défaut) contrôle le listener 2004.
-La désactiver laisse MQTT/TLS sur 2001 et l'ingress sur 2003, mais **aucun
-client LAN ne peut plus se connecter** (intégration et pairer exigent HTTPS).
+HTTPS est **toujours actif** : l'intégration et le pairer refusent le HTTP en
+clair, et le port 2003 n'est joignable que par l'ingress du Supervisor. Une CA
+locale invalide (créée avant alpha99) est régénérée automatiquement au
+démarrage, avec sauvegarde dans `/data/mqtt/certs.bak-*`.
 
 Les publications des appareils sont contrôlées (signature, fraîcheur,
 anti-rejeu) et chaque appareil ne peut utiliser que ses propres topics.
 L'option **`mqtt_integrity_mode`** vaut `observe` par défaut (écarts
 journalisés) ; passer à `enforce` après une période de vérification.
 
-Le certificat du serveur est auto-signé. Deux options :
-
-- **valider le certificat** : récupérer la CA sur
-  `https://homeassistant.local:2004/ca.crt`, comparer son empreinte avec
-  celle du fichier `/data/mqtt/certs/ca.crt`, puis l'importer côté client.
-  Depuis **alpha99**, la CA est valide (`CA:TRUE`) et le certificat serveur
-  contient les adresses IPv4 LAN : l'intégration et le pairer vérifient la
-  chaîne. Les options « ignorer la validation » ont été supprimées.
+Le certificat du serveur est auto-signé par la CA locale. Pour le valider côté
+client, récupérer la CA sur `https://homeassistant.local:2004/ca.crt`,
+comparer son empreinte avec celle du fichier `/data/mqtt/certs/ca.crt`, puis
+l'importer. Depuis **alpha99**, la CA est valide (`CA:TRUE`) et le certificat
+serveur contient les adresses IPv4 LAN : l'intégration et le pairer vérifient
+la chaîne. Les options « ignorer la validation » ont été supprimées.
 
 ### 5. Vérifier
 
@@ -199,6 +211,28 @@ supprime les entités côté Home Assistant. Cette publication a lieu au plus ta
 l'agent) : c'est le délai normal pendant lequel les entités peuvent encore
 apparaître.
 
+Avec l'intégration **2.3.2 ou plus récente** :
+
+- un Unbind reçu sur un appareil actif supprime immédiatement son entrée
+  d'appareil et ses entités dans Home Assistant ;
+- un appareil resté dans le registre HA sans être revu par le broker est
+  détecté au démarrage ; après **48 heures** d'absence, une réparation
+  « Appareil plus appairé » propose de le supprimer ;
+- si l'appareil revient avant, la réparation disparaît d'elle-même.
+
+## Options
+
+Les options se règlent dans **Paramètres → Applications → Meross Local Broker →
+Configuration**. Le détail figure dans [DOCS.md](meross_local_broker/DOCS.md).
+
+| Option                | Défaut    | Rôle                                                      |
+| --------------------- | --------- | --------------------------------------------------------- |
+| `advertise`           | `true`    | publication mDNS du broker et de l'API HTTPS              |
+| `debug_mode`          | `false`   | journaux détaillés                                        |
+| `device_timezone`     | vide      | fuseau (+ DST) poussé aux appareils ; vide = fuseau HA    |
+| `mqtt_integrity_mode` | `observe` | contrôle signature/fraîcheur/anti-rejeu des publications  |
+| `reinit_db`           | `false`   | efface compte local et appareils au démarrage (dépannage) |
+
 ## Journaux
 
 Le panneau du broker affiche quatre diodes, une par service. Cliquer sur une
@@ -221,14 +255,18 @@ appareils. Laisser vide pour utiliser le fuseau de Home Assistant.
 | Aucun appareil dans l'add-on        | appairage Wi-Fi AP ou Bluetooth LE, port MQTT 2001, Wi-Fi 2,4 GHz WPA2   |
 | L'intégration ne voit pas le broker | adresse HTTPS 2004, compte local, broker alpha99+                        |
 | Entités absentes                    | appareil ONLINE dans l'add-on, puis redémarrer l'intégration             |
+| Entités fantômes après un oubli     | intégration 2.3.2+, attendre la réparation 48 h ou supprimer l'appareil  |
 | Durées non conservées               | logs `Stored roller-shutter config` / `Re-applied roller-shutter config` |
 | Appareil déjà lié au cloud Meross   | réinitialiser l'appareil avant l'appairage local                         |
 
 ## Documentation technique
 
-- [MRS100.md](MRS100.md) — détails du support MRS100.
+- [MRS100.md](MRS100.md) — support MRS100 : entités, calibration, limites.
 - [TESTING.md](TESTING.md) — tests unitaires et checklist matérielle.
 - [BUILDING.md](BUILDING.md) — construction de l'image et publication.
+- [RELEASE_NOTES.md](RELEASE_NOTES.md) — évolutions depuis le fork et notes de
+  version stable.
+- [MRS100_PATCH.md](MRS100_PATCH.md) — archive technique du patch initial.
 
 ## Origine et licence
 

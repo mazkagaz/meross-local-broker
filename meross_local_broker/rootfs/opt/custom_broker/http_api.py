@@ -1,3 +1,5 @@
+# Modified or added for the MRS100 fork of ha-meross-local-broker (2026-11).
+# Upstream: https://github.com/albertogeniola/ha-meross-local-broker (Apache-2.0).
 import logging
 from os import getenv
 
@@ -119,13 +121,3 @@ def handle_http_exception(e):
     """HTTP API exception handler"""
     _LOGGER.error("HttpApiError: %s", e.error_code.name)
     return make_api_response(data=None, info=e.error_code.name, api_status=e.error_code)
-
-
-if __name__ == '__main__':
-    debug_env = getenv("ENABLE_DEBUG", None)
-    enable_debug = debug_env.lower() == "true"
-
-    # Bind to localhost, as the traffic is "routed" throughout a front-facing
-    # reverse proxy, which filters the inboud traffic.
-    app.run(port=2002, host="127.0.0.1", debug=enable_debug,
-            use_debugger=False, use_reloader=enable_debug)

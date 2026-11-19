@@ -3,23 +3,11 @@ source /opt/utils/bashutils.sh
 
 ADVERTISE=$(get_option 'advertise' 'false')
 if [[ $ADVERTISE == "true" ]]; then
-    # Advertising api_port service:
+    # Advertise the HTTPS listener: HTTP on the ingress port is restricted to
+    # the Supervisor and cannot be reached by phones on the LAN.
     bashio::log.info "Advertising the Meross API service"
-    api_port=$(bashio::app.ingress_port)
-    api_port=${api_port:-"2003"}
-
-    # Publish the address phones can actually reach. HTTP on the ingress port
-    # is restricted to the Supervisor; LAN clients must use HTTPS.
-    enable_https=$(get_option 'enable_https' 'true')
-    https_port=0
-    if [[ $enable_https == "true" ]]; then
-        https_port=$(bashio::app.port 2004)
-        https_port=${https_port:-"2004"}
-    fi
-    advertised_port=$api_port
-    if [[ $https_port -gt 0 ]]; then
-        advertised_port=$https_port
-    fi
+    https_port=$(bashio::app.port 2004)
+    https_port=${https_port:-"2004"}
     host_err=$(mktemp)
     host_ips=$(python3 /opt/custom_broker/supervisor_network.py 2>"$host_err" || true)
 
@@ -33,8 +21,8 @@ if [[ $ADVERTISE == "true" ]]; then
         fi
     fi
     rm -f "$host_err"
-    bashio::log.info "API mDNS: service_port=$advertised_port https_port=$https_port host=$host_ips (HTTP $api_port is ingress-only)"
-    /opt/custom_broker/mdns_register.py register meross_local_api meross_local_api _meross-api._tcp $advertised_port --update-if-present --set "${txt_args[@]}"
+    bashio::log.info "API mDNS: service_port=$https_port https_port=$https_port host=$host_ips"
+    /opt/custom_broker/mdns_register.py register meross_local_api meross_local_api _meross-api._tcp $https_port --update-if-present --set "${txt_args[@]}"
 else
     bashio::log.warning "Advertising disabled. The Meross API service won't be advertised via MDNS."
 fi

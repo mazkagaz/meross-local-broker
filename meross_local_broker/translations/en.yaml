@@ -7,15 +7,9 @@ configuration:
   advertise:
     name: Advertise the local API
     description: >-
-      Announce the MQTT broker and the HTTP/HTTPS API over mDNS so Meross Local
+      Announce the MQTT broker and the HTTPS API over mDNS so Meross Local
       Pairer can discover Home Assistant automatically. Disable only when mDNS
       is unavailable on your network.
-  enable_https:
-    name: Enable HTTPS
-    description: >-
-      Enable the HTTPS API listener on port 2004 with the local certificate
-      (recommended, enabled by default). MQTT/TLS on 2001 and the HTTP ingress
-      on 2003 are always available.
   debug_mode:
     name: Debug logging
     description: >-
@@ -25,3 +19,10 @@ configuration:
     description: >-
       Timezone pushed to paired devices, for example Europe/Paris. Leave empty
       to use the Home Assistant timezone.
+  mqtt_integrity_mode:
+    name: MQTT message integrity
+    description: >-
+      Check device publications for a valid signature, a fresh timestamp and
+      replays. "observe" logs mismatches and keeps processing messages;
+      "enforce" rejects invalid ones. Keep "observe" until device logs are
+      clean, then switch to "enforce".

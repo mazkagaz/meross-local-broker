@@ -1,4 +1,8 @@
-# MRS100 fork
+# MRS100 fork — historical patch notes
+
+> **Archive.** These notes describe the initial patch. User documentation is in
+> [MRS100.md](MRS100.md); the consolidated changes are in
+> [RELEASE_NOTES.md](RELEASE_NOTES.md).
 
 This is an Apache-2.0 fork of `albertogeniola/ha-meross-local-broker` with a
 narrow MRS100/roller-shutter patch:

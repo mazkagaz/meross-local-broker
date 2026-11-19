@@ -1,3 +1,5 @@
+# Modified or added for the MRS100 fork of ha-meross-local-broker (2026-11).
+# Upstream: https://github.com/albertogeniola/ha-meross-local-broker (Apache-2.0).
 """Tests for $SYS/client-disconnections handling after a device forget.
 
 Run with: python3 -m unittest test_broker_agent_disconnect

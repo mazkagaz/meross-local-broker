@@ -1,3 +1,5 @@
+# Modified or added for the MRS100 fork of ha-meross-local-broker (2026-11).
+# Upstream: https://github.com/albertogeniola/ha-meross-local-broker (Apache-2.0).
 """Tests for device MQTT signature, freshness and replay checks."""
 from hashlib import md5
 import unittest

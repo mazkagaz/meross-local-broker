@@ -531,8 +531,6 @@ class Broker:
         self._cover_config_reapply_ts[device_uuid] = now
 
     def _check_device_message_integrity(self, device_uuid: str, payload: dict) -> bool:
-        if mqtt_integrity.MODE == "off":
-            return True
         owner = dbhelper.find_user_owner_by_device_uuid(device_uuid)
         if owner is None:
             ok, reason = False, "unknown_device"

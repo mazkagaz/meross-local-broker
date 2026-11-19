@@ -1,4 +1,6 @@
 #!/usr/bin/with-contenv bashio
+# Modified or added for the MRS100 fork of ha-meross-local-broker (2026-11).
+# Upstream: https://github.com/albertogeniola/ha-meross-local-broker (Apache-2.0).
 # ==============================================================================
 # Configures Meross service
 # ==============================================================================
@@ -18,8 +20,6 @@ MOSQUITTO_LOG_DIR_PATH=/var/log/mosquitto
 bashio::log.info "Checking for TLS certificates..."
 mkdir -p "$CERTS_FOLDER"
 
-AUTO_REGENERATE=$(get_option 'auto_regenerate_legacy_ca' 'true')
-
 # ------------------------------------------------------------------------------
 # Decide whether the CA must be (re)generated.
 # Legacy brokers created a CA without basicConstraints=CA:TRUE, which makes
@@ -29,12 +29,8 @@ GEN_CA=false
 if [[ ! -f "$CA_KEY_PATH" || ! -f "$CA_CRT_PATH" ]]; then
     GEN_CA=true
 elif ! openssl x509 -in "$CA_CRT_PATH" -noout -text 2>/dev/null | grep -q "CA:TRUE"; then
-    if [[ "$AUTO_REGENERATE" == "true" ]]; then
-        bashio::log.warning "Legacy TLS CA detected (missing CA:TRUE). Regenerating."
-        GEN_CA=true
-    else
-        bashio::log.warning "Legacy TLS CA detected but auto_regenerate_legacy_ca is disabled."
-    fi
+    bashio::log.warning "Legacy TLS CA detected (missing CA:TRUE). Regenerating."
+    GEN_CA=true
 elif ! openssl x509 -checkend 2592000 -noout -in "$CA_CRT_PATH" >/dev/null 2>&1; then
     bashio::log.warning "TLS CA expires within 30 days. Regenerating."
     GEN_CA=true
