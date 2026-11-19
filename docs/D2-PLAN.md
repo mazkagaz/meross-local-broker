@@ -1,6 +1,6 @@
 # D2 — Schéma 2 et moteur de profils
 
-**Statut** : décisions actées ; D2.1, D2.2.1, D2.2.2 et D2.2.3 faits
+**Statut** : décisions actées ; D2.1 et D2.2.1 à D2.2.4 faits
 (détail : [D2.2-PLAN.md](D2.2-PLAN.md)).
 **Prérequis** : D1 terminé (broker 1.1.3, intégration 2.4.4/2.4.5).
 
