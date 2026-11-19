@@ -1,7 +1,7 @@
 # D0 — Architecture cible : tout local, profils déclaratifs
 
 **Statut** : décisions validées le 2026-11-19 ; **D1 terminé et validé** ;
-schéma v0 à étendre en D2 (plateformes, hubs, polling).
+**schéma 2 rédigé** (voir [D2-PLAN.md](D2-PLAN.md)).
 **Portée** : broker, intégration Home Assistant, pairer.
 
 ## Contexte
@@ -137,9 +137,14 @@ Appareil ──MQTT/TLS──> Broker ──profils/révisions──> Intégrati
   logs DEBUG obfusqués. Capteur `Broker profile backend` = `connected`.
 - D2, D2b, D3, D4, D5, D5.1 : à venir.
 
-### D2 — Moteur de profils, schéma étendu
+### D2 — Moteur de profils, schéma 2
 
-- Schéma v0 étendu :
+- **Schéma 2** : évolution additive uniquement ; seuls les changements
+  incompatibles incrémentent `schema_version`. Voir [D2-PLAN.md](D2-PLAN.md).
+- **Schéma hybride** : tronc commun + sous-schémas stricts pour les plateformes
+  complexes ; `state`/`commands` pour les simples.
+- **Hubs** : un profil hub avec templates de sous-appareils (`via_device`).
+- Contenu :
   - plateformes manquantes : `climate`, `fan`, `humidifier`, `calendar`,
     `media_player`, `siren`, `update` ;
   - **hubs et sous-appareils** : identité, `via_device`, entités par
@@ -150,11 +155,14 @@ Appareil ──MQTT/TLS──> Broker ──profils/révisions──> Intégrati
 - Moteur : registre, fusion catalogue/surcharges, validation, révision.
 - Tout accès au catalogue vendorisé (`devices.json`, `descriptor.parameters`)
   se fait hors boucle événementielle, via l’exécuteur Home Assistant.
-- **P3** (config volet depuis le broker/cache, sans GET) est traité ici.
+- **P3** (config volet via un endpoint broker dédié et un cache, sans GET par
+  entité) est traité ici.
 
-### D2b — Parité du catalogue d’appareils
+### D2b — Parité du catalogue d’appareils (parallèle borné)
 
-- Porter en profils les types local-MQTT couverts par meross_lan : prises,
+- Pilote démarré pendant D2 : hub + sous-appareils, thermostat, éclairage/
+  ventilateur ; gel du schéma après deux pilotes sans changement.
+- Puis porter en profils les types local-MQTT couverts par meross_lan : prises,
   éclairages, volets, hubs et sous-appareils, thermostats, capteurs,
   humidificateurs, etc.
 - Les types liés au cloud, au Bluetooth de l’intégration ou au HTTP direct

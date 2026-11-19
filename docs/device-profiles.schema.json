@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/mazkagaz/meross-local-broker/docs/device-profiles.schema.json",
-  "title": "Meross Local device profile (v0)",
-  "description": "Declarative description of a Meross device: identity, payloads, entities and typed quirks. Data only: never executed.",
+  "title": "Meross Local device profile (v2)",
+  "description": "Declarative description of a Meross device: identity, payloads, entities, polling and typed quirks. Data only: never executed. Evolution policy: additive optional fields keep the major version; only breaking changes increment schema_version. Profiles may declare schema_version 1 or 2; the engine applies defaults. Unknown x-* keys are preserved; unknown core keys are rejected.",
   "type": "object",
   "required": ["schema_version", "profile", "match", "entities"],
   "additionalProperties": false,
@@ -11,7 +11,7 @@
   },
   "properties": {
     "schema_version": {
-      "const": 1
+      "enum": [1, 2]
     },
     "profile": {
       "type": "object",
@@ -30,13 +30,34 @@
         },
         "requires_engine": {
           "type": "string",
-          "description": "Minimum engine version, e.g. '>=1.1'."
+          "description": "Minimum engine version, e.g. '>=2.0'."
         },
         "description": {
           "type": "string"
         }
       }
     },
+    "match": {
+      "$ref": "#/$defs/match"
+    },
+    "payloads": {
+      "$ref": "#/$defs/payloads"
+    },
+    "entities": {
+      "$ref": "#/$defs/entities"
+    },
+    "subdevices": {
+      "type": "array",
+      "description": "Hub templates: each match selects a subdevice type and compiles its own entities.",
+      "items": {
+        "$ref": "#/$defs/subdevice"
+      }
+    },
+    "quirks": {
+      "$ref": "#/$defs/quirks"
+    }
+  },
+  "$defs": {
     "match": {
       "type": "object",
       "required": ["type"],
@@ -45,6 +66,10 @@
         "^x-": true
       },
       "properties": {
+        "kind": {
+          "enum": ["device", "hub", "any"],
+          "default": "device"
+        },
         "type": {
           "type": "array",
           "minItems": 1,
@@ -68,6 +93,9 @@
         "abilities": {
           "type": "object",
           "additionalProperties": false,
+          "patternProperties": {
+            "^x-": true
+          },
           "properties": {
             "all": {
               "type": "array",
@@ -85,52 +113,32 @@
         }
       }
     },
-    "payloads": {
+    "polling": {
       "type": "object",
-      "description": "Observed/supported namespaces and field descriptions.",
-      "additionalProperties": {
-        "type": "object",
-        "required": ["methods"],
-        "additionalProperties": false,
-        "patternProperties": {
-          "^x-": true
+      "description": "How the engine polls this namespace. Omitted fields use engine defaults.",
+      "additionalProperties": false,
+      "patternProperties": {
+        "^x-": true
+      },
+      "properties": {
+        "strategy": {
+          "type": "string",
+          "enum": ["default", "smart", "once", "chunked"]
         },
-        "properties": {
-          "methods": {
-            "type": "array",
-            "minItems": 1,
-            "items": {
-              "enum": ["GET", "SET", "GETACK", "SETACK", "PUSH", "ERROR"]
-            }
-          },
-          "digest": {
-            "type": "string",
-            "description": "Path of the digest document inside the payload, if any."
-          },
-          "fields": {
-            "type": "object",
-            "additionalProperties": {
-              "$ref": "#/$defs/field"
-            }
-          }
+        "period_s": {
+          "type": "number",
+          "minimum": 0
+        },
+        "push": {
+          "type": "boolean",
+          "description": "When true, MQTT pushes suppress periodic polling."
+        },
+        "response_size": {
+          "type": "integer",
+          "minimum": 0
         }
       }
     },
-    "entities": {
-      "type": "array",
-      "minItems": 1,
-      "items": {
-        "$ref": "#/$defs/entity"
-      }
-    },
-    "quirks": {
-      "type": "array",
-      "items": {
-        "$ref": "#/$defs/quirk"
-      }
-    }
-  },
-  "$defs": {
     "field": {
       "type": "object",
       "required": ["type"],
@@ -167,6 +175,72 @@
         }
       }
     },
+    "payloads": {
+      "type": "object",
+      "description": "Observed/supported namespaces and field descriptions.",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["methods"],
+        "additionalProperties": false,
+        "patternProperties": {
+          "^x-": true
+        },
+        "properties": {
+          "methods": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "enum": ["GET", "SET", "GETACK", "SETACK", "PUSH", "ERROR"]
+            }
+          },
+          "digest": {
+            "type": "string",
+            "description": "Path of the digest document inside the payload, if any."
+          },
+          "fields": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/$defs/field"
+            }
+          },
+          "polling": {
+            "$ref": "#/$defs/polling"
+          }
+        }
+      }
+    },
+    "entities": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/entity"
+      }
+    },
+    "subdevice": {
+      "type": "object",
+      "required": ["match", "entities"],
+      "additionalProperties": false,
+      "patternProperties": {
+        "^x-": true
+      },
+      "properties": {
+        "match": {
+          "$ref": "#/$defs/match"
+        },
+        "name": {
+          "type": "string"
+        },
+        "payloads": {
+          "$ref": "#/$defs/payloads"
+        },
+        "entities": {
+          "$ref": "#/$defs/entities"
+        },
+        "quirks": {
+          "$ref": "#/$defs/quirks"
+        }
+      }
+    },
     "quirk": {
       "type": "object",
       "required": ["name"],
@@ -182,6 +256,12 @@
         "params": {
           "type": "object"
         }
+      }
+    },
+    "quirks": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/quirk"
       }
     },
     "state": {
@@ -242,10 +322,73 @@
         }
       }
     },
-    "entity": {
+    "capabilities": {
+      "type": "object",
+      "description": "Optional structured capabilities for complex platforms. Extend additively.",
+      "additionalProperties": false,
+      "patternProperties": {
+        "^x-": true
+      },
+      "properties": {
+        "features": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "hvac_modes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "preset_modes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "fan_modes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "swing_modes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "min_temp": {
+          "type": "number"
+        },
+        "max_temp": {
+          "type": "number"
+        },
+        "temp_step": {
+          "type": "number"
+        },
+        "target_humidity": {
+          "type": "object"
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "tones": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "entity_base": {
       "type": "object",
       "required": ["key", "platform"],
-      "additionalProperties": false,
       "patternProperties": {
         "^x-": true
       },
@@ -255,16 +398,7 @@
           "pattern": "^[a-z0-9_]+$"
         },
         "platform": {
-          "enum": [
-            "cover",
-            "switch",
-            "light",
-            "sensor",
-            "binary_sensor",
-            "number",
-            "button",
-            "select"
-          ]
+          "type": "string"
         },
         "name": {
           "type": "string"
@@ -279,6 +413,10 @@
               "type": "string"
             }
           ]
+        },
+        "device": {
+          "enum": ["hub", "subdevice"],
+          "default": "hub"
         },
         "device_class": {
           "type": "string"
@@ -298,13 +436,156 @@
             "$ref": "#/$defs/command"
           }
         },
+        "capabilities": {
+          "$ref": "#/$defs/capabilities"
+        },
         "quirks": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/quirk"
-          }
+          "$ref": "#/$defs/quirks"
         }
       }
+    },
+    "entity_simple": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/entity_base"
+        }
+      ],
+      "unevaluatedProperties": false,
+      "properties": {
+        "platform": {
+          "enum": [
+            "cover",
+            "switch",
+            "light",
+            "sensor",
+            "binary_sensor",
+            "number",
+            "button",
+            "select"
+          ]
+        }
+      }
+    },
+    "entity_climate": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/entity_base"
+        }
+      ],
+      "unevaluatedProperties": false,
+      "properties": {
+        "platform": {
+          "const": "climate"
+        }
+      },
+      "required": ["capabilities"]
+    },
+    "entity_fan": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/entity_base"
+        }
+      ],
+      "unevaluatedProperties": false,
+      "properties": {
+        "platform": {
+          "const": "fan"
+        }
+      },
+      "required": ["capabilities"]
+    },
+    "entity_humidifier": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/entity_base"
+        }
+      ],
+      "unevaluatedProperties": false,
+      "properties": {
+        "platform": {
+          "const": "humidifier"
+        }
+      }
+    },
+    "entity_calendar": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/entity_base"
+        }
+      ],
+      "unevaluatedProperties": false,
+      "properties": {
+        "platform": {
+          "const": "calendar"
+        }
+      }
+    },
+    "entity_media_player": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/entity_base"
+        }
+      ],
+      "unevaluatedProperties": false,
+      "properties": {
+        "platform": {
+          "const": "media_player"
+        }
+      }
+    },
+    "entity_siren": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/entity_base"
+        }
+      ],
+      "unevaluatedProperties": false,
+      "properties": {
+        "platform": {
+          "const": "siren"
+        }
+      }
+    },
+    "entity_update": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/entity_base"
+        }
+      ],
+      "unevaluatedProperties": false,
+      "properties": {
+        "platform": {
+          "const": "update"
+        }
+      }
+    },
+    "entity": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/entity_simple"
+        },
+        {
+          "$ref": "#/$defs/entity_climate"
+        },
+        {
+          "$ref": "#/$defs/entity_fan"
+        },
+        {
+          "$ref": "#/$defs/entity_humidifier"
+        },
+        {
+          "$ref": "#/$defs/entity_calendar"
+        },
+        {
+          "$ref": "#/$defs/entity_media_player"
+        },
+        {
+          "$ref": "#/$defs/entity_siren"
+        },
+        {
+          "$ref": "#/$defs/entity_update"
+        }
+      ]
     }
   }
 }
