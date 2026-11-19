@@ -1,6 +1,7 @@
 # D0 — Architecture cible : tout local, profils déclaratifs
 
-**Statut** : décisions validées le 2026-11-19 ; schéma v0 à figer.
+**Statut** : décisions validées le 2026-11-19 ; **D1 terminé et validé** ;
+schéma v0 à étendre en D2 (plateformes, hubs, polling).
 **Portée** : broker, intégration Home Assistant, pairer.
 
 ## Contexte
@@ -129,14 +130,67 @@ Appareil ──MQTT/TLS──> Broker ──profils/révisions──> Intégrati
 
 ## Découpage suivant
 
-- D1 : adaptateur broker local (MQTT applicatif + descripteurs) et révision.
-- D2 : moteur de profils, registre, fusion et validation. Tout accès au
-  catalogue vendorisé (`devices.json`, `descriptor.parameters`) doit se faire
-  hors boucle événementielle, via l’exécuteur Home Assistant.
-- D3 : entités et migration des identités.
-- D4 : UX avancée (édition, capture, `update`) sans changer le parcours de base.
-- D5 : parité, trames dorées, suppression de `meross_iot`.
-- D5.1 : nettoyage des topics ACK (voir ci-dessous).
+### État d’avancement
+
+- **D1 : terminé et validé** (broker 1.1.3, intégration 2.4.4). Transport MQTT
+  applicatif, descripteurs, catalogue lisible, résolution des transactions,
+  logs DEBUG obfusqués. Capteur `Broker profile backend` = `connected`.
+- D2, D2b, D3, D4, D5, D5.1 : à venir.
+
+### D2 — Moteur de profils, schéma étendu
+
+- Schéma v0 étendu :
+  - plateformes manquantes : `climate`, `fan`, `humidifier`, `calendar`,
+    `media_player`, `siren`, `update` ;
+  - **hubs et sous-appareils** : identité, `via_device`, entités par
+    sous-appareil ;
+  - **polling par namespace** : stratégie (`default`, `smart`, `once`,
+    `chunked`), période, capacité PUSH, taille de réponse estimée ;
+  - capacités/quirks supplémentaires nécessaires au catalogue.
+- Moteur : registre, fusion catalogue/surcharges, validation, révision.
+- Tout accès au catalogue vendorisé (`devices.json`, `descriptor.parameters`)
+  se fait hors boucle événementielle, via l’exécuteur Home Assistant.
+- **P3** (config volet depuis le broker/cache, sans GET) est traité ici.
+
+### D2b — Parité du catalogue d’appareils
+
+- Porter en profils les types local-MQTT couverts par meross_lan : prises,
+  éclairages, volets, hubs et sous-appareils, thermostats, capteurs,
+  humidificateurs, etc.
+- Les types liés au cloud, au Bluetooth de l’intégration ou au HTTP direct
+  restent hors périmètre.
+- Critère de sortie : matrice de parité modèle ↔ entités, validée par trames
+  observées et tests.
+
+### D3 — Entités, scheduler et migration des identités
+
+- Scheduler **central par appareil** : une tâche, un verrou, `next_poll_epoch`.
+- **Namespace handlers** partagés entre entités, stratégies de polling de D2.
+- **Batching** `Appliance.Control.Multiple`, limites de taille de réponse,
+  file « lazy poll » et rate limiting configurable.
+- **Aucun `update_before_add`** : l’ajout d’une entité ne déclenche pas
+  `device.async_update()` ; suppression des doublons `Config`/`System.All`
+  constatés en série A/B. **P1** est ainsi couvert.
+- **P2** (coalescence des updates par appareil) si des bursts subsistent.
+- Entités : plateformes étendues, hubs/sous-appareils, restauration et
+  disponibilité ; `unique_id` existants conservés.
+
+### D4 — UX avancée sans changer le parcours de base
+
+- Édition des profils, surcharges, diff et rechargement à chaud.
+- Capture de trames et génération de brouillon.
+- Catalogue signé, entités `update` par appareil, capteur source/version.
+- Parcours guidé Supervisor et documentation HA Container/Core.
+
+### D5 — Parité, trames dorées, suppression de `meross_iot`
+
+- Tests de parité et trames dorées pour chaque profil livré.
+- Migration complète des commandes vers le socle vendorisé.
+- Suppression de `meross_iot`, des patches et des entités historiques.
+
+### D5.1 — Nettoyage des topics ACK
+
+Voir ci-dessous.
 
 ### Transition des topics ACK
 
