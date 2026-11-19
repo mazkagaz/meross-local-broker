@@ -1,3 +1,9 @@
+## 0.0.1-alpha105
+
+- Panneau web, page Journaux : les champs de recherche et de niveau passent à
+  gauche, juste après les boutons ; le compteur reste à droite. La barre
+  d'outils passe à la ligne au lieu de déborder sur les petits écrans.
+
 ## 0.0.1-alpha104
 
 - Panneau web : un clic sur une diode ouvre une page **Journaux** pleine page

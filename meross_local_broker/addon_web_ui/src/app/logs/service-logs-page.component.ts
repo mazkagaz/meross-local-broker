@@ -81,8 +81,6 @@ interface LogLine {
           <mat-icon>download</mat-icon>
         </button>
 
-        <span class="spacer"></span>
-
         <mat-form-field class="search" appearance="standard">
           <mat-label>Search</mat-label>
           <input matInput [(ngModel)]="searchText" (ngModelChange)="applyFilters()" aria-label="Search log lines" />
@@ -108,6 +106,8 @@ interface LogLine {
             <mat-option value="error">Error</mat-option>
           </mat-select>
         </mat-form-field>
+
+        <span class="spacer"></span>
 
         <span class="counter">{{ logLines.length }} / {{ totalCount }} lines</span>
         <span class="paused-label" *ngIf="paused">Paused</span>
@@ -165,8 +165,9 @@ interface LogLine {
 
       .toolbar {
         display: flex;
+        flex-wrap: wrap;
         align-items: center;
-        gap: 8px;
+        gap: 4px 8px;
         padding: 0 8px 4px;
       }
 
