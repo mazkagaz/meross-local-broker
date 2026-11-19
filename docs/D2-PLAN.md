@@ -1,6 +1,7 @@
 # D2 — Schéma 2 et moteur de profils
 
-**Statut** : décisions actées ; implémentation non commencée.
+**Statut** : décisions actées ; D2.1 et D2.2.1 faits ; D2.2.2 planifié
+(détail : [D2.2-PLAN.md](D2.2-PLAN.md)).
 **Prérequis** : D1 terminé (broker 1.1.3, intégration 2.4.4/2.4.5).
 
 ## Décisions
@@ -38,6 +39,11 @@
 - Fixtures de compatibilité : profils v1 (MRS100, mss310, msl120) et v2 pilote.
 
 ## D2.2 — Moteur (intégration)
+
+Plan détaillé, matrice de tests négatifs et critères de sortie :
+[D2.2-PLAN.md](D2.2-PLAN.md). Séquence : D2.2.1 registre (fait), D2.2.2
+chemins/matching/compilation simple, D2.2.3 hubs et plateformes complexes,
+D2.2.4 dispatch runtime, D2.2.5 interface P3.
 
 Modules prévus, sans détail d’implémentation :
 
