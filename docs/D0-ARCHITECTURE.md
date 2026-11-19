@@ -130,7 +130,9 @@ Appareil ──MQTT/TLS──> Broker ──profils/révisions──> Intégrati
 ## Découpage suivant
 
 - D1 : adaptateur broker local (MQTT applicatif + descripteurs) et révision.
-- D2 : moteur de profils, registre, fusion et validation.
+- D2 : moteur de profils, registre, fusion et validation. Tout accès au
+  catalogue vendorisé (`devices.json`, `descriptor.parameters`) doit se faire
+  hors boucle événementielle, via l’exécuteur Home Assistant.
 - D3 : entités et migration des identités.
 - D4 : UX avancée (édition, capture, `update`) sans changer le parcours de base.
 - D5 : parité, trames dorées, suppression de `meross_iot`.
