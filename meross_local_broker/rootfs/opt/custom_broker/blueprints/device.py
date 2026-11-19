@@ -25,6 +25,21 @@ def _json_or_none(value):
         return None
 
 
+def roller_shutter_payload(device):
+    """Return the persisted roller-shutter state for one device, or None."""
+    configs = dbhelper.get_roller_shutter_configs(device.uuid)
+    statuses = dbhelper.get_roller_shutter_statuses(device.uuid)
+    adjusts = dbhelper.get_roller_shutter_adjusts(device.uuid)
+    if not (configs or statuses or adjusts):
+        return None
+    return {
+        'config': [_json_or_none(c.payload_json) for c in configs],
+        'position': [{'channel': p.channel, 'position': p.position,
+                      'state': p.state} for p in statuses],
+        'adjust': [_json_or_none(a.payload_json) for a in adjusts],
+    }
+
+
 def serialize_device_metadata(device):
     """Attach ability and roller-shutter metadata to a serialized device.
 
@@ -38,17 +53,9 @@ def serialize_device_metadata(device):
         parsed = _json_or_none(ability.ability_json)
         if parsed is not None:
             item['ability'] = parsed
-
-    configs = dbhelper.get_roller_shutter_configs(device.uuid)
-    statuses = dbhelper.get_roller_shutter_statuses(device.uuid)
-    adjusts = dbhelper.get_roller_shutter_adjusts(device.uuid)
-    if configs or statuses or adjusts:
-        item['rollerShutter'] = {
-            'config': [_json_or_none(c.payload_json) for c in configs],
-            'position': [{'channel': p.channel, 'position': p.position,
-                          'state': p.state} for p in statuses],
-            'adjust': [_json_or_none(a.payload_json) for a in adjusts],
-        }
+    roller_shutter = roller_shutter_payload(device)
+    if roller_shutter is not None:
+        item['rollerShutter'] = roller_shutter
     return item
 
 
@@ -71,6 +78,18 @@ def profiles_revision(api_payload: Dict, *args, **kwargs):
 @meross_http_api(login_required=True)
 def profiles_catalog(api_payload: Dict, *args, **kwargs):
     return make_api_response(data=get_catalog().payload())
+
+
+@device_blueprint.route('/rollerShutterConfig', methods=['POST'])
+@meross_http_api(login_required=True)
+def roller_shutter_config(api_payload: Dict, *args, **kwargs):
+    """Return persisted roller-shutter state for the caller's devices."""
+    data = {}
+    for device in g.user.owned_devices:
+        payload = roller_shutter_payload(device)
+        if payload is not None:
+            data[device.uuid] = payload
+    return make_api_response(data=data)
 
 
 @device_blueprint.route('/delete', methods=['POST'])

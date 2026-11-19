@@ -327,6 +327,52 @@ class HttpApiCompatibilityTest(unittest.TestCase):
         for item in result['profiles']:
             self.assertEqual(item['source'], 'bundled')
 
+    def test_roller_shutter_config_requires_auth(self):
+        response = self.client.post(
+            '/v1/Device/rollerShutterConfig', json=self.envelope({}))
+
+        self.assertEqual(response.get_json()['info'], 'token_invalid')
+
+    def test_roller_shutter_config_is_scoped_to_the_account(self):
+        from db_helper import dbhelper
+        dbhelper.associate_user_device(
+            self.user.user_id, mac='AA:BB:CC:DD:EE:10',
+            uuid='shutter-1', device_client_id='client')
+        dbhelper.set_roller_shutter_config('shutter-1', {
+            'channel': 0, 'signalOpen': 45000, 'signalClose': 50000})
+        dbhelper.set_roller_shutter_status('shutter-1', {
+            'position': [{'channel': 0, 'position': 40, 'state': 1}]})
+        dbhelper.set_roller_shutter_adjust('shutter-1', {
+            'adjust': [{'channel': 0, 'value': 2}]})
+        dbhelper.associate_user_device(
+            self.user.user_id, mac='AA:BB:CC:DD:EE:11',
+            uuid='without-config', device_client_id='client')
+
+        other = dbhelper.add_update_user(
+            email='shutter-other@example.com', password='other-password',
+            user_id=2, user_key='ffeeddccbbaa99887766554433221100')
+        dbhelper.associate_user_device(
+            other.user_id, mac='AA:BB:CC:DD:EE:12',
+            uuid='other-shutter', device_client_id='client')
+        dbhelper.set_roller_shutter_config('other-shutter', {
+            'channel': 0, 'signalOpen': 1000, 'signalClose': 2000})
+
+        token = self.sign_in().get_json()['data']['token']
+        response = self.client.post(
+            '/v1/Device/rollerShutterConfig', json=self.envelope({}),
+            headers={'Authorization': f'Basic {token}'})
+
+        result = response.get_json()['data']
+        self.assertEqual(set(result), {'shutter-1'})
+        entry = result['shutter-1']
+        self.assertEqual(entry['config'][0]['channel'], 0)
+        self.assertEqual(entry['config'][0]['signalOpen'], 45000)
+        self.assertEqual(entry['position'],
+                         [{'channel': 0, 'position': 40, 'state': 1}])
+        self.assertEqual(entry['adjust'][0]['channel'], 0)
+        self.assertNotIn('other-shutter', result)
+        self.assertNotIn('without-config', result)
+
     def test_admin_can_forget_device(self):
         from db_helper import dbhelper
         dbhelper.associate_user_device(self.user.user_id, mac='AA:BB:CC:DD:EE:FF',
