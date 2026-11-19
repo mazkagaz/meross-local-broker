@@ -32,7 +32,7 @@ class ProfileCatalogTest(unittest.TestCase):
         catalog = ProfileCatalog(str(PROFILES))
 
         revision = catalog.revision_payload()
-        self.assertEqual(revision["schema_version"], 1)
+        self.assertEqual(revision["schema_version"], 2)
         self.assertEqual(revision["count"], 3)
         self.assertEqual(revision["errors"], 0)
 
@@ -58,6 +58,54 @@ class ProfileCatalogTest(unittest.TestCase):
         self.assertEqual(list(catalog.profiles), ["meross.mss310"])
         self.assertEqual(len(catalog.errors), 1)
         self.assertEqual(catalog.errors[0]["file"], "broken.yaml")
+
+    def test_extension_keys_survive_and_unknown_core_fields_are_rejected(self):
+        entity = {
+            "key": "state",
+            "platform": "sensor",
+            "state": {
+                "namespace": "Appliance.Control.ToggleX",
+                "fields": {"value": "onoff"},
+            },
+        }
+        good = {
+            "schema_version": 2,
+            "profile": {"id": "test.good", "version": "1"},
+            "match": {"type": ["test"]},
+            "payloads": {
+                "Appliance.Control.ToggleX": {"methods": ["GETACK"]},
+            },
+            "entities": [entity],
+            "x-vendor": {"source": "capture"},
+        }
+        bad = {
+            "schema_version": 2,
+            "profile": {"id": "test.bad", "version": "1"},
+            "match": {"type": ["test"]},
+            "payloads": {
+                "Appliance.Control.ToggleX": {"methods": ["GETACK"]},
+            },
+            "entities": [entity],
+            "surprise": 1,
+        }
+        with tempfile.TemporaryDirectory() as temporary:
+            directory = Path(temporary)
+            shutil.copy(PROFILES / "schema.json", directory / "schema.json")
+            (directory / "good.yaml").write_text(
+                json.dumps(good), encoding="utf-8")
+            (directory / "bad.yaml").write_text(
+                json.dumps(bad), encoding="utf-8")
+
+            catalog = ProfileCatalog(str(directory))
+            payload = catalog.payload()
+
+        self.assertEqual(list(catalog.profiles), ["test.good"])
+        self.assertEqual([error["file"] for error in catalog.errors],
+                         ["bad.yaml"])
+        served = next(item for item in payload["profiles"]
+                      if item["id"] == "test.good")
+        self.assertEqual(served["profile"]["x-vendor"],
+                         {"source": "capture"})
 
 
 if __name__ == "__main__":

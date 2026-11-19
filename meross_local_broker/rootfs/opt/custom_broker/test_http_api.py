@@ -311,7 +311,7 @@ class HttpApiCompatibilityTest(unittest.TestCase):
             headers={'Authorization': f'Basic {token}'})
         result = response.get_json()['data']
         self.assertEqual(response.get_json()['apiStatus'], 0)
-        self.assertEqual(result['schema_version'], 1)
+        self.assertEqual(result['schema_version'], 2)
         self.assertEqual(result['count'], 3)
         self.assertEqual(len(result['revision']), 64)
 

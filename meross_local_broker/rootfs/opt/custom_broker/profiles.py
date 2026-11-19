@@ -33,7 +33,7 @@ def _canonical(value: Any) -> bytes:
 
 
 class ProfileCatalog:
-    """Bundled profiles validated against the v0 JSON schema.
+    """Bundled profiles validated against the versioned JSON schema.
 
     An invalid profile is excluded and reported; it never prevents the broker
     from starting.
@@ -43,7 +43,7 @@ class ProfileCatalog:
         self.directory = directory or _DEFAULT_DIR
         self.profiles: Dict[str, Dict[str, Any]] = {}
         self.errors: List[Dict[str, str]] = []
-        self.schema_version = 1
+        self.schema_version = 2
         self.revision = ""
         self._load()
 

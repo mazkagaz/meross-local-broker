@@ -108,6 +108,63 @@ class ProfileLintTest(unittest.TestCase):
         errors, _ = self.lint(("hub.yaml", data))
         self.assertTrue(any("match.kind hub" in error for error in errors))
 
+    def test_unknown_core_field_is_rejected(self):
+        data = profile()
+        data["surprise"] = 1
+
+        errors, _ = self.lint(("a.yaml", data))
+
+        self.assertTrue(any("surprise" in error for error in errors))
+
+    def test_extension_keys_are_accepted(self):
+        data = profile()
+        data["x-vendor"] = {"source": "capture"}
+        data["match"]["x-note"] = "kept"
+        data["entities"][0]["x-note"] = "kept"
+
+        errors, warnings = self.lint(("a.yaml", data))
+
+        self.assertEqual(errors, [])
+        self.assertEqual(warnings, [])
+
+    def test_unknown_platform_is_rejected(self):
+        data = profile(entities=[{"key": "x", "platform": "toaster"}])
+
+        errors, _ = self.lint(("a.yaml", data))
+
+        self.assertTrue(errors)
+
+    def test_unknown_method_is_rejected(self):
+        data = profile(payloads={
+            "Appliance.Control.ToggleX": {
+                "methods": ["GETACK", "FUTURE"]},
+        })
+
+        errors, _ = self.lint(("a.yaml", data))
+
+        self.assertTrue(errors)
+
+    def test_climate_requires_capabilities(self):
+        without = profile(entities=[{
+            "key": "thermostat", "platform": "climate"}])
+        with_caps = profile(entities=[{
+            "key": "thermostat", "platform": "climate",
+            "capabilities": {"hvac_modes": ["off", "heat"]}}])
+
+        errors, _ = self.lint(("a.yaml", without))
+        self.assertTrue(errors)
+        errors, _ = self.lint(("b.yaml", with_caps))
+        self.assertEqual(errors, [])
+
+    def test_schema_versions_one_and_two_are_accepted(self):
+        for version in (1, 2):
+            data = profile()
+            data["schema_version"] = version
+
+            errors, _ = self.lint((f"v{version}.yaml", data))
+
+            self.assertEqual(errors, [])
+
     def test_schema_copies_are_identical(self):
         docs_schema = Path(__file__).resolve().parents[4] / "docs" / \
             "device-profiles.schema.json"
