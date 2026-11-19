@@ -300,6 +300,33 @@ class HttpApiCompatibilityTest(unittest.TestCase):
         self.assertEqual(len(devices), 1)
         self.assertIsInstance(devices[0]['bindTime'], int)
 
+    def test_profiles_revision_requires_auth_and_returns_bundled_revision(self):
+        response = self.client.post('/v1/Device/profiles/rev', json=self.envelope({}))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.get_json()['info'], 'token_invalid')
+
+        token = self.sign_in().get_json()['data']['token']
+        response = self.client.post(
+            '/v1/Device/profiles/rev', json=self.envelope({}),
+            headers={'Authorization': f'Basic {token}'})
+        result = response.get_json()['data']
+        self.assertEqual(response.get_json()['apiStatus'], 0)
+        self.assertEqual(result['schema_version'], 1)
+        self.assertEqual(result['count'], 3)
+        self.assertEqual(len(result['revision']), 64)
+
+    def test_profiles_catalog_is_served(self):
+        token = self.sign_in().get_json()['data']['token']
+        response = self.client.post(
+            '/v1/Device/profiles', json=self.envelope({}),
+            headers={'Authorization': f'Basic {token}'})
+        result = response.get_json()['data']
+        self.assertEqual(response.get_json()['apiStatus'], 0)
+        ids = sorted(item['id'] for item in result['profiles'])
+        self.assertEqual(ids, ['meross.mrs100', 'meross.msl120', 'meross.mss310'])
+        for item in result['profiles']:
+            self.assertEqual(item['source'], 'bundled')
+
     def test_admin_can_forget_device(self):
         from db_helper import dbhelper
         dbhelper.associate_user_device(self.user.user_id, mac='AA:BB:CC:DD:EE:FF',

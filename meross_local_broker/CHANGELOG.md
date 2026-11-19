@@ -1,3 +1,14 @@
+## 1.1.0
+
+- Catalogue de profils d'appareils (lecture seule) : profils livrés MRS100,
+  mss310 et msl120, validation JSON Schema au démarrage, révision SHA-256
+  stable. Un profil invalide est exclu sans bloquer l'add-on.
+- Nouvelles routes signées `POST /v1/Device/profiles/rev` et
+  `POST /v1/Device/profiles`.
+- Dépendances épinglées `PyYAML==6.0.2` et `jsonschema==4.23.0`.
+- Documentation et messages alignés sur la version stable 1.0.0 ; version
+  locale du panneau web alignée (le CI la reprend de `config.yaml`).
+
 ## 1.0.0
 
 Première version stable du fork. Les évolutions depuis le fork, les

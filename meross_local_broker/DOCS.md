@@ -116,14 +116,14 @@ disparaît sans Unbind est proposé à la suppression après 48 heures.
 
 ## Dépannage
 
-| Problème                  | Vérifier                                                     |
-| ------------------------- | ------------------------------------------------------------ |
-| L'appareil n'apparaît pas | appairage effectué, Wi-Fi 2,4 GHz WPA2, port 2001            |
-| Authentification refusée  | identifiants du compte local, `UserId`/`mqttKey`             |
-| Entités absentes dans HA  | intégration configurée avec le compte local, broker alpha99+ |
-| Entités fantômes          | intégration 2.3.2+, réparation 48 h ou suppression manuelle  |
-| Consommation à zéro       | `device_timezone` renseigné ou fuseau HA correct             |
-| Durées MRS100 perdues     | logs `Stored` / `Re-applied`, reconnexion de l'appareil      |
+| Problème                  | Vérifier                                                    |
+| ------------------------- | ----------------------------------------------------------- |
+| L'appareil n'apparaît pas | appairage effectué, Wi-Fi 2,4 GHz WPA2, port 2001           |
+| Authentification refusée  | identifiants du compte local, `UserId`/`mqttKey`            |
+| Entités absentes dans HA  | intégration configurée avec le compte local, broker 1.0.0+  |
+| Entités fantômes          | intégration 2.3.2+, réparation 48 h ou suppression manuelle |
+| Consommation à zéro       | `device_timezone` renseigné ou fuseau HA correct            |
+| Durées MRS100 perdues     | logs `Stored` / `Re-applied`, reconnexion de l'appareil     |
 
 ## Licence
 

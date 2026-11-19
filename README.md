@@ -36,13 +36,11 @@ d'intégration spécifique sont bienvenues.
 
 ## Compatibilité des versions
 
-| Brique                         | Version minimale | Remarques                                       |
-| ------------------------------ | ---------------- | ----------------------------------------------- |
-| Broker                         | alpha99          | TLS/CA valide, HTTPS obligatoire côté LAN       |
-| Broker                         | alpha101         | publication `Appliance.Control.Unbind`          |
-| Broker                         | alpha104         | page Journaux du panneau web                    |
-| Intégration Meross Local Cloud | 2.3.2            | réconciliation des appareils et réparation 48 h |
-| Meross Local Pairer            | 2.0.8            | découverte et appairage HTTPS uniquement        |
+| Brique                         | Version minimale | Remarques                                          |
+| ------------------------------ | ---------------- | -------------------------------------------------- |
+| Broker                         | 1.0.0            | TLS/CA valide, HTTPS obligatoire, Unbind, journaux |
+| Intégration Meross Local Cloud | 2.3.2            | réconciliation des appareils et réparation 48 h    |
+| Meross Local Pairer            | 2.0.8            | découverte et appairage HTTPS uniquement           |
 
 ## Ports
 
@@ -140,7 +138,7 @@ MQTT, puis le compte local. Les ports sont préremplis par la découverte mDNS.
 | Mot de passe      | le mot de passe local                           |
 | Code MFA          | seulement si le compte local l'exige            |
 
-Le broker doit être en **alpha99 ou plus récent** : l'intégration récupère et
+Le broker doit être en **1.0.0 ou plus récent** : l'intégration récupère et
 épingle sa CA (`/ca.crt`). Les options « ignorer la validation » n'existent plus.
 Les options de l'intégration (mode de communication, User-Agent) vivent dans
 **Paramètres → Appareils et services → Meross Local Cloud → Configurer**.
@@ -155,7 +153,7 @@ HTTPS 2004.
 
 HTTPS est **toujours actif** : l'intégration et le pairer refusent le HTTP en
 clair, et le port 2003 n'est joignable que par l'ingress du Supervisor. Une CA
-locale invalide (créée avant alpha99) est régénérée automatiquement au
+locale invalide (créée avant 1.0.0) est régénérée automatiquement au
 démarrage, avec sauvegarde dans `/data/mqtt/certs.bak-*`.
 
 Les publications des appareils sont contrôlées (signature, fraîcheur,
@@ -166,7 +164,7 @@ journalisés) ; passer à `enforce` après une période de vérification.
 Le certificat du serveur est auto-signé par la CA locale. Pour le valider côté
 client, récupérer la CA sur `https://homeassistant.local:2004/ca.crt`,
 comparer son empreinte avec celle du fichier `/data/mqtt/certs/ca.crt`, puis
-l'importer. Depuis **alpha99**, la CA est valide (`CA:TRUE`) et le certificat
+l'importer. Depuis **1.0.0**, la CA est valide (`CA:TRUE`) et le certificat
 serveur contient les adresses IPv4 LAN : l'intégration et le pairer vérifient
 la chaîne. Les options « ignorer la validation » ont été supprimées.
 
@@ -253,7 +251,7 @@ appareils. Laisser vide pour utiliser le fuseau de Home Assistant.
 | ----------------------------------- | ------------------------------------------------------------------------ |
 | L'add-on ne démarre pas             | architecture amd64/aarch64, logs du Supervisor, image GHCR publique      |
 | Aucun appareil dans l'add-on        | appairage Wi-Fi AP ou Bluetooth LE, port MQTT 2001, Wi-Fi 2,4 GHz WPA2   |
-| L'intégration ne voit pas le broker | adresse HTTPS 2004, compte local, broker alpha99+                        |
+| L'intégration ne voit pas le broker | adresse HTTPS 2004, compte local, broker 1.0.0+                          |
 | Entités absentes                    | appareil ONLINE dans l'add-on, puis redémarrer l'intégration             |
 | Entités fantômes après un oubli     | intégration 2.3.2+, attendre la réparation 48 h ou supprimer l'appareil  |
 | Durées non conservées               | logs `Stored roller-shutter config` / `Re-applied roller-shutter config` |

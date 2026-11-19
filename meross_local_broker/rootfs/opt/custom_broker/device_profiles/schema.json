@@ -1,0 +1,310 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/mazkagaz/meross-local-broker/docs/device-profiles.schema.json",
+  "title": "Meross Local device profile (v0)",
+  "description": "Declarative description of a Meross device: identity, payloads, entities and typed quirks. Data only: never executed.",
+  "type": "object",
+  "required": ["schema_version", "profile", "match", "entities"],
+  "additionalProperties": false,
+  "patternProperties": {
+    "^x-": true
+  },
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "profile": {
+      "type": "object",
+      "required": ["id", "version"],
+      "additionalProperties": false,
+      "patternProperties": {
+        "^x-": true
+      },
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9._-]*$"
+        },
+        "version": {
+          "type": "string"
+        },
+        "requires_engine": {
+          "type": "string",
+          "description": "Minimum engine version, e.g. '>=1.1'."
+        },
+        "description": {
+          "type": "string"
+        }
+      }
+    },
+    "match": {
+      "type": "object",
+      "required": ["type"],
+      "additionalProperties": false,
+      "patternProperties": {
+        "^x-": true
+      },
+      "properties": {
+        "type": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          }
+        },
+        "sub_type": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "mac_prefix": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[0-9A-Fa-f]{2}([0-9A-Fa-f]{2})*$"
+          }
+        },
+        "abilities": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "all": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "any": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "payloads": {
+      "type": "object",
+      "description": "Observed/supported namespaces and field descriptions.",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["methods"],
+        "additionalProperties": false,
+        "patternProperties": {
+          "^x-": true
+        },
+        "properties": {
+          "methods": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "enum": ["GET", "SET", "GETACK", "SETACK", "PUSH", "ERROR"]
+            }
+          },
+          "digest": {
+            "type": "string",
+            "description": "Path of the digest document inside the payload, if any."
+          },
+          "fields": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/$defs/field"
+            }
+          }
+        }
+      }
+    },
+    "entities": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/entity"
+      }
+    },
+    "quirks": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/quirk"
+      }
+    }
+  },
+  "$defs": {
+    "field": {
+      "type": "object",
+      "required": ["type"],
+      "additionalProperties": false,
+      "patternProperties": {
+        "^x-": true
+      },
+      "properties": {
+        "type": {
+          "enum": ["integer", "number", "string", "boolean", "object", "array"]
+        },
+        "unit": {
+          "type": "string"
+        },
+        "scale": {
+          "type": "number"
+        },
+        "offset": {
+          "type": "number"
+        },
+        "values": {
+          "type": "object",
+          "description": "Optional enumeration: raw value -> semantic name.",
+          "additionalProperties": true
+        },
+        "fields": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/field"
+          }
+        },
+        "items": {
+          "$ref": "#/$defs/field"
+        }
+      }
+    },
+    "quirk": {
+      "type": "object",
+      "required": ["name"],
+      "additionalProperties": false,
+      "patternProperties": {
+        "^x-": true
+      },
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[a-z0-9_]+$"
+        },
+        "params": {
+          "type": "object"
+        }
+      }
+    },
+    "state": {
+      "type": "object",
+      "required": ["namespace"],
+      "additionalProperties": false,
+      "patternProperties": {
+        "^x-": true
+      },
+      "properties": {
+        "namespace": {
+          "type": "string"
+        },
+        "channel": {
+          "oneOf": [
+            {
+              "type": "integer",
+              "minimum": 0
+            },
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "digest": {
+          "type": "string",
+          "description": "Path of the digest document when the state is carried by System.All."
+        },
+        "fields": {
+          "type": "object",
+          "description": "Entity property -> path inside the payload (e.g. 'togglex[0].onoff').",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "scale": {
+          "type": "number"
+        }
+      }
+    },
+    "command": {
+      "type": "object",
+      "required": ["namespace", "payload"],
+      "additionalProperties": false,
+      "patternProperties": {
+        "^x-": true
+      },
+      "properties": {
+        "namespace": {
+          "type": "string"
+        },
+        "payload": {
+          "type": "object"
+        },
+        "value_scale": {
+          "type": "number",
+          "description": "Multiplier applied to $value before sending."
+        }
+      }
+    },
+    "entity": {
+      "type": "object",
+      "required": ["key", "platform"],
+      "additionalProperties": false,
+      "patternProperties": {
+        "^x-": true
+      },
+      "properties": {
+        "key": {
+          "type": "string",
+          "pattern": "^[a-z0-9_]+$"
+        },
+        "platform": {
+          "enum": [
+            "cover",
+            "switch",
+            "light",
+            "sensor",
+            "binary_sensor",
+            "number",
+            "button",
+            "select"
+          ]
+        },
+        "name": {
+          "type": "string"
+        },
+        "channel": {
+          "oneOf": [
+            {
+              "type": "integer",
+              "minimum": 0
+            },
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "device_class": {
+          "type": "string"
+        },
+        "entity_category": {
+          "enum": ["config", "diagnostic"]
+        },
+        "unit": {
+          "type": "string"
+        },
+        "state": {
+          "$ref": "#/$defs/state"
+        },
+        "commands": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/command"
+          }
+        },
+        "quirks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/quirk"
+          }
+        }
+      }
+    }
+  }
+}

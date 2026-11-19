@@ -12,6 +12,7 @@ from messaging import make_api_response
 from model.db_models import Device
 from model.exception import BadRequestError
 from db_helper import dbhelper
+from profiles import get_catalog
 
 device_blueprint = Blueprint('device', __name__)
 _LOGGER = get_logger(__name__)
@@ -58,6 +59,18 @@ def list_devices(api_payload: Dict, *args, **kwargs):
     _LOGGER.debug("User %s requested deviceList", user)
     data = [serialize_device_metadata(d) for d in user.owned_devices]
     return make_api_response(data=data)
+
+
+@device_blueprint.route('/profiles/rev', methods=['POST'])
+@meross_http_api(login_required=True)
+def profiles_revision(api_payload: Dict, *args, **kwargs):
+    return make_api_response(data=get_catalog().revision_payload())
+
+
+@device_blueprint.route('/profiles', methods=['POST'])
+@meross_http_api(login_required=True)
+def profiles_catalog(api_payload: Dict, *args, **kwargs):
+    return make_api_response(data=get_catalog().payload())
 
 
 @device_blueprint.route('/delete', methods=['POST'])
