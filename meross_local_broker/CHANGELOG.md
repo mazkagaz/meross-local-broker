@@ -1,3 +1,12 @@
+## 1.1.3
+
+- Journaux DEBUG du routage : enregistrement `messageId → topic de réponse`,
+  méthode/namespace des publications d'appareil et topics de livraison.
+- Obfuscation automatique des journaux : UUID, MAC, IP, emails, identifiants
+  d'application et secrets (`sign`, `key`, `token`, `password`, `Basic`)
+  remplacés par des pseudonymes stables (clé aléatoire persistée dans
+  `/data/log_redaction.key`).
+
 ## 1.1.2
 
 - Correctif du routage des ACK : les appareils répondent avec

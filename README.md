@@ -239,7 +239,9 @@ diode ouvre la page **Journaux** sur l'onglet du service choisi ; la flèche
 Retour ramène à l'accueil. La page propose la recherche (surlignage) et le
 filtre par niveau, la copie des lignes visibles, le téléchargement du journal
 complet, le suivi/pause et le retour à la ligne. Seul l'onglet affiché interroge
-l'API.
+l'API. Les journaux de l'agent pseudonymisent automatiquement UUID, MAC, IP,
+emails et secrets avant écriture, pour pouvoir être partagés sans masquage
+manuel.
 
 ## Réglage `device_timezone`
 

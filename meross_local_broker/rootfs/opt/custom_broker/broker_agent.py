@@ -353,8 +353,11 @@ class Broker:
         if header.get("method") in _ACK_METHODS:
             response_topic = self._app_response_topics.pop(
                 header.get("messageId"), None)
-        for topic in _app_forward_topics(
-                user.user_id, payload, LEGACY_USER_TOPIC_ACKS, response_topic):
+        topics = _app_forward_topics(
+            user.user_id, payload, LEGACY_USER_TOPIC_ACKS, response_topic)
+        l.debug("Forwarding device %s %s %s to %s", device_uuid,
+                header.get("method"), header.get("namespace"), topics)
+        for topic in topics:
             self.c.publish(topic=topic, payload=json.dumps(payload))
 
         # In case there is a bridged remote connection, forward the event to the remote broker as well
@@ -543,6 +546,8 @@ class Broker:
         target = _owner_app_topic(owner.user_id, header.get('from'))
         if target is not None:
             self._app_response_topics[message_id] = target
+            l.debug("Tracking response topic for message %s (device %s): %s",
+                    message_id, device_uuid, target)
 
     def _handle_app_to_device_message(self, device_uuid: str, payload: dict) -> None:
         """Observe commands that the app/HA publishes to a device.
