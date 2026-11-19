@@ -1,16 +1,16 @@
-# Notes de version — version stable 1.0.0 (candidate)
+# Notes de version — 1.0.0
 
 Ce document récapitule les évolutions du fork depuis son premier commit
-(alpha54) et sert de base aux notes de la version stable. Les détails
-successifs restent dans [CHANGELOG.md](meross_local_broker/CHANGELOG.md).
+(alpha54) et sert de notes pour la version stable. Les détails successifs
+restent dans [CHANGELOG.md](meross_local_broker/CHANGELOG.md).
 
 ## Le montage
 
-| Brique                  | Rôle                                         | Version         |
-| ----------------------- | -------------------------------------------- | --------------- |
-| **Meross Local Broker** | add-on : MQTT/TLS, API HTTPS, panneau web    | 1.0.0 candidate |
-| **Meross Local Cloud**  | intégration Home Assistant (HACS)            | 2.3.2           |
-| **Meross Local Pairer** | appairage Android (Wi-Fi AP et Bluetooth LE) | 2.0.8           |
+| Brique                  | Rôle                                         | Version |
+| ----------------------- | -------------------------------------------- | ------- |
+| **Meross Local Broker** | add-on : MQTT/TLS, API HTTPS, panneau web    | 1.0.0   |
+| **Meross Local Cloud**  | intégration Home Assistant (HACS)            | 2.3.2   |
+| **Meross Local Pairer** | appairage Android (Wi-Fi AP et Bluetooth LE) | 2.0.8   |
 
 ## Évolutions depuis le fork
 

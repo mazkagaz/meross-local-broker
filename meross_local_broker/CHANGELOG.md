@@ -1,3 +1,17 @@
+## 1.0.0
+
+Première version stable du fork. Les évolutions depuis le fork, les
+changements cassants et la procédure de mise à jour sont récapitulés dans
+[RELEASE_NOTES.md](../RELEASE_NOTES.md).
+
+- HTTPS 2004 obligatoire pour les clients LAN ; le port 2003 reste réservé à
+  l'ingress du Supervisor.
+- CA locale valide et épinglée par l'intégration ; options de contournement
+  supprimées.
+- Surface d'options réduite à `advertise`, `debug_mode`, `device_timezone`,
+  `mqtt_integrity_mode` et `reinit_db`.
+- Compatible avec Meross Local Cloud 2.3.2 et Meross Local Pairer 2.0.8.
+
 ## 0.0.1-alpha106
 
 - Nettoyage de la surface publique avant la version stable :

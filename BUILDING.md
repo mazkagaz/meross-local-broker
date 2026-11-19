@@ -15,12 +15,12 @@ cd ../..
 Angular 11 relies on the legacy OpenSSL provider. With Node 17 or newer, prefix
 the build with `NODE_OPTIONS=--openssl-legacy-provider npm run build`.
 
+```bash
 docker build \
- --build-arg BUILD_ARCH=amd64 \
- --build-arg BUILD_FROM=ghcr.io/home-assistant/amd64-base-debian:bookworm \
- -t local/meross_local_broker meross_local_broker
-
-````
+  --build-arg BUILD_ARCH=amd64 \
+  --build-arg BUILD_FROM=ghcr.io/home-assistant/amd64-base-debian:bookworm \
+  -t local/meross_local_broker meross_local_broker
+```
 
 Cross-build for arm64:
 
@@ -29,7 +29,7 @@ docker buildx build --platform linux/arm64 \
   --build-arg BUILD_ARCH=aarch64 \
   --build-arg BUILD_FROM=ghcr.io/home-assistant/aarch64-base-debian:bookworm \
   -t local/meross_local_broker:arm64 meross_local_broker --load
-````
+```
 
 The build compiles Mosquitto and its Go auth plugin; it takes time.
 
