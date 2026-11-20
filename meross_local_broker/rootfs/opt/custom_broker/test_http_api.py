@@ -179,7 +179,7 @@ class HttpApiCompatibilityTest(unittest.TestCase):
         self.assertIn('Retry-After', response.headers)
 
     def test_missing_token_returns_token_error(self):
-        from meross_iot.http_api import ErrorCodes
+        from compat import ErrorCodes
         response = self.client.post('/v1/Device/devList', json=self.envelope({}))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.get_json()['apiStatus'], ErrorCodes.CODE_TOKEN_ERROR.value)
@@ -562,7 +562,7 @@ class HttpApiCompatibilityTest(unittest.TestCase):
                          'Volet salon')
 
         # The Web UI rename path enforces the same uniqueness rule.
-        from meross_iot.model.enums import OnlineStatus
+        from compat import OnlineStatus
         dbhelper.update_device_status('rename-device-uuid', OnlineStatus.UNKNOWN)
         response = self.client.put('/_admin_/devices/rename-device-uuid',
                                    json={'dev_name': 'Volet cuisine'}, headers=self.INGRESS)

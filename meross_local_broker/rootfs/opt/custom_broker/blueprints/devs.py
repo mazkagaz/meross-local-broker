@@ -11,7 +11,7 @@ from db_helper import dbhelper
 from expiringdict import ExpiringDict
 from flask import Blueprint, request
 from logger import get_logger
-from meross_iot.model.enums import OnlineStatus
+from compat import OnlineStatus
 from model.enums import EventType
 
 

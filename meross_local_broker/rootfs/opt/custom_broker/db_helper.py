@@ -3,7 +3,7 @@
 # Licensed under the Apache License, Version 2.0. See NOTICE.
 # Modifications copyright 2026 the MRS100 fork contributors.
 
-from meross_iot.model.enums import OnlineStatus
+from compat import OnlineStatus
 from logger import get_logger
 from typing import Optional, List, Dict
 from constants import (BASE62_ALPHABET, TOKEN_ABSOLUTE_TTL, TOKEN_IDLE_TTL,

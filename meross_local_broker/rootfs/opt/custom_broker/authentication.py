@@ -9,8 +9,8 @@ import secrets
 from typing import Tuple
 
 from flask import has_request_context, request
-from meross_iot.http_api import ErrorCodes
-from meross_iot.model.http.exception import HttpApiError
+
+from compat import ErrorCodes, HttpApiError
 
 from db_helper import dbhelper
 from model.enums import EventType

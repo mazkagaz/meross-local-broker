@@ -17,7 +17,7 @@ from typing import Dict, List, Optional
 
 import paho.mqtt.client as mqtt
 from expiringdict import ExpiringDict
-from meross_iot.model.enums import OnlineStatus
+from compat import OnlineStatus
 
 from broker_bridge import BrokerDeviceBridge
 from capture import get_capture_manager

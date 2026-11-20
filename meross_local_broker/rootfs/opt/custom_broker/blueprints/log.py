@@ -1,4 +1,4 @@
-from meross_iot.model.http.exception import HttpApiError
+from compat import HttpApiError
 
 from logger import get_logger
 from typing import Dict

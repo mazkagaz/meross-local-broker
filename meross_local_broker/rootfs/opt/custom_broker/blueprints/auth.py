@@ -2,7 +2,7 @@
 # Upstream: https://github.com/albertogeniola/ha-meross-local-broker (Apache-2.0).
 import re
 from enum import Enum
-from meross_iot.model.http.exception import HttpApiError
+from compat import HttpApiError
 
 from logger import get_logger
 from typing import Dict, Optional, Tuple

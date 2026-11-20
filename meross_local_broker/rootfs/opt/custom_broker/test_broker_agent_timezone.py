@@ -3,7 +3,7 @@
 """Tests for the device timezone sync performed by the broker agent.
 
 Run with: python3 -m unittest test_broker_agent_timezone
-(requires the agent runtime dependencies: paho-mqtt, expiringdict, SQLAlchemy, meross_iot)
+(requires the agent runtime dependencies: paho-mqtt, expiringdict, SQLAlchemy)
 """
 import json
 import time
@@ -170,7 +170,7 @@ class AgentMessageHandlingTest(unittest.TestCase):
         self.assertEqual(broker.c.published, [])
 
     def test_system_all_does_not_mark_connected_device_offline(self):
-        from meross_iot.model.enums import OnlineStatus
+        from compat import OnlineStatus
 
         broker = make_broker("Europe/Rome")
         payload = system_all_getack(timezone="Europe/Rome")

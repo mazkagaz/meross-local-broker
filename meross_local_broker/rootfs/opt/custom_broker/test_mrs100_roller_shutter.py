@@ -6,7 +6,7 @@
 
 Run with: python3 -m unittest test_mrs100_roller_shutter
 Requires the agent runtime dependencies (paho-mqtt, expiringdict, SQLAlchemy,
-meross_iot).
+)
 """
 import json
 import unittest

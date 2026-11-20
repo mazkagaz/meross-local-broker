@@ -3,7 +3,7 @@
 """Tests for the Appliance.Control.Unbind publication after a device forget.
 
 Run with: python3 -m unittest test_broker_agent_unbind
-(requires the agent runtime dependencies: paho-mqtt, expiringdict, SQLAlchemy, meross_iot)
+(requires the agent runtime dependencies: paho-mqtt, expiringdict, SQLAlchemy)
 """
 import hashlib
 import json

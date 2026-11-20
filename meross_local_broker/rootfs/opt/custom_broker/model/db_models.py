@@ -8,7 +8,7 @@ from email.policy import default
 from optparse import Option
 from typing import Dict, Optional
 
-from meross_iot.model.enums import OnlineStatus
+from compat import OnlineStatus
 from sqlalchemy import Column, String, BigInteger, Integer, DateTime, Boolean, Text
 from sqlalchemy import ForeignKey, Enum
 from sqlalchemy.orm import relationship

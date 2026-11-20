@@ -5,8 +5,7 @@ from os import getenv
 
 from flask import Flask
 from flask_cors import CORS
-from meross_iot.http_api import ErrorCodes
-from meross_iot.model.http.exception import HttpApiError
+from compat import ErrorCodes, HttpApiError
 from werkzeug.exceptions import HTTPException
 from werkzeug.middleware.proxy_fix import ProxyFix
 

@@ -1,8 +1,8 @@
 from typing import Dict
 
 from flask import Blueprint, g
-from meross_iot.http_api import ErrorCodes
-from meross_iot.model.http.exception import HttpApiError
+
+from compat import ErrorCodes, HttpApiError
 
 from db_helper import dbhelper
 from decorator import meross_http_api

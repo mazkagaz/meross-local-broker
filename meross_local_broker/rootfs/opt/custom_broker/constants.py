@@ -2,7 +2,7 @@
 # Upstream: https://github.com/albertogeniola/ha-meross-local-broker (Apache-2.0).
 from datetime import timedelta
 
-from meross_iot.http_api import _SECRET
+from compat import MEROSS_SECRET as _SECRET
 
 
 _DB_PATH = '/data/database.db'

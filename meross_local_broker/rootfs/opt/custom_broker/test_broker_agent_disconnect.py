@@ -3,13 +3,13 @@
 """Tests for $SYS/client-disconnections handling after a device forget.
 
 Run with: python3 -m unittest test_broker_agent_disconnect
-(requires the agent runtime dependencies: paho-mqtt, expiringdict, SQLAlchemy, meross_iot)
+(requires the agent runtime dependencies: paho-mqtt, expiringdict, SQLAlchemy)
 """
 import unittest
 from types import SimpleNamespace
 from unittest import mock
 
-from meross_iot.model.enums import OnlineStatus
+from compat import OnlineStatus
 
 import broker_agent
 

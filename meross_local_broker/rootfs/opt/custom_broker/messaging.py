@@ -5,7 +5,7 @@ import hmac
 from typing import Optional
 
 from flask import jsonify
-from meross_iot.http_api import ErrorCodes
+from compat import ErrorCodes
 
 from constants import _SECRET
 

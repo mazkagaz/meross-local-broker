@@ -2,7 +2,6 @@
 # Upstream: https://github.com/albertogeniola/ha-meross-local-broker (Apache-2.0).
 import datetime
 import json
-from meross_iot.model.enums import Namespace
 from logger import get_logger
 import ssl
 from _md5 import md5
