@@ -19,6 +19,7 @@ from constants import DEFAULT_USER_ID
 from s6 import service_manager
 from setup import setup_account
 from profiles import reload_catalog
+from capture import get_capture_manager
 from datetime import datetime
 
 
@@ -32,6 +33,50 @@ def reload_profiles():
     result = reload_catalog()
     _LOGGER.info("Device profiles reloaded: %s profile(s), diff %s",
                  result["count"], result["diff"])
+    return jsonify(result)
+
+
+@admin_blueprint.route('/capture/status', methods=['GET'])
+def capture_status():
+    return jsonify(get_capture_manager().status() or {})
+
+
+@admin_blueprint.route('/capture/start', methods=['POST'])
+def capture_start():
+    body = request.get_json(force=True, silent=True) or {}
+    uuid = body.get("uuid")
+    if not uuid:
+        raise BadRequestError("Missing device uuid")
+    try:
+        status = get_capture_manager().start(
+            {
+                "uuid": uuid,
+                "type": body.get("type"),
+                "firmware": body.get("firmware"),
+                "abilities": body.get("abilities") or [],
+            },
+            duration_s=body.get("duration_s", 300),
+            max_bytes=body.get("max_bytes", 2_000_000))
+    except (TypeError, ValueError) as ex:
+        raise BadRequestError(str(ex))
+    return jsonify(status)
+
+
+@admin_blueprint.route('/capture/stop', methods=['POST'])
+def capture_stop():
+    return jsonify(get_capture_manager().stop() or {})
+
+
+@admin_blueprint.route('/capture/draft', methods=['POST'])
+def capture_draft():
+    body = request.get_json(force=True, silent=True) or {}
+    device_type = body.get("type")
+    if not device_type:
+        raise BadRequestError("Missing device type")
+    try:
+        result = get_capture_manager().build_draft(str(device_type))
+    except ValueError as ex:
+        raise BadRequestError(str(ex))
     return jsonify(result)
 
 

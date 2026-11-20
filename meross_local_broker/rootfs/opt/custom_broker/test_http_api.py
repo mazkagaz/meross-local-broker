@@ -376,6 +376,37 @@ class HttpApiCompatibilityTest(unittest.TestCase):
         self.assertNotIn('other-shutter', result)
         self.assertNotIn('without-config', result)
 
+    def test_admin_capture_lifecycle(self):
+        import capture
+
+        previous = capture._manager
+        with tempfile.TemporaryDirectory() as directory:
+            capture._manager = capture.CaptureManager(directory)
+            try:
+                started = self.client.post(
+                    '/_admin_/capture/start',
+                    json={'uuid': '0123456789abcdef0123456789abcdef',
+                          'type': 'mrs100'},
+                    headers=self.INGRESS)
+                self.assertEqual(started.status_code, 200)
+                self.assertIn('session_id', started.get_json())
+
+                status = self.client.get(
+                    '/_admin_/capture/status', headers=self.INGRESS)
+                self.assertTrue(status.get_json()['active'])
+
+                draft = self.client.post(
+                    '/_admin_/capture/draft', json={'type': 'mrs100'},
+                    headers=self.INGRESS)
+                self.assertEqual(draft.status_code, 200)
+                self.assertEqual(draft.get_json()['namespaces'], 0)
+
+                stopped = self.client.post(
+                    '/_admin_/capture/stop', headers=self.INGRESS)
+                self.assertFalse(stopped.get_json()['active'])
+            finally:
+                capture._manager = previous
+
     def test_admin_can_reload_profiles(self):
         response = self.client.post(
             '/_admin_/profiles/reload', headers=self.INGRESS)

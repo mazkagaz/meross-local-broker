@@ -20,6 +20,7 @@ from expiringdict import ExpiringDict
 from meross_iot.model.enums import OnlineStatus
 
 from broker_bridge import BrokerDeviceBridge
+from capture import get_capture_manager
 from database import init_db
 from db_helper import dbhelper
 from logger import get_logger, set_logger_level
@@ -282,6 +283,7 @@ class Broker:
         return thread
 
     def _handle_device_publication(self, device_uuid: str, topic: str, payload: dict):
+        get_capture_manager().record(device_uuid, "rx", topic, payload)
         # If the message comes from a known device, update its online status
         dbhelper.update_device_status(device_uuid=device_uuid, status=OnlineStatus.ONLINE)
 
@@ -558,6 +560,8 @@ class Broker:
         """
         self._remember_app_response(device_uuid, payload)
         header = payload.get('header', {}) or {}
+        get_capture_manager().record(
+            device_uuid, "tx", header.get("from") or "app", payload)
         if header.get('from') == '/_agent':
             return
         if header.get('namespace') != _ROLLER_SHUTTER_CONFIG_NS:

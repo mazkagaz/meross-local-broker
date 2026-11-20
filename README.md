@@ -242,6 +242,16 @@ se fait avec `POST /_admin_/profiles/reload` (ingress Supervisor) et renvoie
 les profils ajoutés, supprimés et modifiés. L'intégration reprend le nouveau
 catalogue au prochain redémarrage ou rechargement de l'entrée.
 
+### Mode capture
+
+Pour un modèle non encore couvert, l’API d’administration (ingress Supervisor)
+permet de capturer temporairement les trames d’un appareil :
+`POST /_admin_/capture/start` avec `uuid`, `type`, puis `stop`. Les sessions
+sont écrites dans `/data/capture` avec des permissions restreintes ; secrets
+retirés et identifiants pseudonymisés. `POST /_admin_/capture/draft` produit
+un brouillon YAML des namespaces observés, à compléter puis déposer dans
+`/data/device_profiles`. Durée et taille sont bornées.
+
 ## Journaux
 
 Le panneau du broker affiche quatre diodes, une par service. Cliquer sur une

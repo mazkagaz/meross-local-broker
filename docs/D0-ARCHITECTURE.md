@@ -142,10 +142,11 @@ Appareil ──MQTT/TLS──> Broker ──profils/révisions──> Intégrati
   cover, number, button), sous-appareils, disponibilité. Les plateformes
   complexes, la restauration d’état et la reprise exacte des `unique_id`
   historiques restent avant D5.
-- **D4 : démarré** : surcharges de profils dans `/data/device_profiles`,
-  rechargement à chaud exposé à l’admin, diff added/removed/changed et
-  exposition source/révision dans les diagnostics. Restent capture de trames,
-  catalogue signé, entités `update` et parcours guidé.
+- **D4 : avancé** : surcharges de profils dans `/data/device_profiles`,
+  rechargement à chaud exposé à l’admin, diff added/removed/changed,
+  exposition source/révision, et mode capture avec assainissement, limites et
+  génération de brouillon. Restent catalogue signé, entités `update`,
+  rechargement HA sans redémarrage et parcours guidé.
 - D5, D5.1 : à venir.
 
 ### D2 — Moteur de profils, schéma 2
@@ -217,8 +218,14 @@ qu’un profil livré ou nouveau profil) ; un fichier invalide est signalé et l
 profil livré reste actif. `POST /_admin_/profiles/reload` recharge le
 catalogue et renvoie `added`/`removed`/`changed`. Le capteur de diagnostics
 expose révision, source et version. L’intégration reprend le nouveau
-catalogue au prochain démarrage ou rechargement de l’entrée : le rechargement
-à chaud côté HA reste à faire, ainsi que la capture, la signature et l’UI.
+catalogue au prochain démarrage ou rechargement de l’entrée.
+
+Le mode capture est activable par appareil via
+`/_admin_/capture/start|stop|status|draft` : sessions sous `/data/capture`
+(0600/0700), secrets retirés, identifiants pseudonymisés, limites de durée,
+de taille et de nombre de trames, et brouillon YAML agrégé par namespace.
+Restent la signature du catalogue, les entités `update`, le rechargement
+catalogue côté HA sans redémarrage et le parcours guidé/UI.
 
 ### D5 — Parité, trames dorées, suppression de `meross_iot`
 

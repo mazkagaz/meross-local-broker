@@ -106,6 +106,11 @@ def install_filter(logger: logging.Logger) -> None:
     logger.addFilter(RedactionFilter(_REDACTOR))
 
 
+def redact_text(text: str) -> str:
+    """Redact identifiers and secrets from a string."""
+    return _REDACTOR.redact(text)
+
+
 def install_handlers(handlers) -> None:
     for handler in handlers:
         if not any(isinstance(item, RedactionFilter)
