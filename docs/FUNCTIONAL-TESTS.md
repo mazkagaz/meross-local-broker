@@ -14,6 +14,11 @@ observables, sur un harnais déterministe ou du matériel réel.
 | H3 Banc        | broker réel + HA + appareil physique                                              | manuel/semi-auto, checklist ci-dessous     |
 | H4 Pairer      | Android + broker réel + appareil                                                  | manuel                                     |
 
+Le simulateur H2 (`tests/functional/device_simulator.py`) implémente
+le sous-ensemble MRS100 du transport : descripteur, GET/SET, réponses
+groupées, PUSH et état persistant. Il rejoue ouverture/fermeture/
+position/durées/calibration et une reconnexion sans matériel.
+
 Chaque scénario note son harnais : **Auto** (CI), **Semi** (banc + script),
 **Manuel** (matériel).
 
@@ -52,10 +57,10 @@ Chaque scénario note son harnais : **Auto** (CI), **Semi** (banc + script),
 
 | ID    | Scénario                        | Attendu                                           | Mode         |
 | ----- | ------------------------------- | ------------------------------------------------- | ------------ |
-| F3.1  | MRS100 ouvrir/fermer/stop       | Mouvement et états corrects, ACK appliqué         | H3           |
-| F3.2  | MRS100 position 0/50/100        | Position et `is_closed` cohérents                 | H3           |
-| F3.3  | Durées 10→60 s                  | SET, persistance, réapplication après reconnexion | H3           |
-| F3.4  | Calibration start/stop          | `in_progress` → `success`/échec, stop interrompt  | H3           |
+| F3.1  | MRS100 ouvrir/fermer/stop       | Mouvement et états corrects, ACK appliqué         | H2 Auto + H3 |
+| F3.2  | MRS100 position 0/50/100        | Position et `is_closed` cohérents                 | H2 Auto + H3 |
+| F3.3  | Durées 10→60 s                  | SET, persistance, réapplication après reconnexion | H2 Auto + H3 |
+| F3.4  | Calibration start/stop          | `in_progress` → `success`/échec, stop interrompt  | H2 Auto + H3 |
 | F3.5  | Appareil hors ligne puis retour | `unavailable` puis états corrects, mêmes entités  | H3           |
 | F3.6  | Prise/interrupteur              | État et commande, capteurs électricité            | H2 Auto + H3 |
 | F3.7  | Éclairage                       | on/off, luminosité, RGB, conversion 0–255 ↔ 0–100 | H2 Auto + H3 |
@@ -97,13 +102,13 @@ Chaque scénario note son harnais : **Auto** (CI), **Semi** (banc + script),
 
 ## F7 — Résilience et sécurité
 
-| ID   | Quand                                         | Alors                                      | Mode    |
-| ---- | --------------------------------------------- | ------------------------------------------ | ------- |
-| F7.1 | Redémarrage broker                            | Reconnexion, états repris, pas de doublons | H2/H3   |
-| F7.2 | Coupure MQTT                                  | Indisponibilité puis reprise               | H3      |
-| F7.3 | Payload non-objet / géant / namespace inconnu | Ignoré ou erreur isolée, aucun crash       | H2 Auto |
-| F7.4 | Trame d’un appareil étranger ou inconnu       | Rejet, aucun état injecté                  | H2 Auto |
-| F7.5 | Rotation CA                                   | Échec explicite ou ré-épinglage contrôlé   | H3      |
+| ID   | Quand                                         | Alors                                      | Mode         |
+| ---- | --------------------------------------------- | ------------------------------------------ | ------------ |
+| F7.1 | Redémarrage broker                            | Reconnexion, états repris, pas de doublons | H2 Auto + H3 |
+| F7.2 | Coupure MQTT                                  | Indisponibilité puis reprise               | H3           |
+| F7.3 | Payload non-objet / géant / namespace inconnu | Ignoré ou erreur isolée, aucun crash       | H2 Auto      |
+| F7.4 | Trame d’un appareil étranger ou inconnu       | Rejet, aucun état injecté                  | H2 Auto      |
+| F7.5 | Rotation CA                                   | Échec explicite ou ré-épinglage contrôlé   | H3           |
 
 ## F8 — Pairer et cycle de vie (H4 / H3)
 
