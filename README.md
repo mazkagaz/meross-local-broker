@@ -242,7 +242,9 @@ se fait avec `POST /_admin_/profiles/reload` (ingress Supervisor) et renvoie
 les profils ajoutés, supprimés et modifiés. L'intégration vérifie la révision
 toutes les 60 s et recharge automatiquement son entrée quand elle change. Le
 catalogue est signé (Ed25519, clé dans `/data`) et l'intégration refuse une
-signature invalide.
+signature invalide. Avec l'option avancée d'entités profils, chaque appareil
+et sous-appareil expose une entité `update` (profil appliqué, version,
+réapplication).
 
 ### Mode capture
 

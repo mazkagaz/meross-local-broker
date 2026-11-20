@@ -146,8 +146,9 @@ Appareil ──MQTT/TLS──> Broker ──profils/révisions──> Intégrati
   rechargement à chaud exposé à l’admin, diff added/removed/changed,
   exposition source/révision, mode capture avec assainissement/limites/
   brouillon, rechargement automatique de l’entrée HA au changement de
-  révision (vérification toutes les 60 s) et catalogue signé Ed25519 vérifié
-  par l’intégration. Restent entités `update` et parcours guidé/UI.
+  révision (vérification toutes les 60 s), catalogue signé Ed25519 vérifié
+  par l’intégration et entités `update` par appareil/sous-appareil. Reste le
+  parcours guidé/UI.
 - D5, D5.1 : à venir.
 
 ### D2 — Moteur de profils, schéma 2
@@ -233,8 +234,12 @@ s’appliquent sans redémarrage de Home Assistant.
 Le catalogue est signé en Ed25519 (paire générée dans `/data` avec openssl,
 clé publique exposée par `/v1/Device/profiles/pubkey`). L’intégration vérifie
 la signature : un catalogue signé invalide est refusé, un catalogue non signé
-(ancien broker) est accepté et signalé dans les diagnostics. Restent les
-entités `update` et le parcours guidé/UI.
+(ancien broker) est accepté et signalé dans les diagnostics.
+
+Chaque appareil et sous-appareil exposé par les profils a une entité
+`update` (titre, source, version installée/dernière, description) dont
+l’action « installer » recharge l’entrée pour réappliquer le catalogue.
+Reste le parcours guidé/UI.
 
 ### D5 — Parité, trames dorées, suppression de `meross_iot`
 
