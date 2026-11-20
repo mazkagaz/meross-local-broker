@@ -298,6 +298,8 @@ appareils. Laisser vide pour utiliser le fuseau de Home Assistant.
   matching, compilation, matrice de tests négatifs.
 - [docs/D2b-PARITY.md](docs/D2b-PARITY.md) — parité du catalogue : jeu pilote
   (hub, sous-appareils, thermostat, ventilateur) et couverture restante.
+- [docs/D4-GUIDE.md](docs/D4-GUIDE.md) — guide avancé : surcharges,
+  rechargement, catalogue signé, capture et entités update.
 - [docs/PROFILE-AUTHORING.md](docs/PROFILE-AUTHORING.md) — écrire et valider un
   profil d’appareil.
 - [docs/device-profiles.schema.json](docs/device-profiles.schema.json) — schéma

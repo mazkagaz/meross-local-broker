@@ -167,22 +167,42 @@ def diff_profiles(previous: Dict[str, str],
 
 
 _catalog: Optional[ProfileCatalog] = None
+_override_signature: tuple = ()
+
+
+def _overrides_signature(directory: str) -> tuple:
+    try:
+        entries = []
+        for name in os.listdir(directory):
+            if not name.endswith((".yaml", ".yml")):
+                continue
+            stat = os.stat(os.path.join(directory, name))
+            entries.append((name, stat.st_mtime_ns, stat.st_size))
+        return tuple(sorted(entries))
+    except OSError:
+        return ()
 
 
 def get_catalog() -> ProfileCatalog:
-    global _catalog
+    """Return the catalog, reloading it when /data overrides changed."""
+    global _catalog, _override_signature
+    signature = _overrides_signature(_DEFAULT_OVERRIDES)
     if _catalog is None:
         _catalog = ProfileCatalog()
+        _override_signature = signature
+    elif signature != _override_signature:
+        reload_catalog()
     return _catalog
 
 
 def reload_catalog() -> Dict[str, Any]:
     """Reload bundled profiles and /data overrides, reporting the diff."""
-    global _catalog
+    global _catalog, _override_signature
     previous = _catalog.profile_hashes() if _catalog is not None else {}
     catalog = ProfileCatalog()
     diff = diff_profiles(previous, catalog.profile_hashes())
     _catalog = catalog
+    _override_signature = _overrides_signature(_DEFAULT_OVERRIDES)
     return {
         "revision": catalog.revision,
         "count": len(catalog.profiles),

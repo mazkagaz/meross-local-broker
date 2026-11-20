@@ -146,9 +146,11 @@ Appareil ──MQTT/TLS──> Broker ──profils/révisions──> Intégrati
   rechargement à chaud exposé à l’admin, diff added/removed/changed,
   exposition source/révision, mode capture avec assainissement/limites/
   brouillon, rechargement automatique de l’entrée HA au changement de
-  révision (vérification toutes les 60 s), catalogue signé Ed25519 vérifié
-  par l’intégration et entités `update` par appareil/sous-appareil. Reste le
-  parcours guidé/UI.
+  révision (vérification toutes les 60 s, surcharges détectées
+  automatiquement), catalogue signé Ed25519 vérifié par l’intégration,
+  entités `update` par appareil/sous-appareil et guide avancé
+  ([D4-GUIDE.md](D4-GUIDE.md)). D4 est terminé côté backend/documentation ;
+  l’UI graphique dédiée n’est pas planifiée.
 - D5, D5.1 : à venir.
 
 ### D2 — Moteur de profils, schéma 2
@@ -239,7 +241,11 @@ la signature : un catalogue signé invalide est refusé, un catalogue non signé
 Chaque appareil et sous-appareil exposé par les profils a une entité
 `update` (titre, source, version installée/dernière, description) dont
 l’action « installer » recharge l’entrée pour réappliquer le catalogue.
-Reste le parcours guidé/UI.
+
+Les surcharges déposées dans `/data/device_profiles` sont détectées à la
+prochaine lecture du catalogue, sans redémarrage. Le parcours guidé et les
+limites Supervisor/Container/Core sont documentés dans
+[D4-GUIDE.md](D4-GUIDE.md).
 
 ### D5 — Parité, trames dorées, suppression de `meross_iot`
 

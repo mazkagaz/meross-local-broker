@@ -10,7 +10,9 @@ import shutil
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
+import profiles as profiles_module
 from profiles import ProfileCatalog, diff_profiles
 
 HERE = Path(__file__).parent
@@ -219,6 +221,32 @@ class ProfileOverrideTest(unittest.TestCase):
 
         self.assertEqual(len(catalog.errors), 1)
         self.assertIn("duplicate profile id", catalog.errors[0]["error"])
+
+    def test_dropping_an_override_reloads_on_next_access(self):
+        with tempfile.TemporaryDirectory() as bundled_tmp, \
+                tempfile.TemporaryDirectory() as override_tmp:
+            bundled, overrides = Path(bundled_tmp), Path(override_tmp)
+            self.prepare(bundled, {})
+            profiles_module._catalog = None
+            profiles_module._override_signature = ()
+            try:
+                with patch.object(
+                        profiles_module, "_DEFAULT_DIR", str(bundled)), \
+                        patch.object(
+                            profiles_module, "_DEFAULT_OVERRIDES",
+                            str(overrides)):
+                    first = profiles_module.get_catalog()
+                    (overrides / "base.yaml").write_text(
+                        json.dumps({**minimal("test.base", version="2"),
+                                    "x-note": "changed"}),
+                        encoding="utf-8")
+                    second = profiles_module.get_catalog()
+            finally:
+                profiles_module._catalog = None
+                profiles_module._override_signature = ()
+
+        self.assertNotEqual(first.revision, second.revision)
+        self.assertEqual(second.sources["test.base"], "override")
 
     def test_diff_reports_added_removed_and_changed(self):
         diff = diff_profiles(
