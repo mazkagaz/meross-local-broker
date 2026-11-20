@@ -1,6 +1,7 @@
 # D2b — Parité du catalogue d’appareils
 
-**Statut** : jeu pilote livré ; portage du reste du catalogue à venir.
+**Statut** : jeu pilote et familles local-MQTT simples portés ; quelques
+familles restent en attente de trames réelles (voir la matrice).
 **Référence** : [D2-PLAN.md](D2-PLAN.md) et
 [D0-ARCHITECTURE.md](D0-ARCHITECTURE.md).
 
@@ -11,20 +12,27 @@ déclaratif qui produit les mêmes entités. Le schéma n’évolue que par ajou
 optionnels ; un profil pilote qui exige une rupture est un défaut de conception
 du schéma.
 
-## Jeu pilote livré
+## Profils livrés
 
-| Famille              | Profil          | Match              | Entités                                  |
-| -------------------- | --------------- | ------------------ | ---------------------------------------- |
-| Hub MSH300           | `meross.msh300` | `kind: hub`, `msh` | hub : online ; modèles ci-dessous        |
-| Sous-appareil MS100  | template        | `ms1`              | temperature, humidity, voltage           |
-| Sous-appareil MTS100 | template        | `mts1`             | climate (consigne, mesure, mode)         |
-| Thermostat MTS200    | `meross.mts200` | `mts2`, `mts3`     | climate (mesure, consigne, mode, on/off) |
-| Ventilateur MFC      | `meross.mfc`    | `mfc`              | fan (vitesse, vitesse max)               |
-| Éclairage RGB        | `meross.msl120` | `msl120`           | light                                    |
+| Famille              | Profil          | Match                       | Entités                                  |
+| -------------------- | --------------- | --------------------------- | ---------------------------------------- |
+| Hub MSH300           | `meross.msh300` | `kind: hub`, `msh`          | hub : online ; modèles ci-dessous        |
+| Sous-appareil MS100  | template        | `ms1`                       | temperature, humidity, voltage           |
+| Sous-appareil MS130  | template        | `ms130`                     | temperature, humidity                    |
+| Sous-appareil MTS100 | template        | `mts1`                      | climate (consigne, mesure, mode)         |
+| Thermostat MTS200    | `meross.mts200` | `mts2`, `mts3`              | climate (mesure, consigne, mode, on/off) |
+| Ventilateur MFC      | `meross.mfc`    | `mfc`                       | fan (vitesse, vitesse max)               |
+| Prises/interrupteurs | `meross.mss`    | `mss*`, `mop`, `p11`, `r1x` | switch (canal 0)                         |
+| Variateur Mss5       | `meross.mss5`   | `mss5`                      | light                                    |
+| Éclairages           | `meross.msl`    | `msl*`                      | light (onoff, luminosité, RGB)           |
+| Volet MRS100         | `meross.mrs100` | `mrs100`                    | cover, durées, calibration, statut       |
+| Volets               | `meross.mrs`    | `mrs`                       | cover (position, ouvrir/fermer/stop)     |
+| Diffuseur MOD        | `meross.mod`    | `mod`                       | humidifier (diffusion) + light           |
 
 Les trames dorées utilisées par les tests proviennent des définitions de
-payloads du client vendorisé (`protocol/types/*.py`) : TempHum, Mts100.All,
-Thermostat.Mode et Control.Fan. **Elles restent à confirmer par des captures
+payloads du client vendorisé (`protocol/types/*.py`) : TempHum, Sensor.All,
+Mts100.All, Thermostat.Mode, ToggleX, Light, RollerShutter.Position,
+Control.Fan et Diffuser.\*. **Elles restent à confirmer par des captures
 réelles** avant de déclarer la parité validée sur matériel.
 
 ## Enseignements du pilote
@@ -41,16 +49,27 @@ réelles** avant de déclarer la parité validée sur matériel.
 
 ## Couverture restante (meross_lan local-MQTT)
 
-| Famille                              | État                                           |
-| ------------------------------------ | ---------------------------------------------- |
-| Prises/switchs (mss310, mss, mss425) | mss310 fait ; autres à porter                  |
-| Éclairages (msl100/120/320)          | msl120 fait ; autres à porter                  |
-| Volets (mrs)                         | mrs100 fait                                    |
-| Hubs (msh)                           | pilote MS100/MTS100 ; autres capteurs à porter |
-| Thermostats (mts1/mts2/mts3/mts9)    | MTS200 + MTS100 via hub ; mts9 à confirmer     |
-| Ventilateurs (mfc)                   | pilote livré                                   |
-| Humidificateurs, purificateurs       | à porter                                       |
-| Garages, capteurs, sprinklers        | à porter                                       |
+| Famille                                   | État                                                    |
+| ----------------------------------------- | ------------------------------------------------------- |
+| Prises/switchs mono-canal                 | porté (`mss`, `mss310`, `mss5`)                         |
+| Multiprises (mss425/msp844)               | en attente : chemins indexés par canal                  |
+| Éclairages                                | porté (`msl`, `msl120`, `msl320*`)                      |
+| Volets                                    | porté (`mrs`, `mrs100`)                                 |
+| Hubs                                      | MS100/MS130/MTS100 portés ; autres capteurs à confirmer |
+| Thermostats                               | MTS200/MTS300 + MTS100 portés ; mts9 à confirmer        |
+| Ventilateurs                              | porté (`mfc`)                                           |
+| Diffuseurs/humidificateurs                | porté (`mod`) ; purificateurs à confirmer               |
+| Garages (msg/rsg)                         | en attente : forme exacte du payload State              |
+| Sprinklers MST, énergie, HP110            | en attente de trames réelles                            |
+| Autres capteurs hub (MS200/400/600/GS559) | en attente de trames réelles                            |
+
+Gaps identifiés pour la suite :
+
+- **chemins indexés par canal** : les multiprises renvoient une liste
+  `togglex` complète ; un chemin statique ne peut pas sélectionner l’élément
+  dont `channel` correspond à l’entité.
+- formes de payloads non documentées dans le client vendorisé pour les
+  garages, purificateurs, sprinklers et certains capteurs hub.
 
 ## Critères de sortie D2b
 
