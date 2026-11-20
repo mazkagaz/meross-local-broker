@@ -151,10 +151,10 @@ Appareil ──MQTT/TLS──> Broker ──profils/révisions──> Intégrati
   entités `update` par appareil/sous-appareil et guide avancé
   ([D4-GUIDE.md](D4-GUIDE.md)). D4 est terminé côté backend/documentation ;
   l’UI graphique dédiée n’est pas planifiée.
-- **D5 : démarré** : suite de parité/trames dorées pour les 11 profils livrés
-  et broker débarrassé de `meross_iot` (enums/exceptions locaux). Restent la
-  migration des commandes et la suppression de `meross_iot`, des patches et
-  des entités historiques côté intégration.
+- **D5 : en cours** : suite de parité/trames dorées pour les 11 profils,
+  broker sans `meross_iot`, et accès HTTP catalogue/P3 de l’intégration migré
+  vers un client signé maison (`broker_http.py`). Restent le manager, les
+  commandes et entités historiques, les patches, puis D5.1.
 - D5.1 : à venir.
 
 ### D2 — Moteur de profils, schéma 2
@@ -259,9 +259,11 @@ limites Supervisor/Container/Core sont documentés dans
 
 **État** : la suite `test_profile_parity.py` couvre les 11 profils avec des
 trames dorées ; le broker n’importe plus `meross_iot` (remplacé par
-`compat.py`, dépendance retirée de `requirements.txt`). L’intégration utilise
-encore `meross_iot` pour l’HTTP, le manager et les entités historiques :
-c’est le reste de D5.
+`compat.py`, dépendance retirée de `requirements.txt`). Côté intégration, le
+catalogue et la config P3 passent par `broker_http.py` : signature d’enveloppe
+locale, TLS du broker, plus aucune dépendance à `MerossHttpClient`. Le
+manager, les commandes des entités historiques et les patches restent à
+migrer.
 
 ### D5.1 — Nettoyage des topics ACK
 
