@@ -135,7 +135,11 @@ Appareil ──MQTT/TLS──> Broker ──profils/révisions──> Intégrati
 - **D1 : terminé et validé** (broker 1.1.3, intégration 2.4.4). Transport MQTT
   applicatif, descripteurs, catalogue lisible, résolution des transactions,
   logs DEBUG obfusqués. Capteur `Broker profile backend` = `connected`.
-- D2, D2b, D3, D4, D5, D5.1 : à venir.
+- **D2 et D2b : faits** (moteur, P3, pilote et familles simples ; reste de la
+  matrice de parité en attente de trames réelles).
+- **D3 : socle fait** (scheduler central, batching, lazy poll, rate limiting) ;
+  entités issues des profils, identités et disponibilité restent à basculer.
+- D4, D5, D5.1 : à venir.
 
 ### D2 — Moteur de profils, schéma 2
 
@@ -182,6 +186,13 @@ Appareil ──MQTT/TLS──> Broker ──profils/révisions──> Intégrati
 - **P2** (coalescence des updates par appareil) si des bursts subsistent.
 - Entités : plateformes étendues, hubs/sous-appareils, restauration et
   disponibilité ; `unique_id` existants conservés.
+
+**État** : le socle moteur est livré (`profiles/scheduler.py`) : une tâche et
+un verrou par appareil, plan de polling issu des profils, batching
+`Appliance.Control.Multiple`, file lazy, rate limiting et backoff. Les
+réponses sollicitées ne sont plus dispatchées deux fois. La création des
+entités HA depuis les profils et la bascule des identités restent à faire ;
+elles restent derrière l’option `profile_backend` jusqu’à la migration D5.
 
 ### D4 — UX avancée sans changer le parcours de base
 
