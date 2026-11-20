@@ -1,3 +1,17 @@
+## 1.2.0
+
+- API de profils : `/v1/Device/profiles/rev`, `/profiles` et
+  `/profiles/pubkey`, catalogue signé Ed25519, révision et source par profil.
+- Surcharges `/data/device_profiles` (remplacement ou ajout), rechargement
+  admin avec diff `added/removed/changed` et détection automatique à la
+  lecture du catalogue.
+- Capture de trames par appareil : sessions bornées, secrets retirés,
+  identifiants pseudonymisés, brouillon de profil.
+- Endpoint `/v1/Device/rollerShutterConfig` pour le cache volet côté
+  intégration.
+- Contrats API v1 et validation des réponses/fixtures.
+- Le broker n’importe plus `meross_iot` (enums/exceptions locaux).
+
 ## 1.1.3
 
 - Journaux DEBUG du routage : enregistrement `messageId → topic de réponse`,

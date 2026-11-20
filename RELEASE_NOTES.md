@@ -1,3 +1,16 @@
+# Notes de version — 1.2.0
+
+## 1.2.0 — socle profils et outillage
+
+- Catalogue de profils servi par le broker, signé Ed25519, avec révision,
+  surcharges `/data/device_profiles`, rechargement à chaud et diff.
+- Mode capture avec assainissement, brouillon de profil et limites.
+- Endpoint de configuration volet pour le cache côté intégration.
+- Contrats API versionnés et tests ; broker sans dépendance `meross_iot`.
+- Branche `dev` et workflows de test pour préparer les prochaines étapes.
+
+Le reste du document décrit les évolutions depuis le fork (1.0.0).
+
 # Notes de version — 1.0.0
 
 Ce document récapitule les évolutions du fork depuis son premier commit
