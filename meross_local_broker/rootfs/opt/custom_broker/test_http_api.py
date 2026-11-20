@@ -10,6 +10,14 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
+CONTRACTS = Path(__file__).parent / "contracts"
+
+
+def assert_contract(name, data):
+    import jsonschema
+    schema = json.loads((CONTRACTS / name).read_text(encoding="utf-8"))
+    jsonschema.validate(data, schema)
+
 
 class HttpApiCompatibilityTest(unittest.TestCase):
     INGRESS = {'X-Ingress-Path': '/api/hassio_ingress/test'}
@@ -78,10 +86,12 @@ class HttpApiCompatibilityTest(unittest.TestCase):
                 result = response.get_json()
                 self.assertEqual(result['apiStatus'], 0)
                 self.assertEqual(result['data']['userid'], self.user_id)
+                assert_contract('signin.json', result['data'])
                 response = self.client.post(
                     '/v1/Device/devList', json=self.envelope({}),
                     headers={'Authorization': f"Basic {result['data']['token']}"})
                 self.assertEqual(response.get_json(), {'apiStatus': 0, 'info': None, 'data': []})
+                assert_contract('devlist.json', response.get_json()['data'])
 
     def test_invalid_signature_returns_meross_error(self):
         envelope = self.envelope({})
@@ -314,6 +324,7 @@ class HttpApiCompatibilityTest(unittest.TestCase):
         self.assertEqual(result['schema_version'], 2)
         self.assertEqual(result['count'], 11)
         self.assertEqual(len(result['revision']), 64)
+        assert_contract('profiles_rev.json', result)
 
     def test_profiles_catalog_is_served(self):
         token = self.sign_in().get_json()['data']['token']
@@ -329,6 +340,15 @@ class HttpApiCompatibilityTest(unittest.TestCase):
             'meross.mss310', 'meross.mss5', 'meross.mts200'])
         for item in result['profiles']:
             self.assertEqual(item['source'], 'bundled')
+        assert_contract('profiles.json', result)
+
+    def test_contract_fixtures_are_valid(self):
+        for name in ('signin', 'devlist', 'profiles_rev', 'profiles',
+                     'pubkey', 'roller_shutter_config'):
+            fixture = json.loads(
+                (CONTRACTS / "fixtures" / f"{name}.json").read_text(
+                    encoding="utf-8"))
+            assert_contract(f"{name}.json", fixture)
 
     def test_roller_shutter_config_requires_auth(self):
         response = self.client.post(
@@ -366,6 +386,7 @@ class HttpApiCompatibilityTest(unittest.TestCase):
             headers={'Authorization': f'Basic {token}'})
 
         result = response.get_json()['data']
+        assert_contract('roller_shutter_config.json', result)
         self.assertEqual(set(result), {'shutter-1'})
         entry = result['shutter-1']
         self.assertEqual(entry['config'][0]['channel'], 0)
@@ -398,6 +419,7 @@ class HttpApiCompatibilityTest(unittest.TestCase):
         self.assertTrue(result['public_key'].startswith(
             '-----BEGIN PUBLIC KEY-----'))
         self.assertEqual(len(result['fingerprint']), 64)
+        assert_contract('pubkey.json', result)
 
     def test_admin_capture_lifecycle(self):
         import capture
