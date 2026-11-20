@@ -18,6 +18,9 @@ Le simulateur H2 (`tests/functional/device_simulator.py`) implémente
 le sous-ensemble MRS100 du transport : descripteur, GET/SET, réponses
 groupées, PUSH et état persistant. Il rejoue ouverture/fermeture/
 position/durées/calibration et une reconnexion sans matériel.
+Le bus MQTT en mémoire (`tests/functional/mqtt_bus.py`) route les requêtes
+et PUSH entre l'adaptateur et les simulateurs MSS310/hub (MS100/MS130/MTS100),
+avec injection de latence et d'appareil hors ligne.
 
 Chaque scénario note son harnais : **Auto** (CI), **Semi** (banc + script),
 **Manuel** (matériel).
