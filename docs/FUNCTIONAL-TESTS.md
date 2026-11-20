@@ -19,8 +19,9 @@ le sous-ensemble MRS100 du transport : descripteur, GET/SET, réponses
 groupées, PUSH et état persistant. Il rejoue ouverture/fermeture/
 position/durées/calibration et une reconnexion sans matériel.
 Le bus MQTT en mémoire (`tests/functional/mqtt_bus.py`) route les requêtes
-et PUSH entre l'adaptateur et les simulateurs MSS310/hub (MS100/MS130/MTS100),
-avec injection de latence et d'appareil hors ligne.
+et PUSH entre l'adaptateur et les simulateurs MRS100, MSS310, hub
+(MS100/MS130/MTS100), MTS200, lumière et diffuseur, avec injection de
+latence et d'appareil hors ligne.
 
 Chaque scénario note son harnais : **Auto** (CI), **Semi** (banc + script),
 **Manuel** (matériel).
