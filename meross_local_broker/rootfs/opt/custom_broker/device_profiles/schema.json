@@ -292,9 +292,29 @@
         },
         "fields": {
           "type": "object",
-          "description": "Entity property -> path inside the payload (e.g. 'togglex[0].onoff').",
+          "description": "Entity property -> path inside the payload (e.g. 'togglex[0].onoff'), or an object with per-field scale/offset.",
           "additionalProperties": {
-            "type": "string"
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "object",
+                "required": ["path"],
+                "additionalProperties": false,
+                "properties": {
+                  "path": {
+                    "type": "string"
+                  },
+                  "scale": {
+                    "type": "number"
+                  },
+                  "offset": {
+                    "type": "number"
+                  }
+                }
+              }
+            ]
           }
         },
         "scale": {

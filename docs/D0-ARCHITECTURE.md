@@ -152,9 +152,10 @@ Appareil ──MQTT/TLS──> Broker ──profils/révisions──> Intégrati
   ([D4-GUIDE.md](D4-GUIDE.md)). D4 est terminé côté backend/documentation ;
   l’UI graphique dédiée n’est pas planifiée.
 - **D5 : en cours** : suite de parité/trames dorées pour les 11 profils,
-  broker sans `meross_iot`, et accès HTTP catalogue/P3 de l’intégration migré
-  vers un client signé maison (`broker_http.py`). Restent le manager, les
-  commandes et entités historiques, les patches, puis D5.1.
+  broker sans `meross_iot`, accès HTTP catalogue/P3 migré vers un client
+  signé maison, échelles par champ et entités profils climate/fan/humidifier.
+  Restent le manager, les commandes et entités historiques, les patches,
+  puis D5.1.
 - D5.1 : à venir.
 
 ### D2 — Moteur de profils, schéma 2

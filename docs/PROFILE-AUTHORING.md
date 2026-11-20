@@ -68,6 +68,8 @@ entities:
 Tronc commun : `key`, `platform`, `name`, `channel`, `device`
 (`hub`/`subdevice`), `device_class`, `entity_category`, `unit`, `min_value`,
 `max_value`, `step`, `state`, `commands`, `capabilities`, `quirks`.
+Les entrées de `state.fields` sont un chemin (`"togglex[0].onoff"`) ou un
+objet `{ path, scale, offset }` pour une mise à l’échelle par champ.
 
 - Plateformes simples (`cover`, `switch`, `light`, `sensor`, `binary_sensor`,
   `number`, `button`, `select`) : `state`/`commands`.
