@@ -157,9 +157,10 @@ Appareil ──MQTT/TLS──> Broker ──profils/révisions──> Intégrati
   bascule opt-in `profile_entities_only` (identifiants historiques préservés,
   entités historiques supprimées pour les appareils couverts), et découverte
   des appareils de l’adaptateur et du polling du coordinateur via l’API
-  broker (`broker_devices.py`) sans client `meross_iot`. Restent le manager
-  (encore utilisé pour les entités historiques), les patches et les fichiers
-  d’entités historiques, puis D5.1.
+  broker (`broker_devices.py`), et authentification de la config flow via le
+  client signé (`BrokerHttpClient.async_login`, identifiants locaux). Restent
+  le manager (encore utilisé pour les entités historiques), les patches et
+  les fichiers d’entités historiques, puis D5.1.
 - D5.1 : à venir.
 
 ### D2 — Moteur de profils, schéma 2
