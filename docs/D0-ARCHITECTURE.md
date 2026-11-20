@@ -156,8 +156,9 @@ Appareil ──MQTT/TLS──> Broker ──profils/révisions──> Intégrati
   signé maison, échelles par champ, entités profils climate/fan/humidifier et
   bascule opt-in `profile_entities_only` (identifiants historiques préservés,
   entités historiques supprimées pour les appareils couverts), et découverte
-  des appareils de l’adaptateur via l’API broker (`broker_devices.py`) sans
-  client `meross_iot`. Restent le manager, les patches et les fichiers
+  des appareils de l’adaptateur et du polling du coordinateur via l’API
+  broker (`broker_devices.py`) sans client `meross_iot`. Restent le manager
+  (encore utilisé pour les entités historiques), les patches et les fichiers
   d’entités historiques, puis D5.1.
 - D5.1 : à venir.
 
