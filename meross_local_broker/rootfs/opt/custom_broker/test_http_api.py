@@ -376,6 +376,16 @@ class HttpApiCompatibilityTest(unittest.TestCase):
         self.assertNotIn('other-shutter', result)
         self.assertNotIn('without-config', result)
 
+    def test_admin_can_reload_profiles(self):
+        response = self.client.post(
+            '/_admin_/profiles/reload', headers=self.INGRESS)
+
+        self.assertEqual(response.status_code, 200)
+        result = response.get_json()
+        self.assertIn("revision", result)
+        self.assertGreaterEqual(result["count"], 1)
+        self.assertEqual(set(result["diff"]), {"added", "removed", "changed"})
+
     def test_admin_can_forget_device(self):
         from db_helper import dbhelper
         dbhelper.associate_user_device(self.user.user_id, mac='AA:BB:CC:DD:EE:FF',

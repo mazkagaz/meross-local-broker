@@ -232,6 +232,16 @@ Configuration**. Le détail figure dans [DOCS.md](meross_local_broker/DOCS.md).
 | `legacy_user_topic_acks` | `true`    | ACK aussi sur le topic utilisateur (temporaire)           |
 | `reinit_db`              | `false`   | efface compte local et appareils au démarrage (dépannage) |
 
+## Profils d'appareils (mode avancé)
+
+Le catalogue de profils est livré dans l'add-on mais peut être surchargé sans
+reconstruire l'image : déposer des fichiers YAML dans `/data/device_profiles`.
+Un même `id` remplace le profil livré, un nouvel `id` l'ajoute. Un fichier
+invalide est ignoré et signalé ; le profil livré reste actif. Le rechargement
+se fait avec `POST /_admin_/profiles/reload` (ingress Supervisor) et renvoie
+les profils ajoutés, supprimés et modifiés. L'intégration reprend le nouveau
+catalogue au prochain redémarrage ou rechargement de l'entrée.
+
 ## Journaux
 
 Le panneau du broker affiche quatre diodes, une par service. Cliquer sur une

@@ -11,10 +11,31 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from profiles import ProfileCatalog
+from profiles import ProfileCatalog, diff_profiles
 
 HERE = Path(__file__).parent
 PROFILES = HERE / "device_profiles"
+
+
+def minimal(profile_id, version="1", **overrides):
+    data = {
+        "schema_version": 2,
+        "profile": {"id": profile_id, "version": version},
+        "match": {"type": ["test"]},
+        "payloads": {
+            "Appliance.Control.ToggleX": {"methods": ["GETACK"]},
+        },
+        "entities": [{
+            "key": "state",
+            "platform": "sensor",
+            "state": {
+                "namespace": "Appliance.Control.ToggleX",
+                "fields": {"value": "onoff"},
+            },
+        }],
+    }
+    data.update(overrides)
+    return data
 
 
 class ProfileCatalogTest(unittest.TestCase):
@@ -60,7 +81,7 @@ class ProfileCatalogTest(unittest.TestCase):
 
         self.assertEqual(list(catalog.profiles), ["meross.mss310"])
         self.assertEqual(len(catalog.errors), 1)
-        self.assertEqual(catalog.errors[0]["file"], "broken.yaml")
+        self.assertEqual(catalog.errors[0]["file"], "bundled:broken.yaml")
 
     def test_extension_keys_survive_and_unknown_core_fields_are_rejected(self):
         entity = {
@@ -104,11 +125,108 @@ class ProfileCatalogTest(unittest.TestCase):
 
         self.assertEqual(list(catalog.profiles), ["test.good"])
         self.assertEqual([error["file"] for error in catalog.errors],
-                         ["bad.yaml"])
+                         ["bundled:bad.yaml"])
         served = next(item for item in payload["profiles"]
                       if item["id"] == "test.good")
         self.assertEqual(served["profile"]["x-vendor"],
                          {"source": "capture"})
+
+
+class ProfileOverrideTest(unittest.TestCase):
+    def prepare(self, bundled, overrides):
+        base = bundled / "schema.json"
+        shutil.copy(PROFILES / "schema.json", base)
+        for name, data in overrides.items():
+            (bundled / name).write_text(json.dumps(data), encoding="utf-8")
+        (bundled / "base.yaml").write_text(
+            json.dumps(minimal("test.base")), encoding="utf-8")
+
+    def test_override_replaces_bundled_profile(self):
+        with tempfile.TemporaryDirectory() as bundled_tmp, \
+                tempfile.TemporaryDirectory() as override_tmp:
+            bundled, overrides = Path(bundled_tmp), Path(override_tmp)
+            self.prepare(bundled, {})
+            (overrides / "base.yaml").write_text(
+                json.dumps(minimal("test.base", version="2")),
+                encoding="utf-8")
+
+            catalog = ProfileCatalog(str(bundled), str(overrides))
+
+        self.assertEqual(catalog.errors, [])
+        self.assertEqual(catalog.profiles["test.base"]["profile"]["version"],
+                         "2")
+        self.assertEqual(catalog.sources["test.base"], "override")
+        served = catalog.payload()["profiles"][0]
+        self.assertEqual(served["source"], "override")
+
+    def test_invalid_override_keeps_the_bundled_profile(self):
+        with tempfile.TemporaryDirectory() as bundled_tmp, \
+                tempfile.TemporaryDirectory() as override_tmp:
+            bundled, overrides = Path(bundled_tmp), Path(override_tmp)
+            self.prepare(bundled, {})
+            (overrides / "broken.yaml").write_text(
+                json.dumps({**minimal("test.base", version="2"),
+                            "surprise": 1}), encoding="utf-8")
+
+            catalog = ProfileCatalog(str(bundled), str(overrides))
+
+        self.assertEqual(catalog.profiles["test.base"]["profile"]["version"],
+                         "1")
+        self.assertEqual(catalog.sources["test.base"], "bundled")
+        self.assertEqual(len(catalog.errors), 1)
+        self.assertTrue(catalog.errors[0]["file"].startswith("override:"))
+
+    def test_override_can_add_a_new_profile(self):
+        with tempfile.TemporaryDirectory() as bundled_tmp, \
+                tempfile.TemporaryDirectory() as override_tmp:
+            bundled, overrides = Path(bundled_tmp), Path(override_tmp)
+            self.prepare(bundled, {})
+            (overrides / "extra.yaml").write_text(
+                json.dumps(minimal("test.extra")), encoding="utf-8")
+
+            catalog = ProfileCatalog(str(bundled), str(overrides))
+
+        self.assertEqual(sorted(catalog.profiles),
+                         ["test.base", "test.extra"])
+        self.assertEqual(catalog.sources["test.extra"], "override")
+
+    def test_override_revision_differs(self):
+        with tempfile.TemporaryDirectory() as bundled_tmp, \
+                tempfile.TemporaryDirectory() as override_tmp:
+            bundled, overrides = Path(bundled_tmp), Path(override_tmp)
+            self.prepare(bundled, {})
+            plain = ProfileCatalog(str(bundled), "")
+            (overrides / "base.yaml").write_text(
+                json.dumps(minimal("test.base", version="2")),
+                encoding="utf-8")
+            overridden = ProfileCatalog(str(bundled), str(overrides))
+
+        self.assertNotEqual(plain.revision, overridden.revision)
+
+    def test_duplicate_override_is_rejected(self):
+        with tempfile.TemporaryDirectory() as bundled_tmp, \
+                tempfile.TemporaryDirectory() as override_tmp:
+            bundled, overrides = Path(bundled_tmp), Path(override_tmp)
+            self.prepare(bundled, {})
+            (overrides / "a.yaml").write_text(
+                json.dumps(minimal("test.base", version="2")),
+                encoding="utf-8")
+            (overrides / "b.yaml").write_text(
+                json.dumps(minimal("test.base", version="3")),
+                encoding="utf-8")
+
+            catalog = ProfileCatalog(str(bundled), str(overrides))
+
+        self.assertEqual(len(catalog.errors), 1)
+        self.assertIn("duplicate profile id", catalog.errors[0]["error"])
+
+    def test_diff_reports_added_removed_and_changed(self):
+        diff = diff_profiles(
+            {"a": "1", "b": "2", "c": "3"},
+            {"a": "1", "b": "9", "d": "4"})
+
+        self.assertEqual(diff, {
+            "added": ["d"], "removed": ["c"], "changed": ["b"]})
 
 
 if __name__ == "__main__":

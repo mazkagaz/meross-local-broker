@@ -18,11 +18,21 @@ from model.exception import BadRequestError
 from constants import DEFAULT_USER_ID
 from s6 import service_manager
 from setup import setup_account
+from profiles import reload_catalog
 from datetime import datetime
 
 
 admin_blueprint = Blueprint('admin', __name__)
 _LOGGER = get_logger(__name__)
+
+
+@admin_blueprint.route('/profiles/reload', methods=['POST'])
+def reload_profiles():
+    """Reload bundled profiles and the /data overrides."""
+    result = reload_catalog()
+    _LOGGER.info("Device profiles reloaded: %s profile(s), diff %s",
+                 result["count"], result["diff"])
+    return jsonify(result)
 
 
 @admin_blueprint.route('/devices', methods=['GET'])

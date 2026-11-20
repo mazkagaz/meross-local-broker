@@ -142,7 +142,11 @@ Appareil ──MQTT/TLS──> Broker ──profils/révisions──> Intégrati
   cover, number, button), sous-appareils, disponibilité. Les plateformes
   complexes, la restauration d’état et la reprise exacte des `unique_id`
   historiques restent avant D5.
-- D4, D5, D5.1 : à venir.
+- **D4 : démarré** : surcharges de profils dans `/data/device_profiles`,
+  rechargement à chaud exposé à l’admin, diff added/removed/changed et
+  exposition source/révision dans les diagnostics. Restent capture de trames,
+  catalogue signé, entités `update` et parcours guidé.
+- D5, D5.1 : à venir.
 
 ### D2 — Moteur de profils, schéma 2
 
@@ -207,6 +211,14 @@ pas de collision, mais doublons fonctionnels pendant la transition.
 - Capture de trames et génération de brouillon.
 - Catalogue signé, entités `update` par appareil, capteur source/version.
 - Parcours guidé Supervisor et documentation HA Container/Core.
+
+**État** : les surcharges sont lues dans `/data/device_profiles` (même `id`
+qu’un profil livré ou nouveau profil) ; un fichier invalide est signalé et le
+profil livré reste actif. `POST /_admin_/profiles/reload` recharge le
+catalogue et renvoie `added`/`removed`/`changed`. Le capteur de diagnostics
+expose révision, source et version. L’intégration reprend le nouveau
+catalogue au prochain démarrage ou rechargement de l’entrée : le rechargement
+à chaud côté HA reste à faire, ainsi que la capture, la signature et l’UI.
 
 ### D5 — Parité, trames dorées, suppression de `meross_iot`
 
