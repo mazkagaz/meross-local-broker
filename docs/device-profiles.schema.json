@@ -457,6 +457,13 @@
           "type": "number",
           "exclusiveMinimum": 0
         },
+        "legacy_classifiers": {
+          "type": "array",
+          "description": "Classifiers used by the historical unique_id scheme.",
+          "items": {
+            "type": "string"
+          }
+        },
         "state": {
           "$ref": "#/$defs/state"
         },

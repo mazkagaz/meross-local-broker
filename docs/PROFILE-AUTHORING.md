@@ -70,6 +70,8 @@ Tronc commun : `key`, `platform`, `name`, `channel`, `device`
 `max_value`, `step`, `state`, `commands`, `capabilities`, `quirks`.
 Les entrées de `state.fields` sont un chemin (`"togglex[0].onoff"`) ou un
 objet `{ path, scale, offset }` pour une mise à l’échelle par champ.
+`legacy_classifiers` permet de conserver l’identifiant historique d’une
+entité lors de la bascule vers les entités profils.
 
 - Plateformes simples (`cover`, `switch`, `light`, `sensor`, `binary_sensor`,
   `number`, `button`, `select`) : `state`/`commands`.

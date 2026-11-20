@@ -153,9 +153,10 @@ Appareil ──MQTT/TLS──> Broker ──profils/révisions──> Intégrati
   l’UI graphique dédiée n’est pas planifiée.
 - **D5 : en cours** : suite de parité/trames dorées pour les 11 profils,
   broker sans `meross_iot`, accès HTTP catalogue/P3 migré vers un client
-  signé maison, échelles par champ et entités profils climate/fan/humidifier.
-  Restent le manager, les commandes et entités historiques, les patches,
-  puis D5.1.
+  signé maison, échelles par champ, entités profils climate/fan/humidifier et
+  bascule opt-in `profile_entities_only` (identifiants historiques préservés,
+  entités historiques supprimées pour les appareils couverts). Restent le
+  manager, les patches et les fichiers d’entités historiques, puis D5.1.
 - D5.1 : à venir.
 
 ### D2 — Moteur de profils, schéma 2
