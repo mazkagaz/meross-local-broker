@@ -145,9 +145,9 @@ Appareil ──MQTT/TLS──> Broker ──profils/révisions──> Intégrati
 - **D4 : avancé** : surcharges de profils dans `/data/device_profiles`,
   rechargement à chaud exposé à l’admin, diff added/removed/changed,
   exposition source/révision, mode capture avec assainissement/limites/
-  brouillon, et rechargement automatique de l’entrée HA au changement de
-  révision (vérification toutes les 60 s). Restent catalogue signé, entités
-  `update` et parcours guidé/UI.
+  brouillon, rechargement automatique de l’entrée HA au changement de
+  révision (vérification toutes les 60 s) et catalogue signé Ed25519 vérifié
+  par l’intégration. Restent entités `update` et parcours guidé/UI.
 - D5, D5.1 : à venir.
 
 ### D2 — Moteur de profils, schéma 2
@@ -228,8 +228,13 @@ de taille et de nombre de trames, et brouillon YAML agrégé par namespace.
 
 Côté HA, l’adaptateur compare la révision du catalogue toutes les 60 s et
 recharge l’entrée de configuration quand elle change : les profils surchargés
-s’appliquent sans redémarrage de Home Assistant. Restent la signature du
-catalogue, les entités `update` et le parcours guidé/UI.
+s’appliquent sans redémarrage de Home Assistant.
+
+Le catalogue est signé en Ed25519 (paire générée dans `/data` avec openssl,
+clé publique exposée par `/v1/Device/profiles/pubkey`). L’intégration vérifie
+la signature : un catalogue signé invalide est refusé, un catalogue non signé
+(ancien broker) est accepté et signalé dans les diagnostics. Restent les
+entités `update` et le parcours guidé/UI.
 
 ### D5 — Parité, trames dorées, suppression de `meross_iot`
 

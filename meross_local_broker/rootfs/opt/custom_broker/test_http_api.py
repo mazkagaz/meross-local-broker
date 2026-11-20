@@ -376,6 +376,29 @@ class HttpApiCompatibilityTest(unittest.TestCase):
         self.assertNotIn('other-shutter', result)
         self.assertNotIn('without-config', result)
 
+    def test_profiles_public_key_endpoint(self):
+        import profile_signing
+
+        response = self.client.post(
+            '/v1/Device/profiles/pubkey', json=self.envelope({}))
+        self.assertEqual(response.get_json()['info'], 'token_invalid')
+
+        with tempfile.TemporaryDirectory() as directory:
+            key = str(Path(directory) / "signing.key")
+            pub = str(Path(directory) / "signing.pub")
+            with patch.multiple(
+                    profile_signing, KEY_PATH=key, PUB_PATH=pub):
+                token = self.sign_in().get_json()['data']['token']
+                response = self.client.post(
+                    '/v1/Device/profiles/pubkey', json=self.envelope({}),
+                    headers={'Authorization': f'Basic {token}'})
+
+        result = response.get_json()['data']
+        self.assertEqual(result['algorithm'], 'ed25519')
+        self.assertTrue(result['public_key'].startswith(
+            '-----BEGIN PUBLIC KEY-----'))
+        self.assertEqual(len(result['fingerprint']), 64)
+
     def test_admin_capture_lifecycle(self):
         import capture
 

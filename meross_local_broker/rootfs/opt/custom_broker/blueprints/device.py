@@ -13,6 +13,12 @@ from model.db_models import Device
 from model.exception import BadRequestError
 from db_helper import dbhelper
 from profiles import get_catalog
+from profile_signing import (
+    ALGORITHM,
+    ensure_keypair,
+    public_key_fingerprint,
+    public_key_pem,
+)
 
 device_blueprint = Blueprint('device', __name__)
 _LOGGER = get_logger(__name__)
@@ -78,6 +84,17 @@ def profiles_revision(api_payload: Dict, *args, **kwargs):
 @meross_http_api(login_required=True)
 def profiles_catalog(api_payload: Dict, *args, **kwargs):
     return make_api_response(data=get_catalog().payload())
+
+
+@device_blueprint.route('/profiles/pubkey', methods=['POST'])
+@meross_http_api(login_required=True)
+def profiles_public_key(api_payload: Dict, *args, **kwargs):
+    ensure_keypair()
+    return make_api_response(data={
+        'algorithm': ALGORITHM,
+        'public_key': public_key_pem(),
+        'fingerprint': public_key_fingerprint(),
+    })
 
 
 @device_blueprint.route('/rollerShutterConfig', methods=['POST'])

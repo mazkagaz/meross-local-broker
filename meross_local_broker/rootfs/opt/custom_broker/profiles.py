@@ -13,6 +13,7 @@ import jsonschema
 import yaml
 
 from logger import get_logger
+from profile_signing import ALGORITHM, sign
 
 _LOG = get_logger(__name__)
 _DEFAULT_DIR = os.path.join(os.path.dirname(__file__), "device_profiles")
@@ -117,7 +118,7 @@ class ProfileCatalog:
             "errors": len(self.errors),
         }
 
-    def payload(self) -> Dict[str, Any]:
+    def _body(self) -> Dict[str, Any]:
         profiles = []
         for profile_id in sorted(self.profiles):
             data = self.profiles[profile_id]
@@ -135,6 +136,14 @@ class ProfileCatalog:
             "profiles": profiles,
             "errors": list(self.errors),
         }
+
+    def payload(self) -> Dict[str, Any]:
+        body = self._body()
+        signature = sign(_canonical(body))
+        if signature:
+            body["signature"] = signature
+            body["algorithm"] = ALGORITHM
+        return body
 
     def profile_hashes(self) -> Dict[str, str]:
         return {

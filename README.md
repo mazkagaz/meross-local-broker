@@ -240,7 +240,9 @@ Un même `id` remplace le profil livré, un nouvel `id` l'ajoute. Un fichier
 invalide est ignoré et signalé ; le profil livré reste actif. Le rechargement
 se fait avec `POST /_admin_/profiles/reload` (ingress Supervisor) et renvoie
 les profils ajoutés, supprimés et modifiés. L'intégration vérifie la révision
-toutes les 60 s et recharge automatiquement son entrée quand elle change.
+toutes les 60 s et recharge automatiquement son entrée quand elle change. Le
+catalogue est signé (Ed25519, clé dans `/data`) et l'intégration refuse une
+signature invalide.
 
 ### Mode capture
 
