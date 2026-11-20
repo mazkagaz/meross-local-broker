@@ -75,8 +75,8 @@ Tronc commun : `key`, `platform`, `name`, `channel`, `device`
   `media_player`, `siren`, `update`) : sous-schéma strict, avec `capabilities`
   obligatoire pour `climate` et `fan`.
 
-Jetons autorisés dans les payloads : `$channel`, `$value`. Aucune expression,
-aucun template.
+Jetons autorisés dans les payloads : `$channel`, `$value` et `$id`
+(sous-appareils uniquement). Aucune expression, aucun template.
 
 ## Polling
 

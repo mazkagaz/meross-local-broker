@@ -1,7 +1,8 @@
 # D2 — Schéma 2 et moteur de profils
 
 **Statut** : décisions actées ; D2.1, D2.2.1 à D2.2.5 et D2.3 faits ; D2b
-(parité du catalogue) à venir (détail : [D2.2-PLAN.md](D2.2-PLAN.md)).
+jeu pilote livré, portage complet à venir (détails :
+[D2.2-PLAN.md](D2.2-PLAN.md) et [D2b-PARITY.md](D2b-PARITY.md)).
 **Prérequis** : D1 terminé (broker 1.1.3, intégration 2.4.4/2.4.5).
 
 ## Décisions

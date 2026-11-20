@@ -272,6 +272,8 @@ appareils. Laisser vide pour utiliser le fuseau de Home Assistant.
 - [docs/D2-PLAN.md](docs/D2-PLAN.md) — schéma 2, moteur et parité du catalogue.
 - [docs/D2.2-PLAN.md](docs/D2.2-PLAN.md) — moteur de profils : chemins,
   matching, compilation, matrice de tests négatifs.
+- [docs/D2b-PARITY.md](docs/D2b-PARITY.md) — parité du catalogue : jeu pilote
+  (hub, sous-appareils, thermostat, ventilateur) et couverture restante.
 - [docs/PROFILE-AUTHORING.md](docs/PROFILE-AUTHORING.md) — écrire et valider un
   profil d’appareil.
 - [docs/device-profiles.schema.json](docs/device-profiles.schema.json) — schéma

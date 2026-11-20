@@ -23,7 +23,7 @@ class ProfileCatalogTest(unittest.TestCase):
         second = ProfileCatalog(str(PROFILES))
 
         self.assertEqual(first.errors, [])
-        self.assertEqual(len(first.profiles), 3)
+        self.assertEqual(len(first.profiles), 6)
         self.assertEqual(first.revision, second.revision)
         self.assertEqual(len(first.revision), 64)
         self.assertIn("meross.mrs100", first.profiles)
@@ -33,13 +33,15 @@ class ProfileCatalogTest(unittest.TestCase):
 
         revision = catalog.revision_payload()
         self.assertEqual(revision["schema_version"], 2)
-        self.assertEqual(revision["count"], 3)
+        self.assertEqual(revision["count"], 6)
         self.assertEqual(revision["errors"], 0)
 
         payload = catalog.payload()
         self.assertEqual(payload["revision"], catalog.revision)
         ids = sorted(item["id"] for item in payload["profiles"])
-        self.assertEqual(ids, ["meross.mrs100", "meross.msl120", "meross.mss310"])
+        self.assertEqual(ids, [
+            "meross.mfc", "meross.mrs100", "meross.msh300", "meross.msl120",
+            "meross.mss310", "meross.mts200"])
         for item in payload["profiles"]:
             self.assertEqual(item["source"], "bundled")
             self.assertEqual(len(item["hash"]), 64)
