@@ -1,0 +1,54 @@
+name: Tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: |
+            meross_local_broker/rootfs/opt/custom_broker/requirements_ci.txt
+
+      - name: Install test dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install \
+            -r meross_local_broker/rootfs/opt/custom_broker/requirements_ci.txt
+
+      - name: Lint the bundled profiles
+        working-directory: meross_local_broker/rootfs/opt/custom_broker
+        run: python profile_lint.py
+
+      - name: Run the broker test suite
+        working-directory: meross_local_broker/rootfs/opt/custom_broker
+        run: |
+          python -m pytest -q \
+            --junitxml="${GITHUB_WORKSPACE}/reports/broker.xml"
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: broker-reports
+          path: reports/
+          if-no-files-found: ignore

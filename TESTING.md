@@ -63,6 +63,18 @@ The Docker image runs `test_http_api` as a build gate.
 8. Read `/v1/Device/devList` (authenticated) and confirm `ability` and, for a
    roller shutter, `rollerShutter.config/position/adjust`.
 
+## CI et exécution locale
+
+```bash
+make install        # dépendances de test épinglées (requirements_ci.txt)
+make test           # suite broker via pytest
+make lint-profiles  # schéma + cohérence des profils
+make reports        # rapport JUnit dans reports/
+```
+
+Le workflow `.github/workflows/test.yaml` exécute le linter de profils puis
+la suite broker sur chaque push/PR ; les rapports JUnit sont archivés.
+
 ## Known validation gaps
 
 - Models other than the MRS100 are community-tested; report the model,
