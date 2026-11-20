@@ -137,8 +137,11 @@ Appareil ──MQTT/TLS──> Broker ──profils/révisions──> Intégrati
   logs DEBUG obfusqués. Capteur `Broker profile backend` = `connected`.
 - **D2 et D2b : faits** (moteur, P3, pilote et familles simples ; reste de la
   matrice de parité en attente de trames réelles).
-- **D3 : socle fait** (scheduler central, batching, lazy poll, rate limiting) ;
-  entités issues des profils, identités et disponibilité restent à basculer.
+- **D3 : fait (mode opt-in)** : scheduler central, batching, lazy poll, rate
+  limiting, entités issues des profils (switch, light, sensor, binary_sensor,
+  cover, number, button), sous-appareils, disponibilité. Les plateformes
+  complexes, la restauration d’état et la reprise exacte des `unique_id`
+  historiques restent avant D5.
 - D4, D5, D5.1 : à venir.
 
 ### D2 — Moteur de profils, schéma 2
@@ -187,12 +190,16 @@ Appareil ──MQTT/TLS──> Broker ──profils/révisions──> Intégrati
 - Entités : plateformes étendues, hubs/sous-appareils, restauration et
   disponibilité ; `unique_id` existants conservés.
 
-**État** : le socle moteur est livré (`profiles/scheduler.py`) : une tâche et
-un verrou par appareil, plan de polling issu des profils, batching
-`Appliance.Control.Multiple`, file lazy, rate limiting et backoff. Les
-réponses sollicitées ne sont plus dispatchées deux fois. La création des
-entités HA depuis les profils et la bascule des identités restent à faire ;
-elles restent derrière l’option `profile_backend` jusqu’à la migration D5.
+**État** : socle et entités livrés. `profiles/scheduler.py` fournit une tâche
+et un verrou par appareil, le plan de polling, le batching
+`Appliance.Control.Multiple`, la file lazy, le rate limiting et le backoff ;
+les réponses sollicitées ne sont plus dispatchées deux fois.
+`profile_entities.py` crée les entités des plateformes simples depuis les
+profils, avec commandes, abonnements runtime et `via_device` des
+sous-appareils. Ces entités sont derrière l’option dédiée
+`profile_entities` (elle-même utile seulement avec `profile_backend`) et
+coexistent avec les entités historiques jusqu’à D5 : identifiants distincts,
+pas de collision, mais doublons fonctionnels pendant la transition.
 
 ### D4 — UX avancée sans changer le parcours de base
 

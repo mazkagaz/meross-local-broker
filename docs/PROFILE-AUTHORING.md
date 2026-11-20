@@ -66,8 +66,8 @@ entities:
 ## Entités
 
 Tronc commun : `key`, `platform`, `name`, `channel`, `device`
-(`hub`/`subdevice`), `device_class`, `entity_category`, `unit`, `state`,
-`commands`, `capabilities`, `quirks`.
+(`hub`/`subdevice`), `device_class`, `entity_category`, `unit`, `min_value`,
+`max_value`, `step`, `state`, `commands`, `capabilities`, `quirks`.
 
 - Plateformes simples (`cover`, `switch`, `light`, `sensor`, `binary_sensor`,
   `number`, `button`, `select`) : `state`/`commands`.

@@ -427,6 +427,16 @@
         "unit": {
           "type": "string"
         },
+        "min_value": {
+          "type": "number"
+        },
+        "max_value": {
+          "type": "number"
+        },
+        "step": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
         "state": {
           "$ref": "#/$defs/state"
         },
