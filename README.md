@@ -300,6 +300,8 @@ appareils. Laisser vide pour utiliser le fuseau de Home Assistant.
   (hub, sous-appareils, thermostat, ventilateur) et couverture restante.
 - [docs/D4-GUIDE.md](docs/D4-GUIDE.md) — guide avancé : surcharges,
   rechargement, catalogue signé, capture et entités update.
+- [docs/FUNCTIONAL-TESTS.md](docs/FUNCTIONAL-TESTS.md) — scénarios
+  fonctionnels (installation, bascule, appareils, scheduler, résilience).
 - [docs/PROFILE-AUTHORING.md](docs/PROFILE-AUTHORING.md) — écrire et valider un
   profil d’appareil.
 - [docs/device-profiles.schema.json](docs/device-profiles.schema.json) — schéma

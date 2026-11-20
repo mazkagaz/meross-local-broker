@@ -78,6 +78,30 @@ Avec `profile_entities`, chaque appareil et sous-appareil expose une entité
 `update` : titre du profil, version installée/dernière, description, et une
 action « installer » qui recharge l’entrée pour réappliquer le catalogue.
 
+## Bascule D5 — valider les entités profils
+
+Avant de supprimer `meross_iot`, valider le mode « entités profils seules » :
+
+1. Options de l’intégration : activer `profile_backend`, `profile_entities`
+   et `profile_entities_only`, puis recharger l’entrée.
+2. Dans le capteur de diagnostics, vérifier `entities_only: true`,
+   `devices_matched` égal au nombre d’appareils et l’absence de doublons
+   d’entités (les entités historiques des appareils couverts ne sont plus
+   créées).
+3. Vérifier chaque appareil couvert : volet (ouvrir/fermer/position/stop,
+   durées, calibration), prises et éclairages, thermostat, ventilateur,
+   capteurs et sous-appareils, disponibilité après redémarrage du broker.
+4. Les identifiants historiques sont conservés : automatisations et
+   tableaux de bord restent valides.
+5. En cas de problème, désactiver `profile_entities_only` (et au besoin
+   `profile_entities`) puis recharger : les entités historiques reviennent
+   avec les mêmes identifiants. Aucun appareil n’est supprimé du registre.
+
+Limites du mode : les appareils sans profil conservent leurs entités
+historiques (repli) tant que `meross_iot` est présent ; les plateformes
+climate/fan/humidifier des profils couvrent le cas nominal (consigne, mode,
+pourcentage), pas tous les réglages avancés.
+
 ## Dépannage
 
 | Symptôme                     | Vérifier                                                        |
