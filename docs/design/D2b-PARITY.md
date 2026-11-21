@@ -20,6 +20,9 @@ du schéma.
 | Sous-appareil MS100  | template        | `ms1`                       | temperature, humidity, voltage           |
 | Sous-appareil MS130  | template        | `ms130`                     | temperature, humidity                    |
 | Sous-appareil MTS100 | template        | `mts1`                      | climate (consigne, mesure, mode)         |
+| Sous-appareil MS200  | template        | `ms200`                     | binary_sensor fenêtre                    |
+| Sous-appareil MS400  | template        | `ms400`                     | binary_sensor fuite d’eau                |
+| Capteur MS600        | `meross.ms600`  | `ms600`                     | présence, distance, luminosité           |
 | Thermostat MTS200    | `meross.mts200` | `mts2`                      | climate (mesure, consigne, mode, on/off) |
 | Thermostat MTS300    | `meross.mts300` | `mts3`                      | climate (échelle 0,01)                   |
 | Ventilateur MFC      | `meross.mfc`    | `mfc`                       | fan (vitesse, vitesse max)               |
@@ -55,19 +58,20 @@ réelles** avant de déclarer la parité validée sur matériel.
 
 ## Couverture restante (meross_lan local-MQTT)
 
-| Famille                                   | État                                                    |
-| ----------------------------------------- | ------------------------------------------------------- |
-| Prises/switchs mono-canal                 | porté (`mss`, `mss310`, `mss5`)                         |
-| Multiprises (mss425/msp844)               | porté : sélection par canal, entités dynamiques         |
-| Éclairages                                | porté (`msl`, `msl120`, `msl320*`)                      |
-| Volets                                    | porté (`mrs`, `mrs100`)                                 |
-| Hubs                                      | MS100/MS130/MTS100 portés ; autres capteurs à confirmer |
-| Thermostats                               | MTS200/MTS300 + MTS100 portés ; mts9 à confirmer        |
-| Ventilateurs                              | porté (`mfc`)                                           |
-| Diffuseurs/humidificateurs                | porté (`mod`) ; purificateurs à confirmer               |
-| Garages (msg/rsg)                         | en attente : forme exacte du payload State              |
-| Sprinklers MST, énergie, HP110            | en attente de trames réelles                            |
-| Autres capteurs hub (MS200/400/600/GS559) | en attente de trames réelles                            |
+| Famille                        | État                                                      |
+| ------------------------------ | --------------------------------------------------------- |
+| Prises/switchs mono-canal      | porté (`mss`, `mss310`, `mss5`)                           |
+| Multiprises (mss425/msp844)    | porté : sélection par canal, entités dynamiques           |
+| Éclairages                     | porté (`msl`, `msl120`, `msl320*`)                        |
+| Volets                         | porté (`mrs`, `mrs100`)                                   |
+| Hubs                           | MS100/MS130/MTS100/MS200/MS400 portés ; GS559 à confirmer |
+| Capteurs                       | MS600 porté (push) ; MS200/MS400 via hub                  |
+| Thermostats                    | MTS200/MTS300 + MTS100 portés ; mts9 à confirmer          |
+| Ventilateurs                   | porté (`mfc`)                                             |
+| Diffuseurs/humidificateurs     | porté (`mod`) ; purificateurs à confirmer                 |
+| Garages (msg/rsg)              | en attente : forme exacte du payload State                |
+| Sprinklers MST, énergie, HP110 | en attente de trames réelles                              |
+| Capteur hub GS559 (fumée)      | en attente : correspondance des codes `status`            |
 
 Gaps identifiés pour la suite :
 
