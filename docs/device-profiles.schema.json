@@ -290,6 +290,21 @@
           "type": "string",
           "description": "Path of the digest document when the state is carried by System.All."
         },
+        "select": {
+          "type": "object",
+          "description": "Select the list item whose key equals the entity channel. State fields are relative to that item.",
+          "required": ["path", "key"],
+          "additionalProperties": false,
+          "properties": {
+            "path": {
+              "type": "string"
+            },
+            "key": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_]+$"
+            }
+          }
+        },
         "fields": {
           "type": "object",
           "description": "Entity property -> path inside the payload (e.g. 'togglex[0].onoff'), or an object with per-field scale/offset.",
@@ -424,6 +439,7 @@
           "type": "string"
         },
         "channel": {
+          "description": "Fixed channel, or '$channels' to clone this entity for each device channel.",
           "oneOf": [
             {
               "type": "integer",

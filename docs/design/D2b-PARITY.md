@@ -1,7 +1,7 @@
 # D2b — Parité du catalogue d’appareils
 
-**Statut** : jeu pilote et familles local-MQTT simples portés ; quelques
-familles restent en attente de trames réelles (voir la matrice).
+**Statut** : jeu pilote, familles local-MQTT simples et multiprises portés ;
+quelques familles restent en attente de trames réelles (voir la matrice).
 **Référence** : [D2-PLAN.md]../design/D2-PLAN.md et
 [D0-ARCHITECTURE.md]../architecture/D0-ARCHITECTURE.md.
 
@@ -23,6 +23,7 @@ du schéma.
 | Thermostat MTS200    | `meross.mts200` | `mts2`, `mts3`              | climate (mesure, consigne, mode, on/off) |
 | Ventilateur MFC      | `meross.mfc`    | `mfc`                       | fan (vitesse, vitesse max)               |
 | Prises/interrupteurs | `meross.mss`    | `mss*`, `mop`, `p11`, `r1x` | switch (canal 0)                         |
+| Multiprises          | `meross.mss425` | `mss425`, `msp844`          | switch par canal exposé                  |
 | Variateur Mss5       | `meross.mss5`   | `mss5`                      | light                                    |
 | Éclairages           | `meross.msl`    | `msl*`                      | light (onoff, luminosité, RGB)           |
 | Volet MRS100         | `meross.mrs100` | `mrs100`                    | cover, durées, calibration, statut       |
@@ -37,8 +38,10 @@ réelles** avant de déclarer la parité validée sur matériel.
 
 ## Enseignements du pilote
 
-- Le schéma n’a nécessité **aucun changement** : hubs/sub-appareils,
-  plateformes complexes et `capabilities` suffisent.
+- Le schéma n’a nécessité **aucun changement cassant** : hubs/sub-appareils,
+  plateformes complexes et `capabilities` suffisent. Les multiprises ajoutent
+  deux champs optionnels (`channel: $channels`, `state.select`) et le moteur
+  2.3 qui les honore.
 - Le seul ajout est moteur : le jeton `$id` pour adresser un sous-appareil
   dans une commande (`Appliance.Hub.Mts100.Mode`, `…Temperature`). Il est
   refusé hors template.
@@ -52,7 +55,7 @@ réelles** avant de déclarer la parité validée sur matériel.
 | Famille                                   | État                                                    |
 | ----------------------------------------- | ------------------------------------------------------- |
 | Prises/switchs mono-canal                 | porté (`mss`, `mss310`, `mss5`)                         |
-| Multiprises (mss425/msp844)               | en attente : chemins indexés par canal                  |
+| Multiprises (mss425/msp844)               | porté : sélection par canal, entités dynamiques         |
 | Éclairages                                | porté (`msl`, `msl120`, `msl320*`)                      |
 | Volets                                    | porté (`mrs`, `mrs100`)                                 |
 | Hubs                                      | MS100/MS130/MTS100 portés ; autres capteurs à confirmer |
@@ -65,11 +68,16 @@ réelles** avant de déclarer la parité validée sur matériel.
 
 Gaps identifiés pour la suite :
 
-- **chemins indexés par canal** : les multiprises renvoient une liste
-  `togglex` complète ; un chemin statique ne peut pas sélectionner l’élément
-  dont `channel` correspond à l’entité.
 - formes de payloads non documentées dans le client vendorisé pour les
   garages, purificateurs, sprinklers et certains capteurs hub.
+
+Le gap des chemins indexés par canal est résolu par `channel: $channels` +
+`state.select` (moteur 2.3), qui clone l’entité par canal découvert et
+sélectionne l’élément de liste par sa clé `channel`.
+
+**Ordre de publication** : livrer d’abord l’intégration avec le moteur 2.3,
+puis le broker avec `mss425.yaml`. Un moteur 2.2 ignore le profil et laisse
+retomber `mss425`/`msp844` sur le profil `mss` (canal 0 uniquement).
 
 ## Critères de sortie D2b
 

@@ -12,6 +12,7 @@ vérifications matérielles restent manuelles.
 | BRK-DEV-001    | Comptes, appairage, liste `devList`                       | `blueprints/device`, `db_helper`                  | `test_http_api.py`, `test_broker_agent_forwarding.py`                                          | F1, F3     |
 | BRK-PROF-001   | Catalogue, surcharges, lint, signature Ed25519            | `profiles.py`, `profile_signing.py`               | `test_profiles.py`, `test_profile_lint.py`, `test_profile_signing.py`                          | F6         |
 | BRK-API-001    | Contrats API versionnés et fixtures                       | `contracts/`, `blueprints/device.py`              | `test_http_api.py`                                                                             | F6         |
+| BRK-PROF-002   | Multiprises : template par canal et sélection indexée     | `device_profiles/mss425.yaml`                     | `test_profile_lint.py` (catalogue) ; moteur côté intégration                                   | F3, F6     |
 | BRK-ROLL-001   | Cache volet, position/état/config/calibration             | `broker_agent.py`, `db_helper.py`, profils MRS100 | `test_mrs100_roller_shutter.py`                                                                | F3, F6     |
 | BRK-MQTT-001   | Routage MQTT, ACK, ACL, anti-rejeu, fraîcheur             | `broker_agent.py`, `mqtt_integrity.py`            | `test_broker_agent_forwarding.py`, `test_broker_agent_disconnect.py`, `test_mqtt_integrity.py` | F4, F5, F7 |
 | BRK-UNBIND-001 | Oubli, révocation MAC, publication Unbind                 | `broker_agent.py`, `blueprints/device.py`         | `test_broker_agent_unbind.py`                                                                  | F7         |
@@ -27,6 +28,7 @@ vérifications matérielles restent manuelles.
 | --------------------------------------- | --------------------------------------------------------- |
 | `ProfileCatalog.load`, surcharges, diff | `test_profiles.py`                                        |
 | `profile_lint` schéma et identités      | `test_profile_lint.py`                                    |
+| Profil multiprise et template de canal  | `test_profile_lint.py`, `mss425.yaml`                     |
 | Signature et clé publique               | `test_profile_signing.py`                                 |
 | `CaptureManager` et brouillon           | `test_capture.py`                                         |
 | Routage des publications et ACK         | `test_broker_agent_forwarding.py`                         |

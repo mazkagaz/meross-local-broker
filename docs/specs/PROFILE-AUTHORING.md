@@ -82,6 +82,36 @@ entité lors de la bascule vers les entités profils.
 Jetons autorisés dans les payloads : `$channel`, `$value` et `$id`
 (sous-appareils uniquement). Aucune expression, aucun template.
 
+## Canaux multiples
+
+Une entité peut être clonée pour chaque canal exposé par l'appareil :
+
+```yaml
+profile:
+  requires_engine: ">=2.3"
+entities:
+  - key: outlet
+    platform: switch
+    channel: $channels
+    name: "Outlet $channel_number"
+    state:
+      namespace: Appliance.Control.ToggleX
+      channel: $channel
+      select: { path: togglex, key: channel }
+      fields: { onoff: onoff }
+```
+
+- `channel: $channels` marque un template ; l'intégration crée une entité par
+  canal découvert dans le descriptor (`digest`, avec repli sur le type).
+- `state.select` choisit l'élément de la liste dont `key` vaut le canal de
+  l'entité ; les chemins de `state.fields` sont relatifs à cet élément. Cela
+  évite de dépendre de l'ordre du tableau.
+- `name` accepte `$channel` (index) et `$channel_number` (index + 1).
+- Les commandes gardent `$channel`, substitué à l'envoi.
+- `requires_engine: ">=2.3"` : les moteurs antérieurs ignorent le profil au
+  lieu de créer une entité incomplète.
+- Les templates de canaux ne sont pas acceptés dans `subdevices`.
+
 ## Polling
 
 Chaque namespace peut déclarer :

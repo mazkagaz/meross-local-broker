@@ -151,7 +151,7 @@ Appareil ──MQTT/TLS──> Broker ──profils/révisions──> Intégrati
   entités `update` par appareil/sous-appareil et guide avancé
   ([D4-GUIDE.md]../design/D4-GUIDE.md). D4 est terminé côté backend/documentation ;
   l’UI graphique dédiée n’est pas planifiée.
-- **D5 : en cours** : suite de parité/trames dorées pour les 11 profils,
+- **D5 : terminé** : suite de parité/trames dorées pour les 12 profils,
   broker sans `meross_iot`, accès HTTP catalogue/P3 migré vers un client
   signé maison, échelles par champ, entités profils climate/fan/humidifier et
   bascule opt-in `profile_entities_only` (identifiants historiques préservés,
@@ -263,8 +263,8 @@ limites Supervisor/Container/Core sont documentés dans
 - Migration complète des commandes vers le socle vendorisé.
 - Suppression de `meross_iot`, des patches et des entités historiques.
 
-**État** : la suite `test_profile_parity.py` couvre les 11 profils avec des
-trames dorées ; le broker n’importe plus `meross_iot` (remplacé par
+**État** : la suite `test_profile_parity.py` couvre les 12 profils avec des
+trames dorées (dont la multiprise par canal) ; le broker n’importe plus `meross_iot` (remplacé par
 `compat.py`, dépendance retirée de `requirements.txt`). Côté intégration, le
 catalogue et la config P3 passent par `broker_http.py` : signature d’enveloppe
 locale, TLS du broker, plus aucune dépendance à `MerossHttpClient`. Le
