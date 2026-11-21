@@ -99,8 +99,14 @@ def main(argv=None) -> int:
     content = "\n".join(lines) + "\n"
     if args.check:
         current = TARGET / "UPSTREAM.md"
-        if current.read_text() != content:
-            print("Profile engine UPSTREAM.md is stale.", file=sys.stderr)
+        existing = current.read_text() if current.is_file() else ""
+        missing = [
+            name for name in FILES
+            if digest(source / name) not in existing
+        ]
+        if commit not in existing or missing:
+            print("Profile engine UPSTREAM.md is stale: "
+                  + (", ".join(missing) or "commit"), file=sys.stderr)
             return 1
     else:
         (TARGET / "UPSTREAM.md").write_text(content)
