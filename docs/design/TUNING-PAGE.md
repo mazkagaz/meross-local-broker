@@ -34,6 +34,14 @@ identiques dans les deux artefacts.
 
 **Sortie** : un seul comportement de compilation entre HA et l’aperçu broker.
 
+**État (2026-11-21)** : fait. Le broker embarque
+`profile_engine/` (copie octet pour octet de l’intégration), le script
+`tools/sync_profile_engine.py` et la provenance
+`profile_engine/UPSTREAM.md`. La CI broker épingle l’intégration
+`475c5d14065e3c792d426822d9ea13250c7cc967` et vérifie la parité avant les
+tests. Les tests couvrent la compilation de tout le catalogue et des trames
+MRS100 de référence.
+
 ## Étape 1 — Socle backend V1
 
 1.1 Stockage des surcharges : écriture atomique, backup horodaté, révision +

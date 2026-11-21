@@ -13,6 +13,9 @@ on:
 permissions:
   contents: read
 
+env:
+  MEROSS_CLOUD_REPO: ${{ github.workspace }}/cloud-src
+
 concurrency:
   group: tests-${{ github.ref }}
   cancel-in-progress: true
@@ -23,6 +26,13 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
+
+      - name: Check out the integration profile engine (pinned)
+        uses: actions/checkout@v4
+        with:
+          repository: mazkagaz/meross-local-cloud
+          ref: 475c5d14065e3c792d426822d9ea13250c7cc967
+          path: cloud-src
 
       - uses: actions/setup-python@v6
         with:
@@ -36,6 +46,11 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install \
             -r meross_local_broker/rootfs/opt/custom_broker/requirements_ci.txt
+
+      - name: Check the shared profile engine
+        run: |
+          python tools/sync_profile_engine.py \
+            --source "$MEROSS_CLOUD_REPO" --check
 
       - name: Lint the bundled profiles
         working-directory: meross_local_broker/rootfs/opt/custom_broker
