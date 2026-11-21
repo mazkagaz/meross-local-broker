@@ -9,8 +9,9 @@
 ## Branding
 
 - Display name: **Meross Local Broker**.
-- Banner and icon: originals in `branding/`, generated assets in
-  `meross_local_broker/icon.png` and `meross_local_broker/logo.png`.
+- Banner and icon: unified originals in `branding/` (the logo is a transparent
+  PNG); generated assets in `meross_local_broker/icon.png`,
+  `meross_local_broker/logo.png`, the web UI banner and favicons.
 
 ## Main modified areas
 
