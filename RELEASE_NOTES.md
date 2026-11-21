@@ -1,3 +1,16 @@
+# Notes de version — 1.2.2
+
+## 1.2.2 — routage ACK
+
+- Les ACK (`GETACK`, `SETACK`, `ERROR`) sont livrés uniquement sur le topic
+  applicatif demandeur (`/app/<userId>-<appId>/subscribe`).
+- Les PUSH restent sur `/app/<userId>/subscribe`.
+- Repli sur le topic utilisateur uniquement si le topic demandeur est absent
+  ou invalide.
+- Suppression de l’option `legacy_user_topic_acks` et de la double publication.
+- Aucun changement d’API ; l’intégration 3.0 et le pairer 2.0.9 restent
+  compatibles.
+
 # Notes de version — 1.2.1
 
 ## 1.2.1 — volets MRS100

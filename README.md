@@ -39,8 +39,8 @@ d'intégration spécifiques sont bienvenues.
 | Brique                         | Version minimale | Remarques                                             |
 | ------------------------------ | ---------------- | ----------------------------------------------------- |
 | Broker                         | 1.2.1            | profils MRS100 corrigés, TLS/CA valide, HTTPS, Unbind |
-| Intégration Meross Local Cloud | 3.0.0-beta.3     | catalogue profils, réparation 48 h                    |
-| Meross Local Pairer            | 2.0.8            | découverte et appairage HTTPS uniquement              |
+| Intégration Meross Local Cloud | 3.0.0-beta.4     | catalogue profils, réparation 48 h                    |
+| Meross Local Pairer            | 2.0.9            | découverte et appairage HTTPS uniquement              |
 
 ## Ports
 
@@ -209,7 +209,7 @@ supprime les entités côté Home Assistant. Cette publication a lieu au plus ta
 l'agent) : c'est le délai normal pendant lequel les entités peuvent encore
 apparaître.
 
-Avec l'intégration **3.0.0-beta.3 ou plus récente** :
+Avec l'intégration **3.0.0-beta.4 ou plus récente** :
 
 - un Unbind reçu sur un appareil actif supprime immédiatement son entrée
   d'appareil et ses entités dans Home Assistant ;
@@ -279,7 +279,7 @@ appareils. Laisser vide pour utiliser le fuseau de Home Assistant.
 | Aucun appareil dans l'add-on        | appairage Wi-Fi AP ou Bluetooth LE, port MQTT 2001, Wi-Fi 2,4 GHz WPA2         |
 | L'intégration ne voit pas le broker | adresse HTTPS 2004, compte local, broker 1.2.1+                                |
 | Entités absentes                    | appareil ONLINE dans l'add-on, puis redémarrer l'intégration                   |
-| Entités fantômes après un oubli     | intégration 3.0.0-beta.3+, attendre la réparation 48 h ou supprimer l'appareil |
+| Entités fantômes après un oubli     | intégration 3.0.0-beta.4+, attendre la réparation 48 h ou supprimer l'appareil |
 | Durées non conservées               | logs `Stored roller-shutter config` / `Re-applied roller-shutter config`       |
 | Appareil déjà lié au cloud Meross   | réinitialiser l'appareil avant l'appairage local                               |
 

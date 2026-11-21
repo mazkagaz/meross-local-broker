@@ -1,4 +1,4 @@
-## Unreleased
+## 1.2.2
 
 - D5.1 : les ACK de commande sont livrés uniquement sur le topic applicatif
   demandeur (`/app/<userId>-<appId>/subscribe`) ; l’option temporaire
