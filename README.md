@@ -27,20 +27,20 @@ Appareil Meross ──MQTT/TLS──> add-on Meross Local Broker ──API/MQTT�
 ## Compatibilité
 
 Le broker fonctionne avec les appareils Meross qui acceptent un broker local.
-Le **MRS100** (volet roulant) est la cible principalement testée, mais les
+Le **MRS100** (volet roulant) est la cible principale des tests, mais les
 autres modèles doivent continuer à fonctionner comme avec le broker d'origine,
 et parfois mieux. Les retours de test sont précieux : ouvrez une
 [issue](https://github.com/mazkagaz/meross-local-broker/issues) en précisant le
 modèle, le firmware et les fonctions qui marchent ou non. Les demandes
-d'intégration spécifique sont bienvenues.
+d'intégration spécifiques sont bienvenues.
 
 ## Compatibilité des versions
 
-| Brique                         | Version minimale | Remarques                                          |
-| ------------------------------ | ---------------- | -------------------------------------------------- |
-| Broker                         | 1.0.0            | TLS/CA valide, HTTPS obligatoire, Unbind, journaux |
-| Intégration Meross Local Cloud | 2.3.2            | réconciliation des appareils et réparation 48 h    |
-| Meross Local Pairer            | 2.0.8            | découverte et appairage HTTPS uniquement           |
+| Brique                         | Version minimale | Remarques                                             |
+| ------------------------------ | ---------------- | ----------------------------------------------------- |
+| Broker                         | 1.2.1            | profils MRS100 corrigés, TLS/CA valide, HTTPS, Unbind |
+| Intégration Meross Local Cloud | 3.0.0-beta.3     | catalogue profils, réparation 48 h                    |
+| Meross Local Pairer            | 2.0.8            | découverte et appairage HTTPS uniquement              |
 
 ## Ports
 
@@ -138,9 +138,9 @@ MQTT, puis le compte local. Les ports sont préremplis par la découverte mDNS.
 | Mot de passe      | le mot de passe local                           |
 | Code MFA          | seulement si le compte local l'exige            |
 
-Le broker doit être en **1.0.0 ou plus récent** : l'intégration récupère et
+Le broker doit être en **1.2.1 ou plus récent** : l'intégration récupère et
 épingle sa CA (`/ca.crt`). Les options « ignorer la validation » n'existent plus.
-Les options de l'intégration (mode de communication, User-Agent) vivent dans
+L'option User-Agent de l'intégration se règle dans
 **Paramètres → Appareils et services → Meross Local Cloud → Configurer**.
 
 ### TLS
@@ -209,7 +209,7 @@ supprime les entités côté Home Assistant. Cette publication a lieu au plus ta
 l'agent) : c'est le délai normal pendant lequel les entités peuvent encore
 apparaître.
 
-Avec l'intégration **2.3.2 ou plus récente** :
+Avec l'intégration **3.0.0-beta.3 ou plus récente** :
 
 - un Unbind reçu sur un appareil actif supprime immédiatement son entrée
   d'appareil et ses entités dans Home Assistant ;
@@ -274,15 +274,15 @@ appareils. Laisser vide pour utiliser le fuseau de Home Assistant.
 
 ## Dépannage
 
-| Problème                            | Vérifier                                                                 |
-| ----------------------------------- | ------------------------------------------------------------------------ |
-| L'add-on ne démarre pas             | architecture amd64/aarch64, logs du Supervisor, image GHCR publique      |
-| Aucun appareil dans l'add-on        | appairage Wi-Fi AP ou Bluetooth LE, port MQTT 2001, Wi-Fi 2,4 GHz WPA2   |
-| L'intégration ne voit pas le broker | adresse HTTPS 2004, compte local, broker 1.0.0+                          |
-| Entités absentes                    | appareil ONLINE dans l'add-on, puis redémarrer l'intégration             |
-| Entités fantômes après un oubli     | intégration 2.3.2+, attendre la réparation 48 h ou supprimer l'appareil  |
-| Durées non conservées               | logs `Stored roller-shutter config` / `Re-applied roller-shutter config` |
-| Appareil déjà lié au cloud Meross   | réinitialiser l'appareil avant l'appairage local                         |
+| Problème                            | Vérifier                                                                       |
+| ----------------------------------- | ------------------------------------------------------------------------------ |
+| L'add-on ne démarre pas             | architecture amd64/aarch64, logs du Supervisor, image GHCR publique            |
+| Aucun appareil dans l'add-on        | appairage Wi-Fi AP ou Bluetooth LE, port MQTT 2001, Wi-Fi 2,4 GHz WPA2         |
+| L'intégration ne voit pas le broker | adresse HTTPS 2004, compte local, broker 1.2.1+                                |
+| Entités absentes                    | appareil ONLINE dans l'add-on, puis redémarrer l'intégration                   |
+| Entités fantômes après un oubli     | intégration 3.0.0-beta.3+, attendre la réparation 48 h ou supprimer l'appareil |
+| Durées non conservées               | logs `Stored roller-shutter config` / `Re-applied roller-shutter config`       |
+| Appareil déjà lié au cloud Meross   | réinitialiser l'appareil avant l'appairage local                               |
 
 ## Documentation technique
 

@@ -10,11 +10,11 @@ HTTP/HTTPS) pour Home Assistant. HTTPS est activé par défaut. Il est prévu po
   entités Home Assistant.
 
 Le broker vise tous les appareils Meross qui acceptent un broker local. Le
-**MRS100** (volet roulant) est la cible principalement testée ; les autres
+**MRS100** (volet roulant) est la cible principale des tests ; les autres
 modèles doivent continuer à fonctionner comme avec le broker d'origine.
 Merci de signaler vos tests en précisant le modèle, le firmware et les
 fonctions disponibles : ouvrez une issue sur le dépôt du broker. Les demandes
-d'intégration spécifique sont bienvenues.
+d'intégration spécifiques sont bienvenues.
 
 ## Démarrage
 
@@ -121,14 +121,14 @@ disparaît sans Unbind est proposé à la suppression après 48 heures.
 
 ## Dépannage
 
-| Problème                  | Vérifier                                                    |
-| ------------------------- | ----------------------------------------------------------- |
-| L'appareil n'apparaît pas | appairage effectué, Wi-Fi 2,4 GHz WPA2, port 2001           |
-| Authentification refusée  | identifiants du compte local, `UserId`/`mqttKey`            |
-| Entités absentes dans HA  | intégration configurée avec le compte local, broker 1.0.0+  |
-| Entités fantômes          | intégration 2.3.2+, réparation 48 h ou suppression manuelle |
-| Consommation à zéro       | `device_timezone` renseigné ou fuseau HA correct            |
-| Durées MRS100 perdues     | logs `Stored` / `Re-applied`, reconnexion de l'appareil     |
+| Problème                  | Vérifier                                                           |
+| ------------------------- | ------------------------------------------------------------------ |
+| L'appareil n'apparaît pas | appairage effectué, Wi-Fi 2,4 GHz WPA2, port 2001                  |
+| Authentification refusée  | identifiants du compte local, `UserId`/`mqttKey`                   |
+| Entités absentes dans HA  | intégration configurée avec le compte local, broker 1.2.1+         |
+| Entités fantômes          | intégration 3.0.0-beta.3+, réparation 48 h ou suppression manuelle |
+| Consommation à zéro       | `device_timezone` renseigné ou fuseau HA correct                   |
+| Durées MRS100 perdues     | logs `Stored` / `Re-applied`, reconnexion de l'appareil            |
 
 ## Licence
 

@@ -33,7 +33,10 @@ Upstream: https://github.com/albertogeniola/ha-meross-local-broker (Apache-2.0).
         <ul>
           <li>Connect the phone to the <b>same Wi-Fi network as Home Assistant</b>.</li>
           <li>Open the pairer. It discovers this broker and fills in its address automatically.</li>
-          <li>Keep <b>HTTPS</b> enabled. HTTP is only useful for diagnostics.</li>
+          <li>
+            Keep <b>HTTPS</b> enabled. Plain HTTP is reserved for the Supervisor ingress and is not reachable from the
+            LAN.
+          </li>
           <li>Log in with the local account created in step 1.</li>
         </ul>
         <p class="small">
@@ -79,7 +82,7 @@ Upstream: https://github.com/albertogeniola/ha-meross-local-broker (Apache-2.0).
       <div class="ha-step-container">
         <p>
           Install the <b>Meross Local Cloud</b> integration from
-          <a href="https://github.com/mazkagaz/meross-local-cloud#installation" target="_blank" rel="noopener"
+          <a href="https://github.com/mazkagaz/meross-local-cloud#installation-avec-hacs" target="_blank" rel="noopener"
             >mazkagaz/meross-local-cloud</a
           >, and configure it with the local account created in step 1. It only works with this local broker; no cloud
           mode is offered.
