@@ -14,33 +14,40 @@ du schéma.
 
 ## Profils livrés
 
-| Famille              | Profil          | Match                       | Entités                                   |
-| -------------------- | --------------- | --------------------------- | ----------------------------------------- |
-| Hub MSH300           | `meross.msh300` | `kind: hub`, `msh`          | hub : online ; modèles ci-dessous         |
-| Sous-appareil MS100  | template        | `ms1`                       | temperature, humidity, voltage            |
-| Sous-appareil MS130  | template        | `ms130`                     | temperature, humidity                     |
-| Sous-appareil MTS100 | template        | `mts1`                      | climate (consigne, mesure, mode)          |
-| Sous-appareil MS200  | template        | `ms200`                     | binary_sensor fenêtre                     |
-| Sous-appareil MS400  | template        | `ms400`                     | binary_sensor fuite d’eau                 |
-| Capteur MS600        | `meross.ms600`  | `ms600`                     | présence, distance, luminosité            |
-| Sous-appareil GS559  | template        | `gs559`                     | fumée, défaut, silencieux, interconnexion |
-| Porte de garage      | `meross.garage` | `msg`, `rsg`                | cover (ouvrir/fermer, état)               |
-| Thermostat MTS200    | `meross.mts200` | `mts2`                      | climate (mesure, consigne, mode, on/off)  |
-| Thermostat MTS300    | `meross.mts300` | `mts3`                      | climate (échelle 0,01)                    |
-| Ventilateur MFC      | `meross.mfc`    | `mfc`                       | fan (vitesse, vitesse max)                |
-| Prises/interrupteurs | `meross.mss`    | `mss*`, `mop`, `p11`, `r1x` | switch (canal 0)                          |
-| Multiprises          | `meross.mss425` | `mss425`, `msp844`          | switch par canal exposé                   |
-| Variateur Mss5       | `meross.mss5`   | `mss5`                      | light                                     |
-| Éclairages           | `meross.msl`    | `msl*`                      | light (onoff, luminosité, RGB)            |
-| Volet MRS100         | `meross.mrs100` | `mrs100`                    | cover, durées, calibration, statut        |
-| Volets               | `meross.mrs`    | `mrs`                       | cover (position, ouvrir/fermer/stop)      |
-| Diffuseur MOD        | `meross.mod`    | `mod`                       | humidifier (diffusion) + light            |
+| Famille              | Profil          | Match                       | Entités                                    |
+| -------------------- | --------------- | --------------------------- | ------------------------------------------ |
+| Hub MSH300           | `meross.msh300` | `kind: hub`, `msh`          | hub : online ; modèles ci-dessous          |
+| Sous-appareil MS100  | template        | `ms1`                       | temperature, humidity, voltage             |
+| Sous-appareil MS130  | template        | `ms130`                     | temperature, humidity                      |
+| Sous-appareil MTS100 | template        | `mts1`                      | climate (consigne, mesure, mode)           |
+| Sous-appareil MS200  | template        | `ms200`                     | binary_sensor fenêtre                      |
+| Sous-appareil MS400  | template        | `ms400`                     | binary_sensor fuite d’eau                  |
+| Capteur MS600        | `meross.ms600`  | `ms600`                     | présence, distance, luminosité             |
+| Sous-appareil GS559  | template        | `gs559`                     | fumée, défaut, silencieux, interconnexion  |
+| Porte de garage      | `meross.garage` | `msg`, `rsg`                | cover (ouvrir/fermer, état)                |
+| Thermostat MTS200    | `meross.mts200` | `mts2`                      | climate (mesure, consigne, mode, on/off)   |
+| Thermostat MTS300    | `meross.mts300` | `mts3`, `mts9`              | climate (échelle 0,01)                     |
+| Ventilateur MFC      | `meross.mfc`    | `mfc`                       | fan (vitesse, vitesse max)                 |
+| Purificateur MAP100  | `meross.map100` | `map`                       | fan (vitesse) + durée de vie du filtre     |
+| Compteur EM/EM06     | `meross.em`     | `em`, `em06`                | puissance, tension, courant, énergie/canal |
+| Diffuseur MSXH0      | `meross.msxh0`  | `msxh0`                     | spray + lumière                            |
+| Cherub HP110         | `meross.hp110`  | `hp110*`                    | alimentation + lumière (MP3 non couvert)   |
+| Sous-appareil MST    | template        | `mst100`, `mst200`          | arrosage, durée, débit (mono-vanne)        |
+| Prises/interrupteurs | `meross.mss`    | `mss*`, `mop`, `p11`, `r1x` | switch (canal 0)                           |
+| Multiprises          | `meross.mss425` | `mss425`, `msp844`          | switch par canal exposé                    |
+| Variateur Mss5       | `meross.mss5`   | `mss5`                      | light                                      |
+| Éclairages           | `meross.msl`    | `msl*`                      | light (onoff, luminosité, RGB)             |
+| Volet MRS100         | `meross.mrs100` | `mrs100`                    | cover, durées, calibration, statut         |
+| Volets               | `meross.mrs`    | `mrs`                       | cover (position, ouvrir/fermer/stop)       |
+| Diffuseur MOD        | `meross.mod`    | `mod`                       | humidifier (diffusion) + light             |
 
 Les trames dorées utilisées par les tests proviennent des définitions de
-payloads du client vendorisé (`protocol/types/*.py`) : TempHum, Sensor.All,
-Mts100.All, Thermostat.Mode, ToggleX, Light, RollerShutter.Position,
-Control.Fan et Diffuser.\*. **Elles restent à confirmer par des captures
-réelles** avant de déclarer la parité validée sur matériel.
+payloads du client vendorisé (`protocol/types/*.py`) et des traces
+`emulator_traces/` de meross_lan (MST100/MST200, EM06, MAP100, MSXH0,
+HP110, garage) : TempHum, Sensor.All, Mts100.All, Thermostat.Mode, ToggleX,
+Light, RollerShutter.Position, Fan, FilterMaintenance, Water, ElectricityX,
+GarageDoor.State et Diffuser. Les familles sans trace (MST200 multicanal,
+MS600 poussé) restent à confirmer sur matériel.
 
 ## Enseignements du pilote
 
@@ -60,25 +67,29 @@ réelles** avant de déclarer la parité validée sur matériel.
 
 ## Couverture restante (meross_lan local-MQTT)
 
-| Famille                        | État                                              |
-| ------------------------------ | ------------------------------------------------- |
-| Prises/switchs mono-canal      | porté (`mss`, `mss310`, `mss5`)                   |
-| Multiprises (mss425/msp844)    | porté : sélection par canal, entités dynamiques   |
-| Éclairages                     | porté (`msl`, `msl120`, `msl320*`)                |
-| Volets                         | porté (`mrs`, `mrs100`)                           |
-| Hubs                           | MS100/MS130/MTS100/MS200/MS400/GS559 portés       |
-| Capteurs                       | MS600 porté (push) ; MS200/MS400 via hub          |
-| Thermostats                    | MTS200/MTS300 + MTS100 portés ; mts9 à confirmer  |
-| Ventilateurs                   | porté (`mfc`)                                     |
-| Diffuseurs/humidificateurs     | porté (`mod`) ; purificateurs à confirmer         |
-| Garages (msg/rsg)              | porté : State objet ou liste, cover ouvrir/fermer |
-| Sprinklers MST, énergie, HP110 | en attente de trames réelles                      |
-| Capteur hub GS559 (fumée)      | porté : alarme/défaut/silencieux via `on_values`  |
+| Famille                     | État                                                   |
+| --------------------------- | ------------------------------------------------------ |
+| Prises/switchs mono-canal   | porté (`mss`, `mss310`, `mss5`)                        |
+| Multiprises (mss425/msp844) | porté : sélection par canal, entités dynamiques        |
+| Éclairages                  | porté (`msl`, `msl120`, `msl320*`)                     |
+| Volets                      | porté (`mrs`, `mrs100`)                                |
+| Hubs                        | MS100/MS130/MTS100/MS200/MS400/GS559 portés            |
+| Capteurs                    | MS600 porté (push) ; MS200/MS400 via hub               |
+| Thermostats                 | MTS200/MTS300/MTS9 + MTS100 portés                     |
+| Ventilateurs                | porté (`mfc`)                                          |
+| Diffuseurs/humidificateurs  | porté (`mod`, `msxh0`)                                 |
+| Purificateurs (map100)      | porté : fan + `FilterMaintenance`                      |
+| Garages (msg/rsg)           | porté : State objet ou liste, cover ouvrir/fermer      |
+| Sprinklers MST              | MST100 porté ; MST200 : une vanne (canaux non validés) |
+| Compteurs d'énergie         | porté (`em`, `em06`, par canal)                        |
+| HP110                       | alimentation + lumière ; média MP3 hors périmètre      |
+| Capteur hub GS559 (fumée)   | porté : alarme/défaut/silencieux via `on_values`       |
 
 Gaps identifiés pour la suite :
 
-- formes de payloads non documentées dans le client vendorisé pour les
-  sprinklers et HP110.
+- MST200 : trames réelles sans canaux exploitables ; le template expose une
+  vanne par sous-appareil.
+- HP110 : le namespace MP3 n’a pas de plateforme média dans le moteur.
 
 Le gap des chemins indexés par canal est résolu par `channel: $channels` +
 `state.select` (moteur 2.3), qui clone l’entité par canal découvert et

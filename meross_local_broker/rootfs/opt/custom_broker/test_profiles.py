@@ -46,7 +46,7 @@ class ProfileCatalogTest(unittest.TestCase):
         second = ProfileCatalog(str(PROFILES))
 
         self.assertEqual(first.errors, [])
-        self.assertEqual(len(first.profiles), 16)
+        self.assertEqual(len(first.profiles), 19)
         self.assertEqual(first.revision, second.revision)
         self.assertEqual(len(first.revision), 64)
         self.assertIn("meross.mrs100", first.profiles)
@@ -56,16 +56,17 @@ class ProfileCatalogTest(unittest.TestCase):
 
         revision = catalog.revision_payload()
         self.assertEqual(revision["schema_version"], 2)
-        self.assertEqual(revision["count"], 16)
+        self.assertEqual(revision["count"], 19)
         self.assertEqual(revision["errors"], 0)
 
         payload = catalog.payload()
         self.assertEqual(payload["revision"], catalog.revision)
         ids = sorted(item["id"] for item in payload["profiles"])
         self.assertEqual(ids, [
-            "meross.garage", "meross.map100", "meross.mfc", "meross.mod", "meross.mrs", "meross.mrs100",
+            "meross.em", "meross.garage", "meross.hp110", "meross.map100",
+            "meross.mfc", "meross.mod", "meross.mrs", "meross.mrs100",
             "meross.ms600", "meross.msh300", "meross.msl", "meross.msl120", "meross.mss",
-            "meross.mss310", "meross.mss425", "meross.mss5", "meross.mts200", "meross.mts300"])
+            "meross.mss310", "meross.mss425", "meross.mss5", "meross.msxh0", "meross.mts200", "meross.mts300"])
         for item in payload["profiles"]:
             self.assertEqual(item["source"], "bundled")
             self.assertEqual(len(item["hash"]), 64)
