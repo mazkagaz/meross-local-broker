@@ -78,7 +78,7 @@ réelles** avant de déclarer la parité validée sur matériel.
 Gaps identifiés pour la suite :
 
 - formes de payloads non documentées dans le client vendorisé pour les
-  purificateurs, sprinklers et certains capteurs hub.
+  sprinklers et HP110.
 
 Le gap des chemins indexés par canal est résolu par `channel: $channels` +
 `state.select` (moteur 2.3), qui clone l’entité par canal découvert et
