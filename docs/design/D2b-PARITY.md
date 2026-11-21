@@ -20,7 +20,8 @@ du schéma.
 | Sous-appareil MS100  | template        | `ms1`                       | temperature, humidity, voltage           |
 | Sous-appareil MS130  | template        | `ms130`                     | temperature, humidity                    |
 | Sous-appareil MTS100 | template        | `mts1`                      | climate (consigne, mesure, mode)         |
-| Thermostat MTS200    | `meross.mts200` | `mts2`, `mts3`              | climate (mesure, consigne, mode, on/off) |
+| Thermostat MTS200    | `meross.mts200` | `mts2`                      | climate (mesure, consigne, mode, on/off) |
+| Thermostat MTS300    | `meross.mts300` | `mts3`                      | climate (échelle 0,01)                   |
 | Ventilateur MFC      | `meross.mfc`    | `mfc`                       | fan (vitesse, vitesse max)               |
 | Prises/interrupteurs | `meross.mss`    | `mss*`, `mop`, `p11`, `r1x` | switch (canal 0)                         |
 | Multiprises          | `meross.mss425` | `mss425`, `msp844`          | switch par canal exposé                  |
@@ -46,9 +47,11 @@ réelles** avant de déclarer la parité validée sur matériel.
   dans une commande (`Appliance.Hub.Mts100.Mode`, `…Temperature`). Il est
   refusé hors template.
 - Les thermostat MTS100 utilise `Appliance.Hub.Mts100.All` comme source
-  d’état unique ; MTS200 utilise `Appliance.Control.Thermostat.Mode`.
-- Le mapping fin des modes (valeurs brutes → `hvac_modes`) et les échelles
-  de température par champ restent des quirks de plateforme (D3), pas du YAML.
+  d’état unique ; MTS200 et MTS300 utilisent
+  `Appliance.Control.Thermostat.Mode`.
+- Les échelles diffèrent : MTS200 en dixièmes (×0,1), MTS300 en centièmes
+  (×0,01), d’où deux profils. Le mapping fin des modes (valeurs brutes →
+  `hvac_modes`) reste un quirk de plateforme (D3).
 
 ## Couverture restante (meross_lan local-MQTT)
 
