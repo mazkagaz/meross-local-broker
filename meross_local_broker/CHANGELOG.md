@@ -1,3 +1,12 @@
+## 1.3.1
+
+- Profil MRS100 `2026.11.2` : `Appliance.RollerShutter.Adjust` n’est plus
+  interrogé en GET (namespace SET-only) ; le statut vient du SETACK/PUSH de
+  calibration.
+- Associé à l’intégration 3.1.1, la position et le statut de calibration sont
+  amorcés depuis le cache P3 et survivent aux reloads/redémarrages.
+- Aucun changement d’API ; catalogue à 19 profils.
+
 ## 1.3.0
 
 - Catalogue D2b complet (19 profils) : multiprises MSS425/MSP844, capteurs

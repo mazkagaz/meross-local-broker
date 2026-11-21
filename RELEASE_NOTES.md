@@ -1,3 +1,15 @@
+# Notes de version — 1.3.1
+
+## 1.3.1 — maintien d’état du volet
+
+- Profil MRS100 `2026.11.2` : plus de GET sur
+  `Appliance.RollerShutter.Adjust` (SET-only). Le statut de calibration est
+  reçu via SETACK/PUSH.
+- L’intégration 3.1.1 amorce position et statut depuis le cache P3 : pas de
+  retour à « inconnu » après un reload ou un redémarrage de Home Assistant.
+- Compatibilité : intégration 3.1.0 minimum, **3.1.1 recommandée** ; pairer
+  2.0.9 inchangé. Aucun changement d’API.
+
 # Notes de version — 1.3.0
 
 ## 1.3.0 — catalogue D2b complet

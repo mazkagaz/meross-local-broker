@@ -39,8 +39,8 @@ d'intégration spécifiques sont bienvenues.
 
 | Brique                         | Version minimale | Remarques                                |
 | ------------------------------ | ---------------- | ---------------------------------------- |
-| Broker                         | 1.3.0            | catalogue complet, TLS/CA valide, Unbind |
-| Intégration Meross Local Cloud | 3.1.0            | moteur profils 2.4, catalogue complet    |
+| Broker                         | 1.3.1            | catalogue complet, maintien d’état volet |
+| Intégration Meross Local Cloud | 3.1.0            | moteur profils 2.4 ; 3.1.1 recommandée   |
 | Meross Local Pairer            | 2.0.9            | découverte et appairage HTTPS uniquement |
 
 ## Ports
@@ -139,7 +139,7 @@ MQTT, puis le compte local. Les ports sont préremplis par la découverte mDNS.
 | Mot de passe      | le mot de passe local                           |
 | Code MFA          | seulement si le compte local l'exige            |
 
-Le broker doit être en **1.3.0 ou plus récent** : l'intégration récupère et
+Le broker doit être en **1.3.1 ou plus récent** : l'intégration récupère et
 épingle sa CA (`/ca.crt`). Les options « ignorer la validation » n'existent plus.
 L'option User-Agent de l'intégration se règle dans
 **Paramètres → Appareils et services → Meross Local Cloud → Configurer**.
@@ -278,7 +278,7 @@ appareils. Laisser vide pour utiliser le fuseau de Home Assistant.
 | ----------------------------------- | ------------------------------------------------------------------------ |
 | L'add-on ne démarre pas             | architecture amd64/aarch64, logs du Supervisor, image GHCR publique      |
 | Aucun appareil dans l'add-on        | appairage Wi-Fi AP ou Bluetooth LE, port MQTT 2001, Wi-Fi 2,4 GHz WPA2   |
-| L'intégration ne voit pas le broker | adresse HTTPS 2004, compte local, broker 1.3.0+                          |
+| L'intégration ne voit pas le broker | adresse HTTPS 2004, compte local, broker 1.3.1+                          |
 | Entités absentes                    | appareil ONLINE dans l'add-on, puis redémarrer l'intégration             |
 | Entités fantômes après un oubli     | intégration 3.1.0+, attendre la réparation 48 h ou supprimer l'appareil  |
 | Durées non conservées               | logs `Stored roller-shutter config` / `Re-applied roller-shutter config` |
