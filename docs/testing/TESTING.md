@@ -5,7 +5,7 @@ log, the device model/hardware/firmware, and the pairing method.
 
 ## What can be tested without a Meross device
 
-- Build the Docker image (`BUILDING.md`).
+- Build the Docker image (`../operations/BUILDING.md`).
 - Run the unit tests (HTTP API, MQTT integrity, timezone sync, MRS100 message
   handling, Unbind publication, disconnect handling).
 - Start the add-on locally or in Home Assistant and verify that already-paired

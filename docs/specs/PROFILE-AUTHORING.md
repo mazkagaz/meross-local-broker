@@ -8,8 +8,8 @@ polling. C’est **une donnée**, jamais du code exécuté.
 - Profils livrés (canoniques) :
   `meross_local_broker/rootfs/opt/custom_broker/device_profiles/`.
 - Schéma : `device_profiles/schema.json` (copie de
-  [device-profiles.schema.json](device-profiles.schema.json)).
-- Exemples documentaires : [profiles/](profiles/).
+  [device-profiles.schema.json](../device-profiles.schema.json)).
+- Exemples documentaires : [profiles/](../profiles/).
 
 ## Vérifier un profil
 

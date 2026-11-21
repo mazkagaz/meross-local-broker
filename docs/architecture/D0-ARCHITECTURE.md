@@ -1,7 +1,7 @@
 # D0 — Architecture cible : tout local, profils déclaratifs
 
 **Statut** : décisions validées le 2026-11-19 ; **D1 terminé et validé** ;
-**schéma 2 rédigé** (voir [D2-PLAN.md](D2-PLAN.md)).
+**schéma 2 rédigé** (voir [D2-PLAN.md]../design/D2-PLAN.md).
 **Portée** : broker, intégration Home Assistant, pairer.
 
 ## Contexte
@@ -149,7 +149,7 @@ Appareil ──MQTT/TLS──> Broker ──profils/révisions──> Intégrati
   révision (vérification toutes les 60 s, surcharges détectées
   automatiquement), catalogue signé Ed25519 vérifié par l’intégration,
   entités `update` par appareil/sous-appareil et guide avancé
-  ([D4-GUIDE.md](D4-GUIDE.md)). D4 est terminé côté backend/documentation ;
+  ([D4-GUIDE.md]../design/D4-GUIDE.md). D4 est terminé côté backend/documentation ;
   l’UI graphique dédiée n’est pas planifiée.
 - **D5 : en cours** : suite de parité/trames dorées pour les 11 profils,
   broker sans `meross_iot`, accès HTTP catalogue/P3 migré vers un client
@@ -166,7 +166,7 @@ Appareil ──MQTT/TLS──> Broker ──profils/révisions──> Intégrati
 ### D2 — Moteur de profils, schéma 2
 
 - **Schéma 2** : évolution additive uniquement ; seuls les changements
-  incompatibles incrémentent `schema_version`. Voir [D2-PLAN.md](D2-PLAN.md).
+  incompatibles incrémentent `schema_version`. Voir [D2-PLAN.md]../design/D2-PLAN.md.
 - **Schéma hybride** : tronc commun + sous-schémas stricts pour les plateformes
   complexes ; `state`/`commands` pour les simples.
 - **Hubs** : un profil hub avec templates de sous-appareils (`via_device`).
@@ -255,7 +255,7 @@ l’action « installer » recharge l’entrée pour réappliquer le catalogue.
 Les surcharges déposées dans `/data/device_profiles` sont détectées à la
 prochaine lecture du catalogue, sans redémarrage. Le parcours guidé et les
 limites Supervisor/Container/Core sont documentés dans
-[D4-GUIDE.md](D4-GUIDE.md).
+[D4-GUIDE.md]../design/D4-GUIDE.md.
 
 ### D5 — Parité, trames dorées, suppression de `meross_iot`
 

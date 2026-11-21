@@ -2,8 +2,8 @@
 
 **Statut** : jeu pilote et familles local-MQTT simples portés ; quelques
 familles restent en attente de trames réelles (voir la matrice).
-**Référence** : [D2-PLAN.md](D2-PLAN.md) et
-[D0-ARCHITECTURE.md](D0-ARCHITECTURE.md).
+**Référence** : [D2-PLAN.md]../design/D2-PLAN.md et
+[D0-ARCHITECTURE.md]../architecture/D0-ARCHITECTURE.md.
 
 ## Principe
 

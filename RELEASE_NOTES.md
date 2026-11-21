@@ -141,5 +141,5 @@ restent dans [CHANGELOG.md](meross_local_broker/CHANGELOG.md).
 
 ## Vérifications
 
-- Broker : 74 tests unitaires (`TESTING.md`).
+- Broker : 74 tests unitaires (`docs/testing/TESTING.md`).
 - Intégration : 61 tests unitaires, build Angular vert, release HACS.

@@ -43,8 +43,8 @@ prominent fork notice at the top; the full list of behaviour changes is in
   `test_supervisor_network.py`, `test_timezone_utils.py`,
   `test_mrs100_roller_shutter.py`, `test_broker_agent_timezone.py`,
   `test_broker_agent_unbind.py`, `test_broker_agent_disconnect.py`.
-- Documentation: `README.md`, `MRS100.md`, `MRS100_PATCH.md`, `TESTING.md`,
-  `BUILDING.md`, `RELEASE_NOTES.md`, `MODIFICATIONS.md`, `LEGAL.md`, `NOTICE`.
+- Documentation: `README.md`, `docs/specs/MRS100.md`, `docs/design/MRS100_PATCH.md`, `docs/testing/TESTING.md`,
+  `docs/operations/BUILDING.md`, `RELEASE_NOTES.md`, `MODIFICATIONS.md`, `LEGAL.md`, `NOTICE`.
 - Tooling: `configure.sh`, `push.sh`, `branding/`.
 
 New files are copyright 2026 the MRS100 fork contributors and licensed under

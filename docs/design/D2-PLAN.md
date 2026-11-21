@@ -2,8 +2,8 @@
 
 **Statut** : décisions actées ; D2.1, D2.2.1 à D2.2.5 et D2.3 faits ; D2b
 pilote et familles local-MQTT simples portés, familles complexes en attente
-de trames réelles (détails : [D2.2-PLAN.md](D2.2-PLAN.md) et
-[D2b-PARITY.md](D2b-PARITY.md)).
+de trames réelles (détails : [D2.2-PLAN.md]D2.2-PLAN.md et
+[D2b-PARITY.md]D2b-PARITY.md).
 **Prérequis** : D1 terminé (broker 1.1.3, intégration 2.4.4/2.4.5).
 
 ## Décisions
@@ -43,7 +43,7 @@ de trames réelles (détails : [D2.2-PLAN.md](D2.2-PLAN.md) et
 ## D2.2 — Moteur (intégration)
 
 Plan détaillé, matrice de tests négatifs et critères de sortie :
-[D2.2-PLAN.md](D2.2-PLAN.md). Séquence : D2.2.1 registre (fait), D2.2.2
+[D2.2-PLAN.md]D2.2-PLAN.md. Séquence : D2.2.1 registre (fait), D2.2.2
 chemins/matching/compilation simple, D2.2.3 hubs et plateformes complexes,
 D2.2.4 dispatch runtime, D2.2.5 interface P3.
 

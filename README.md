@@ -286,29 +286,19 @@ appareils. Laisser vide pour utiliser le fuseau de Home Assistant.
 
 ## Documentation technique
 
-- [MRS100.md](MRS100.md) — support MRS100 : entités, calibration, limites.
-- [TESTING.md](TESTING.md) — tests unitaires et checklist matérielle.
-- [BUILDING.md](BUILDING.md) — construction de l'image et publication.
-- [RELEASE_NOTES.md](RELEASE_NOTES.md) — évolutions depuis le fork et notes de
-  version stable.
-- [docs/D0-ARCHITECTURE.md](docs/D0-ARCHITECTURE.md) — architecture cible
-  (profils déclaratifs, un produit / deux artefacts).
-- [docs/D2-PLAN.md](docs/D2-PLAN.md) — schéma 2, moteur et parité du catalogue.
-- [docs/D2.2-PLAN.md](docs/D2.2-PLAN.md) — moteur de profils : chemins,
-  matching, compilation, matrice de tests négatifs.
-- [docs/D2b-PARITY.md](docs/D2b-PARITY.md) — parité du catalogue : jeu pilote
-  (hub, sous-appareils, thermostat, ventilateur) et couverture restante.
-- [docs/D4-GUIDE.md](docs/D4-GUIDE.md) — guide avancé : surcharges,
-  rechargement, catalogue signé, capture et entités update.
-- [docs/FUNCTIONAL-TESTS.md](docs/FUNCTIONAL-TESTS.md) — scénarios
-  fonctionnels (installation, bascule, appareils, scheduler, résilience).
-- [docs/PROFILE-AUTHORING.md](docs/PROFILE-AUTHORING.md) — écrire et valider un
-  profil d’appareil.
+- [Index de la documentation](docs/README.md)
+- [Vue d’architecture](docs/architecture/OVERVIEW.md)
+- [Contrats API](docs/specs/API-CONTRACTS.md)
+- [Auteur de profils](docs/specs/PROFILE-AUTHORING.md)
+- [Volets MRS100](docs/specs/MRS100.md)
+- [Format de capture](docs/specs/CAPTURE-FORMAT.md)
+- [Plans et guides de conception](docs/design/)
+- [Stratégie et scénarios de test](docs/testing/FUNCTIONAL-TESTS.md)
+- [Matrice de traçabilité](docs/testing/TRACEABILITY.md)
+- [Construction et publication](docs/operations/BUILDING.md)
+- [RELEASE_NOTES.md](RELEASE_NOTES.md) — évolutions depuis le fork.
 - [docs/device-profiles.schema.json](docs/device-profiles.schema.json) — schéma
   de profil 2 et exemples dans [docs/profiles/](docs/profiles/).
-- [docs/CAPTURE-FORMAT.md](docs/CAPTURE-FORMAT.md) — format du mode capture et
-  cycle de validation d'un nouveau modèle.
-- [MRS100_PATCH.md](MRS100_PATCH.md) — archive technique du patch initial.
 
 ## Origine et licence
 

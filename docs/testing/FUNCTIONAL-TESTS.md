@@ -47,15 +47,16 @@ Chaque scénario note son harnais : **Auto** (CI), **Semi** (banc + script),
 | F1.7 | Changement d’options                         | Entrée rechargée, comportement appliqué                                   | Auto |
 | F1.8 | Deuxième instance                            | Refus `single_instance_allowed`                                           | Auto |
 
-## F2 — Bascule D5 (`profile_entities_only`)
+## F2 — Backend profils obligatoire (3.0)
 
-| ID   | Étant donné / Quand                                                | Alors                                                                                           | Harnais      |
-| ---- | ------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------- | ------------ |
-| F2.1 | Options backend + entités profils + seules activées ; rechargement | Seules les entités profils existent ; `unique_id` historiques conservés ; `entities_only: true` | H2 Auto      |
-| F2.2 | Rollback : option seules désactivée ; rechargement                 | Entités historiques de retour avec les mêmes `unique_id` ; aucune suppression du registre       | H2 Auto + H3 |
-| F2.3 | Appareil sans profil en mode seules                                | Aucune entité profil ; entités historiques conservées en repli ; appareil signalé non apparié   | H2 Auto      |
-| F2.4 | Hub + sous-appareils                                               | Entités par sous-appareil, `via_device` correct, IDs stables                                    | H2 Auto      |
-| F2.5 | Redémarrage HA                                                     | Entités restaurées, mêmes IDs, pas de résurrection des historiques                              | H2 Auto + H3 |
+| ID   | Étant donné / Quand            | Alors                                                              | Harnais |
+| ---- | ------------------------------ | ------------------------------------------------------------------ | ------- |
+| F2.1 | Intégration 3.0 chargée        | Uniquement les entités profils ; `unique_id` historiques conservés | H2 Auto |
+| F2.2 | Retour arrière HACS vers 2.4.6 | Entités historiques restaurées, registre conservé                  | H3      |
+| F2.3 | Appareil sans profil           | Aucune entité + réparation « appareil sans profil »                | H2 Auto |
+| F2.4 | Hub + sous-appareils           | Entités par sous-appareil, `via_device` correct, IDs stables       | H2 Auto |
+| F2.5 | Redémarrage HA                 | Entités restaurées, mêmes IDs, aucun doublon                       | H2 Auto |
+| F2.6 | Déconnexion/reconnexion MQTT   | Entités indisponibles puis disponibles sans reload                 | H2 Auto |
 
 ## F3 — Comportements par famille
 
