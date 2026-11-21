@@ -70,6 +70,8 @@ Tronc commun : `key`, `platform`, `name`, `channel`, `device`
 `max_value`, `step`, `state`, `commands`, `capabilities`, `quirks`.
 Les entrées de `state.fields` sont un chemin (`"togglex[0].onoff"`) ou un
 objet `{ path, scale, offset }` pour une mise à l’échelle par champ.
+`on_values: [23, 25]` transforme la valeur brute en booléen (membre de la
+liste), utile pour les codes d’état des capteurs.
 `legacy_classifiers` permet de conserver l’identifiant historique d’une
 entité lors de la bascule vers les entités profils.
 
@@ -111,6 +113,10 @@ entities:
 - `requires_engine: ">=2.3"` : les moteurs antérieurs ignorent le profil au
   lieu de créer une entité incomplète.
 - Les templates de canaux ne sont pas acceptés dans `subdevices`.
+- `state.select` accepte aussi un objet unique (anciens firmwares) en plus
+  d’une liste.
+- Quirk `garage_door` : `is_closed` lit le champ `open` (1 = ouvert) et
+  n’expose pas de position.
 
 ## Polling
 

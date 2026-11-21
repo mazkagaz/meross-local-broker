@@ -307,7 +307,7 @@
         },
         "fields": {
           "type": "object",
-          "description": "Entity property -> path inside the payload (e.g. 'togglex[0].onoff'), or an object with per-field scale/offset.",
+          "description": "Entity property -> path inside the payload (e.g. 'togglex[0].onoff'), or an object with per-field scale/offset/on_values.",
           "additionalProperties": {
             "oneOf": [
               {
@@ -326,6 +326,21 @@
                   },
                   "offset": {
                     "type": "number"
+                  },
+                  "on_values": {
+                    "type": "array",
+                    "minItems": 1,
+                    "description": "Map the raw value to a boolean: true when it is in this list.",
+                    "items": {
+                      "oneOf": [
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "string"
+                        }
+                      ]
+                    }
                   }
                 }
               }
