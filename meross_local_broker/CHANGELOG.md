@@ -1,3 +1,10 @@
+## Unreleased
+
+- D5.1 : les ACK de commande sont livrés uniquement sur le topic applicatif
+  demandeur (`/app/<userId>-<appId>/subscribe`) ; l’option temporaire
+  `legacy_user_topic_acks` et sa variable d’environnement sont supprimées.
+- Les PUSH restent sur `/app/<userId>/subscribe`.
+
 ## 1.2.1
 
 - Profils MRS100 et `mrs` corrigés d’après les trames réelles :

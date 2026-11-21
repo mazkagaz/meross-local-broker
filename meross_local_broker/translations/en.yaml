@@ -19,12 +19,6 @@ configuration:
     description: >-
       Timezone pushed to paired devices, for example Europe/Paris. Leave empty
       to use the Home Assistant timezone.
-  legacy_user_topic_acks:
-    name: Legacy ACKs on the user topic
-    description: >-
-      Also deliver command ACKs on /app/<userId>/subscribe in addition to the
-      requesting app topic. Keep enabled for older clients; this temporary
-      compatibility option will be removed in a later release.
   mqtt_integrity_mode:
     name: MQTT message integrity
     description: >-

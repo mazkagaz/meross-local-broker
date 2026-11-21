@@ -37,14 +37,6 @@ class AppForwardTopicsTest(unittest.TestCase):
             _app_forward_topics(
                 1, message("/appliance/uuid/publish"),
                 response_topic="/app/1-abc123/subscribe"),
-            ["/app/1/subscribe", "/app/1-abc123/subscribe"])
-
-    def test_legacy_mode_can_be_disabled(self):
-        self.assertEqual(
-            _app_forward_topics(
-                1, message("/appliance/uuid/publish"),
-                legacy_user_topic_acks=False,
-                response_topic="/app/1-abc123/subscribe"),
             ["/app/1-abc123/subscribe"])
 
     def test_device_response_header_from_is_not_used_as_a_topic(self):

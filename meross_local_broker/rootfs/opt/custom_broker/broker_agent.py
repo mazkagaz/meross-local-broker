@@ -44,10 +44,6 @@ DISCONNECTION_TOPIC_RE = re.compile(r"^\$SYS/client-disconnections$")
 _NAT_RE = re.compile(r"/_nat_/([a-zA-Z0-9\-]+)")
 _APP_RESPONSE_TOPIC_RE = re.compile(r"^/app/(\d+)(?:-[A-Za-z0-9]+)?/subscribe$")
 _ACK_METHODS = {"GETACK", "SETACK", "ERROR"}
-# Temporary compatibility option (removed in D5.1): keep ACKs on the user topic.
-LEGACY_USER_TOPIC_ACKS = os.getenv(
-    "LEGACY_USER_TOPIC_ACKS", "true").strip().lower() not in {
-        "0", "false", "no", "off"}
 _CLIENTID_RE = re.compile('^fmware:([a-zA-Z0-9]+)_[a-zA-Z0-9]+$')
 _DEVICE_UPDATE_CACHE_INTERVAL_SECONDS = 60
 # How often the agent polls Appliance.System.All from devices with stale info (devices reconnecting after a
@@ -92,13 +88,11 @@ def _owner_app_topic(user_id, topic) -> Optional[str]:
 
 
 def _app_forward_topics(user_id, payload: dict,
-                        legacy_user_topic_acks: bool = True,
                         response_topic: Optional[str] = None) -> List[str]:
     """Topics where a device publication must be delivered for one owner.
 
-    Command ACKs are routed to the app response topic recorded from the
-    original request; PUSH notifications always use the user topic. The
-    temporary compatibility mode also copies ACKs to the user topic.
+    Command ACKs are routed only to the app response topic recorded from the
+    original request; PUSH notifications always use the user topic.
     """
     default = f"/app/{user_id}/subscribe"
     header = payload.get("header") if isinstance(payload, dict) else None
@@ -107,9 +101,9 @@ def _app_forward_topics(user_id, payload: dict,
     if header.get("method") not in _ACK_METHODS:
         return [default]
     target = _owner_app_topic(user_id, response_topic)
-    if target is None or target == default:
+    if target is None:
         return [default]
-    return [default, target] if legacy_user_topic_acks else [target]
+    return [target]
 
 
 def guess_subdevice_type(subdevices_data: Dict):
@@ -356,7 +350,7 @@ class Broker:
             response_topic = self._app_response_topics.pop(
                 header.get("messageId"), None)
         topics = _app_forward_topics(
-            user.user_id, payload, LEGACY_USER_TOPIC_ACKS, response_topic)
+            user.user_id, payload, response_topic)
         l.debug("Forwarding device %s %s %s to %s", device_uuid,
                 header.get("method"), header.get("namespace"), topics)
         for topic in topics:

@@ -48,11 +48,6 @@ n'est publié : `debug_mode` ne fait qu'activer les journaux détaillés.
 - **`device_timezone`** (vide) : fuseau IANA poussé aux appareils (voir
   ci-dessous).
 - **`debug_mode`** (`false`) : journaux détaillés (niveau `DEBUG`).
-- **`legacy_user_topic_acks`** (`true`) : option temporaire de compatibilité.
-  Les ACK de commande sont normalement livrés sur le topic applicatif demandeur
-  (`/app/<userId>-<appId>/subscribe`) et aussi, tant que cette option est
-  active, sur `/app/<userId>/subscribe`. Elle sera supprimée dans une version
-  ultérieure.
 - **`mqtt_integrity_mode`** (`observe`) : contrôle de chaque publication
   d'appareil :
 

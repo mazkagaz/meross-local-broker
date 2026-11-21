@@ -29,11 +29,9 @@ options:
   debug_mode: false
   device_timezone: ""
   mqtt_integrity_mode: "observe"
-  legacy_user_topic_acks: true
 schema:
   reinit_db: "bool"
   advertise: "bool"
   debug_mode: "bool"
   device_timezone: "str?"
   mqtt_integrity_mode: "list(observe|enforce)"
-  legacy_user_topic_acks: "bool"
