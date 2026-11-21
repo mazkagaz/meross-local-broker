@@ -80,7 +80,7 @@ action « installer » qui recharge l’entrée pour réappliquer le catalogue.
 
 ## Validation D5 — backend profils obligatoire
 
-L’intégration 3.0 est profile-only : il n’existe plus d’options ni de repli
+L’intégration 3.0 et suivantes est profile-only : il n’existe plus d’options ni de repli
 historique.
 
 1. Installer la pré-release `3.0.0-beta.1`, recharger l’entrée.

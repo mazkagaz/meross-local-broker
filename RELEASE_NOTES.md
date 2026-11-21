@@ -1,3 +1,20 @@
+# Notes de version — 1.3.0
+
+## 1.3.0 — catalogue D2b complet
+
+- 19 profils : multiprises MSS425/MSP844, capteurs MS200/MS400/MS600, GS559,
+  garages MSG/RSG, purificateur MAP100, sprinkler MST100, compteurs EM/EM06,
+  diffuseur MSXH0, HP110, MTS9 ; MTS200/MTS300 séparés (échelle corrigée).
+- Entités par canal découvert (`channel: $channels`), sélection d’état par clé
+  (`state.select`, liste ou objet), mapping booléen `on_values`, routage des
+  sous-appareils par `id` ou `subId`, quirk `garage_door`.
+- Les profils MSH300 et garage exigent le moteur 2.4 : installer
+  **l’intégration 3.1.0 ou plus récente avant ce broker**, sinon le hub et le
+  garage ne sont pas appariés.
+- Aucun changement d’API ; routage ACK et compatibilité pairer 2.0.9 inchangés.
+- Testeurs recherchés pour toutes les familles hors MRS100 (modèle, firmware,
+  fonctions observées).
+
 # Notes de version — 1.2.2
 
 ## 1.2.2 — routage ACK

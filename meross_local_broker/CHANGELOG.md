@@ -1,3 +1,15 @@
+## 1.3.0
+
+- Catalogue D2b complet (19 profils) : multiprises MSS425/MSP844, capteurs
+  MS200/MS400/MS600, GS559, portes de garage MSG/RSG, purificateur MAP100,
+  sprinkler MST100, compteurs EM/EM06, diffuseur MSXH0, HP110 et MTS9.
+- Séparation MTS200/MTS300 et correction de l’échelle MTS300.
+- Schéma profils : `channel: $channels`, `state.select` (liste ou objet),
+  `on_values` et quirk `garage_door`.
+- Les profils MSH300 et garage exigent le moteur d’intégration 2.4 :
+  **l’intégration 3.1.0 est requise** avec ce broker.
+- Aucun changement d’API ; routage ACK inchangé.
+
 ## 1.2.2
 
 - D5.1 : les ACK de commande sont livrés uniquement sur le topic applicatif
