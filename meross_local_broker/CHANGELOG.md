@@ -1,3 +1,16 @@
+## 1.2.1
+
+- Profils MRS100 et `mrs` corrigés d’après les trames réelles :
+  `position`/`state`/`config`/`adjust` sont des listes ; les commandes
+  Position, Config et Adjust utilisent un objet sous la clé du namespace.
+- Volets : ouvrir/fermer/stop/position passent par
+  `Appliance.RollerShutter.Position` (`100`, `0`, `-1`).
+- Durées : lecture de `config[0].signalOpen/signalClose` et écriture
+  `{"config":{"channel":…,"signalOpen":…}}`.
+- Calibration : statut `adjust[0].status`, démarrage `value=1`, arrêt `value=2`.
+- Aucun changement d’API ; l’intégration détecte la nouvelle révision du
+  catalogue et se recharge.
+
 ## 1.2.0
 
 - API de profils : `/v1/Device/profiles/rev`, `/profiles` et

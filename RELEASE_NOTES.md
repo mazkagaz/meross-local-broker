@@ -1,3 +1,17 @@
+# Notes de version — 1.2.1
+
+## 1.2.1 — volets MRS100
+
+- Profils MRS100 et `mrs` alignés sur les trames réelles : listes
+  `position`/`state`/`config`/`adjust`, commandes Position/Config/Adjust sous
+  la clé du namespace.
+- Ouvrir, fermer, stop et position utilisent désormais
+  `Appliance.RollerShutter.Position`.
+- Durées et calibration relisent les bons chemins ; arrêt de calibration
+  avec `value=2`.
+- Aucun changement d’API. Intégration 3.0 : rechargement automatique à la
+  nouvelle révision du catalogue.
+
 # Notes de version — 1.2.0
 
 ## 1.2.0 — socle profils et outillage
