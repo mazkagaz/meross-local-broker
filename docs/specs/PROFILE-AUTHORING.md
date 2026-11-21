@@ -170,6 +170,15 @@ stable.
 3. Tester sur l’appareil (entités, commandes, polling).
 4. Activer en surcharge locale, puis proposer une PR pour le catalogue livré.
 
+## Références de développement
+
+Les profils et les trames dorées s'appuient sur
+[meross_lan](https://github.com/krahabb/meross_lan) (**MIT**) : protocole,
+descripteurs, client `merossclient` vendorisé (commit épinglé) et traces
+`emulator_traces/` pour les familles sans capture locale. Ce n'est pas une
+dépendance runtime : c'est un outil de conception et de validation. Les
+testeurs matériels restent indispensables pour chaque famille.
+
 ## Sécurité
 
 Un profil ne contient jamais de secret, d’URL, de certificat ni de commande

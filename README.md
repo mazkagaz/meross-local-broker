@@ -27,9 +27,10 @@ Appareil Meross ──MQTT/TLS──> add-on Meross Local Broker ──API/MQTT�
 ## Compatibilité
 
 Le broker fonctionne avec les appareils Meross qui acceptent un broker local.
-Le **MRS100** (volet roulant) est la cible principale des tests, mais les
-autres modèles doivent continuer à fonctionner comme avec le broker d'origine,
-et parfois mieux. Les retours de test sont précieux : ouvrez une
+Le **MRS100** (volet roulant) sert de référence de validation ; toutes les
+autres familles du catalogue (multiprises, capteurs, garage, purificateur,
+MST, compteurs, MSXH0, HP110, MTS9, thermostats…) attendent des testeurs sur
+matériel réel. Ouvrez une
 [issue](https://github.com/mazkagaz/meross-local-broker/issues) en précisant le
 modèle, le firmware et les fonctions qui marchent ou non. Les demandes
 d'intégration spécifiques sont bienvenues.

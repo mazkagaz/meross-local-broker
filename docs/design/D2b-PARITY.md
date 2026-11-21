@@ -95,6 +95,10 @@ Le gap des chemins indexés par canal est résolu par `channel: $channels` +
 `state.select` (moteur 2.3), qui clone l’entité par canal découvert et
 sélectionne l’élément de liste par sa clé `channel`.
 
+**Testeurs** : le MRS100 est la référence ; chaque autre famille attend des
+retours matériels (modèle, firmware, fonctions). Les traces meross_lan ne
+remplacent pas une validation sur appareil réel.
+
 **Ordre de publication** : livrer d’abord l’intégration avec le moteur 2.4
 (`mss425`, GS559 et garage), puis le broker. Un moteur antérieur ignore les
 profils concernés : `mss425`/`msp844` retombent sur `mss` (canal 0), et un hub

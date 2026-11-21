@@ -77,8 +77,8 @@ la suite broker sur chaque push/PR ; les rapports JUnit sont archivés.
 
 ## Known validation gaps
 
-- Models other than the MRS100 are community-tested; report the model,
-  firmware and working functions.
+- Every family needs field testers; the MRS100 is only the reference device.
+  Report the model, firmware and working functions.
 - Multi-channel cover devices: channel 0 is the primary target.
 - `mqtt_integrity_mode` stays in `observe` until device logs are clean; then
   `enforce` can be evaluated.
