@@ -34,7 +34,7 @@ jobs:
           ref: 475c5d14065e3c792d426822d9ea13250c7cc967
           path: cloud-src
 
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.13"
           cache: pip
