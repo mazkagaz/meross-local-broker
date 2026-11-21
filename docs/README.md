@@ -32,6 +32,7 @@ pour les formats et les contrats.
 - [D2.2 — Chemins, matching, compilation](design/D2.2-PLAN.md)
 - [D2b — Parité du catalogue](design/D2b-PARITY.md)
 - [D4 — Surcharges, capture, rechargement](design/D4-GUIDE.md)
+- [Page de tuning des appareils — plan V1 → V2](design/TUNING-PAGE.md)
 - [Archive du patch MRS100](design/MRS100_PATCH.md)
 
 ### Tests
