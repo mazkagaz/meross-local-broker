@@ -1,3 +1,20 @@
+# Notes de version — 1.4.5
+
+## 1.4.5 — capture des trames réparée
+
+- La capture était pilotée par le processus API tandis que les trames étaient
+  observées par l’agent : chaque processus avait son propre état, d’où une
+  session « active » mais toujours **0 frame**. La session est maintenant
+  décrite sur disque (`/data/capture/current.json`) et l’agent l’enregistre
+  lui-même ; l’API calcule le statut depuis les mêmes fichiers.
+- Seules les trames de l’appareil capturé sont conservées, y compris les PUSH
+  déclenchés à l’interrupteur ; les limites de durée et de taille sont
+  appliquées côté agent.
+- Nouveau bouton **Download ZIP** (et `GET /_admin_/tuning/capture/export`) :
+  archive avec `session.json`, `frames.jsonl` et le brouillon, déjà assainis,
+  pour partager une capture avec la communauté.
+- Aucun changement de profil ni de rupture d’API.
+
 # Notes de version — 1.4.4
 
 ## 1.4.4 — récupération automatique de l’ability

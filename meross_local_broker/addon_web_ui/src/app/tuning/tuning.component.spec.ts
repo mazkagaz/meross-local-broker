@@ -132,6 +132,7 @@ describe('TuningComponent', () => {
       'captureStart',
       'captureStop',
       'captureDraft',
+      'captureExport',
       'deviceState',
       'preview',
       'readDevice',
@@ -314,6 +315,15 @@ describe('TuningComponent', () => {
     expect(component.tabIndex).toBe(0);
     expect(component.yamlText).toContain('draft.mrs100');
     expect(component.selectedProfileId).toBeNull();
+  });
+
+  it('downloads the capture archive', () => {
+    const download = { blob: new Blob(['zip']), filename: 'capture.zip' };
+    service.captureExport.and.returnValue(of(download));
+    spyOn<any>(component, 'saveDownload');
+    component.downloadCapture();
+    expect(service.captureExport).toHaveBeenCalled();
+    expect((component as any).saveDownload).toHaveBeenCalledWith(download);
   });
 
   it('posts a simulation with the parsed payload', () => {

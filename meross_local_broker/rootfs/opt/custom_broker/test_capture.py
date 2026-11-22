@@ -4,9 +4,11 @@
 Run with: python3 -m unittest test_capture
 """
 
+import io
 import json
 import tempfile
 import unittest
+import zipfile
 from pathlib import Path
 
 from capture import CaptureManager
@@ -133,6 +135,83 @@ class CaptureTest(unittest.TestCase):
     def test_draft_rejects_an_invalid_type(self):
         with self.assertRaises(ValueError):
             self.manager.build_draft("Not A Type!")
+
+    def test_a_second_process_records_into_the_active_session(self):
+        # The broker agent creates its manager at startup, before the API
+        # process starts a capture.
+        recorder = CaptureManager(self.manager.directory, clock=self.clock)
+        recorder.record(UUID, "rx", f"/appliance/{UUID}/publish",
+                        payload("Appliance.RollerShutter.State", "PUSH",
+                                {"channel": 0, "state": 2}))
+
+        status = self.manager.status()
+        self.assertTrue(status["active"])
+        self.assertEqual(status["frames"], 1)
+        self.assertGreater(status["bytes"], 0)
+        self.assertEqual(len(self.frames()), 1)
+
+    def test_stop_from_the_controller_stops_the_recorder(self):
+        recorder = CaptureManager(self.manager.directory, clock=self.clock)
+        recorder.record(UUID, "rx", "topic",
+                        payload("Appliance.Test", "PUSH", {"value": 1}))
+        self.manager.stop()
+
+        recorder.record(UUID, "rx", "topic",
+                        payload("Appliance.Test", "PUSH", {"value": 2}))
+
+        status = recorder.status()
+        self.assertFalse(status["active"])
+        self.assertEqual(status["reason"], "user")
+        self.assertEqual(status["frames"], 1)
+
+    def test_frames_from_other_devices_are_ignored(self):
+        self.manager.record("f" * 32, "rx", "topic",
+                            payload("Appliance.Test", "PUSH", {"value": 1}))
+
+        self.assertEqual(self.manager.status()["frames"], 0)
+
+    def test_export_zip_contains_session_frames_and_draft(self):
+        self.manager.record(UUID, "rx", "topic", payload(
+            "Appliance.RollerShutter.Position", "PUSH",
+            {"channel": 0, "position": 20}))
+        name, content = self.manager.export_zip()
+
+        self.assertTrue(name.startswith("capture-"))
+        with zipfile.ZipFile(io.BytesIO(content)) as archive:
+            self.assertEqual(
+                set(archive.namelist()),
+                {"session.json", "frames.jsonl", "draft.yaml"})
+            frames = archive.read("frames.jsonl").decode("utf-8")
+            self.assertIn("Appliance.RollerShutter.Position", frames)
+            self.assertNotIn(UUID, frames)
+            self.assertIn("draft.mrs100",
+                          archive.read("draft.yaml").decode("utf-8"))
+
+    def test_export_zip_drops_a_partial_last_frame(self):
+        self.manager.record(UUID, "rx", "topic",
+                            payload("Appliance.Test", "PUSH", {"value": 1}))
+        with open(self.manager.session.frames_path, "ab") as handle:
+            handle.write(b'{"ts":0,"dir":"rx"')
+
+        _, content = self.manager.export_zip()
+
+        with zipfile.ZipFile(io.BytesIO(content)) as archive:
+            frames = archive.read("frames.jsonl").decode("utf-8")
+        self.assertEqual(len(frames.splitlines()), 1)
+
+    def test_restart_from_the_controller_rebinds_the_recorder(self):
+        recorder = CaptureManager(self.manager.directory, clock=self.clock)
+        recorder.record(UUID, "rx", "topic",
+                        payload("Appliance.Test", "PUSH", {"value": 1}))
+        self.manager.start({"uuid": UUID, "type": "mrs100"})
+        recorder.record(UUID, "rx", "topic",
+                        payload("Appliance.Test", "PUSH", {"value": 2}))
+
+        status = self.manager.status()
+        self.assertTrue(status["active"])
+        self.assertEqual(status["frames"], 1)
+        self.assertEqual(recorder.status()["session_id"],
+                         status["session_id"])
 
 
 if __name__ == "__main__":

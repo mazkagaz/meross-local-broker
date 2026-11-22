@@ -209,6 +209,7 @@ tester une commande V2 confirmée.
 | POST    | `/_admin_/tuning/capture/start`                     | oui | démarrer une capture            |
 | POST    | `/_admin_/tuning/capture/stop`                      | oui | arrêter la capture              |
 | POST    | `/_admin_/tuning/capture/draft`                     | oui | brouillon YAML                  |
+| GET     | `/_admin_/tuning/capture/export`                    | oui | archive ZIP de la capture       |
 | GET     | `/_admin_/tuning/devices/{uuid}/commands`           | oui | commandes autorisées (V2)       |
 | POST    | `/_admin_/tuning/devices/{uuid}/commands/{command}` | oui | SET typé confirmé (V2)          |
 

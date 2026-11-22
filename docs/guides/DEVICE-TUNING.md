@@ -50,9 +50,13 @@ restreintes.
   Chaque envoi exige une confirmation à usage unique (jeton de 60 s lié à
   l’appareil et à la commande), un appareil en ligne, une seule commande à la
   fois et un cooldown. L’action est auditée avec un snapshot avant/après.
-- **Capture** : démarrer/arrêter une session, puis injecter le brouillon YAML
-  dans l’éditeur. Le brouillon est un point de départ (`draft.<type>`) à
-  compléter et valider avant application.
+- **Capture** : démarrer/arrêter une session pour l’appareil sélectionné, puis
+  injecter le brouillon YAML dans l’éditeur. Seules les trames de cet appareil
+  sont conservées, y compris les PUSH déclenchés à l’interrupteur ; durée et
+  taille sont bornées. **Download ZIP** exporte `session.json`,
+  `frames.jsonl` et le brouillon — déjà assainis — pour partager une capture.
+  Le brouillon est un point de départ (`draft.<type>`) à compléter et valider
+  avant application.
 
 ## Onglet Audit
 

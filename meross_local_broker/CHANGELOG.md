@@ -1,3 +1,17 @@
+## 1.4.5
+
+- Correctif capture : la session est autoritative sur disque
+  (`current.json` + `session.json`) et partagée entre l’API et l’agent. Les
+  trames de l’appareil capturé sont réellement enregistrées, y compris les
+  PUSH d’une commande à l’interrupteur ; les autres appareils sont ignorés.
+- Les limites de durée et de taille arrêtent la session côté enregistreur, et
+  le statut affiché par l’API reflète les trames écrites par l’agent.
+- Export **Download ZIP** (`GET /_admin_/tuning/capture/export`) :
+  `session.json`, `frames.jsonl` et `draft.yaml` assainis, pour partager une
+  capture.
+- Tests : deux instances `CaptureManager` partageant le même répertoire,
+  arrêt/redémarrage depuis le contrôleur et filtrage des autres appareils.
+
 ## 1.4.4
 
 - Correctif Ability : la demande de l’agent repart avec `from: /_agent` (topic

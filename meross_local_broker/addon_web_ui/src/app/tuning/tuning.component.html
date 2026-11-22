@@ -238,6 +238,14 @@ Modified or added for the MRS100 fork of ha-meross-local-broker (2026-11).
                 Stop
               </button>
               <button mat-stroked-button type="button" (click)="draftCapture()">Draft into editor</button>
+              <button
+                mat-stroked-button
+                type="button"
+                [disabled]="!capture || !capture.session_id"
+                (click)="downloadCapture()"
+              >
+                Download ZIP
+              </button>
             </div>
           </div>
         </mat-card>

@@ -192,6 +192,29 @@ export class TuningService {
     );
   }
 
+  captureExport(): Observable<Download> {
+    return new Observable<Download>((subscriber) => {
+      const request = this.http
+        .get(this.base + '/tuning/capture/export', {
+          observe: 'response',
+          responseType: 'blob',
+        })
+        .subscribe(
+          (response) => {
+            const header = response.headers.get('content-disposition') || '';
+            const match = /filename="?([^";]+)"?/i.exec(header);
+            subscriber.next({
+              blob: response.body as Blob,
+              filename: match ? match[1] : 'capture.zip',
+            });
+            subscriber.complete();
+          },
+          (error) => subscriber.error(error)
+        );
+      return () => request.unsubscribe();
+    });
+  }
+
   private jsonHeaders(): HttpHeaders {
     return new HttpHeaders({ 'Content-Type': 'application/json; charset=utf-8' });
   }

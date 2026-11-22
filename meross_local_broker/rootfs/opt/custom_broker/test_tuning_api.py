@@ -433,8 +433,27 @@ class TuningApiTest(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn("schema_version: 2", response.get_json()["yaml"])
 
+        response = self.client.get("/_admin_/tuning/capture/export")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.mimetype, "application/zip")
+        self.assertIn("attachment", response.headers["Content-Disposition"])
+        with zipfile.ZipFile(BytesIO(response.data)) as archive:
+            self.assertEqual(
+                set(archive.namelist()),
+                {"session.json", "frames.jsonl", "draft.yaml"})
+
         response = self.client.post("/_admin_/tuning/capture/stop")
         self.assertFalse(response.get_json()["active"])
+
+    def test_capture_export_without_a_session(self):
+        manager = CaptureManager(str(Path(self.temporary.name) / "empty"))
+        patcher = patch.object(
+            tuning_blueprint, "get_capture_manager", lambda: manager)
+        patcher.start()
+        self.addCleanup(patcher.stop)
+
+        response = self.client.get("/_admin_/tuning/capture/export")
+        self.assertEqual(response.status_code, 404)
 
 
 if __name__ == "__main__":

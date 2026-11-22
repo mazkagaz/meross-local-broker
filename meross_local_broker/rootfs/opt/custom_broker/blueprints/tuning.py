@@ -347,6 +347,17 @@ def capture_stop():
     return jsonify(get_capture_manager().stop() or {})
 
 
+@tuning_blueprint.route("/tuning/capture/export", methods=["GET"])
+def capture_export():
+    try:
+        name, payload = get_capture_manager().export_zip()
+    except ValueError as error:
+        return _error(TuningNotFound(str(error)))
+    return send_file(
+        io.BytesIO(payload), mimetype="application/zip",
+        as_attachment=True, download_name=name)
+
+
 @tuning_blueprint.route("/tuning/capture/draft", methods=["POST"])
 def capture_draft():
     body = request.get_json(silent=True) or {}

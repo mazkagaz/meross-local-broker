@@ -496,6 +496,15 @@ export class TuningComponent implements OnInit, OnDestroy {
     );
   }
 
+  downloadCapture(): void {
+    this.subscriptions.add(
+      this.tuning.captureExport().subscribe(
+        (download) => this.saveDownload(download),
+        (error) => this.fail(error, 'Capture export')
+      )
+    );
+  }
+
   preview(): void {
     const profileId =
       this.deviceState && this.deviceState.profile ? this.deviceState.profile.id : this.selectedProfileId;
