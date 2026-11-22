@@ -1,3 +1,17 @@
+# Notes de version — 1.4.1
+
+## 1.4.1 — matching des profils et confort du tuning
+
+- L’agent demande `Appliance.System.Ability` aux appareils quand le document
+  manque ou date de plus de 24 h (cooldown 5 min). Les profils qui déclarent
+  des capacités (MRS100, etc.) sont maintenant associés dans le tuning, donc
+  les commandes typées sont disponibles.
+- Tuning : à défaut de profil associé, un message explicatif remplace le
+  snackbar ; la révision et les hashes sont tronqués avec tooltip et copie.
+- Tuning : la liste des profils affiche les profils détectés par défaut, avec
+  recherche et option « Show all » persistée.
+- Compatibilité et profils inchangés ; aucune rupture d’API.
+
 # Notes de version — 1.4.0
 
 ## 1.4.0 — page de tuning et commandes typées

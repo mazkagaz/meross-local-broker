@@ -46,6 +46,12 @@ _APP_RESPONSE_TOPIC_RE = re.compile(r"^/app/(\d+)(?:-[A-Za-z0-9]+)?/subscribe$")
 _ACK_METHODS = {"GETACK", "SETACK", "ERROR"}
 _CLIENTID_RE = re.compile('^fmware:([a-zA-Z0-9]+)_[a-zA-Z0-9]+$')
 _DEVICE_UPDATE_CACHE_INTERVAL_SECONDS = 60
+# The broker matches profiles from the ability document. Ask the device for it
+# when missing, then refresh it rarely; the cooldown avoids request loops when
+# a firmware never answers.
+_ABILITY_NAMESPACE = 'Appliance.System.Ability'
+_ABILITY_REFRESH_INTERVAL_SECONDS = 24 * 3600
+_ABILITY_REQUEST_COOLDOWN_SECONDS = 300
 # How often the agent polls Appliance.System.All from devices with stale info (devices reconnecting after a
 # broker restart publish nothing on their own, so this is what keeps their status and timezone in sync)
 _DEVICE_REFRESH_INTERVAL_SECONDS = 60
@@ -148,6 +154,7 @@ class Broker:
         self._lock = RLock()
         self._devices_sys_info_timestamp = {}
         self._cover_config_reapply_ts = {}
+        self._ability_request_ts = {}
         self._bridges = {}
 
         self._nat_table = ExpiringDict(max_age_seconds=30, max_len=50000)
@@ -211,6 +218,7 @@ class Broker:
         devices = dbhelper.get_all_devices()
         for d in devices:
             self._issue_device_get_all(device_uuid=d.uuid)
+            self._maybe_request_ability(d.uuid)
 
     def _issue_device_get_all(self, device_uuid: str) -> None:
         device = dbhelper.get_device_by_uuid(device_uuid=device_uuid)
@@ -219,6 +227,34 @@ class Broker:
                                               payload={},
                                               dev_key=device.owner_user.mqtt_key)
         self.c.publish(topic=f"/appliance/{device_uuid}/subscribe", payload=msg)
+
+    def _issue_device_get_ability(self, device_uuid: str) -> bool:
+        """Request the ability document so profile matching has its facts."""
+        device = dbhelper.get_device_by_uuid(device_uuid=device_uuid)
+        if device is None or device.owner_user is None:
+            return False
+        msg, _ = _build_mqtt_message(method="GET",
+                                     namespace=_ABILITY_NAMESPACE,
+                                     payload={},
+                                     dev_key=device.owner_user.mqtt_key)
+        self.c.publish(topic=f"/appliance/{device_uuid}/subscribe", payload=msg)
+        self._ability_request_ts[device_uuid] = time.time()
+        l.info("Requested %s from device %s", _ABILITY_NAMESPACE, device_uuid)
+        return True
+
+    def _maybe_request_ability(self, device_uuid: str) -> bool:
+        """Request the ability only when missing/stale, at most every cooldown."""
+        now = time.time()
+        last = self._ability_request_ts.get(device_uuid, 0)
+        if now - last < _ABILITY_REQUEST_COOLDOWN_SECONDS:
+            return False
+        getter = getattr(dbhelper, 'get_device_ability', None)
+        row = getter(device_uuid) if getter is not None else None
+        if row is not None and row.updated_at is not None:
+            age = now - row.updated_at.timestamp()
+            if age < _ABILITY_REFRESH_INTERVAL_SECONDS:
+                return False
+        return self._issue_device_get_ability(device_uuid)
 
     def refresh_stale_devices(self) -> List[str]:
         """Issue Appliance.System.All to every known device whose info is missing or older than the cache interval."""
@@ -229,6 +265,7 @@ class Broker:
             if last_update_ts is None or (now - last_update_ts).total_seconds() > _DEVICE_UPDATE_CACHE_INTERVAL_SECONDS:
                 self._issue_device_get_all(device.uuid)
                 refreshed.append(device.uuid)
+            self._maybe_request_ability(device.uuid)
         return refreshed
 
     def process_pending_unbinds(self) -> List[str]:
@@ -280,6 +317,7 @@ class Broker:
         get_capture_manager().record(device_uuid, "rx", topic, payload)
         # If the message comes from a known device, update its online status
         dbhelper.update_device_status(device_uuid=device_uuid, status=OnlineStatus.ONLINE)
+        self._maybe_request_ability(device_uuid)
 
         user = dbhelper.find_user_owner_by_device_uuid(device_uuid)
         if user is None:

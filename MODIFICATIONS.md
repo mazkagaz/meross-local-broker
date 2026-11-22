@@ -22,7 +22,7 @@ prominent fork notice at the top; the full list of behaviour changes is in
 
 | Area                                                                 | Change                                                                                                                                                                |
 | -------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `rootfs/opt/custom_broker/broker_agent.py`                           | MRS100 channel/config persistence and replay, timezone push, Unbind publication, forgotten-device disconnect handling, TLS connection retry                           |
+| `rootfs/opt/custom_broker/broker_agent.py`                           | MRS100 channel/config persistence and replay, timezone push, Unbind publication, forgotten-device disconnect handling, TLS connection retry, ability request/cache    |
 | `rootfs/opt/custom_broker/db_helper.py`, `model/db_models.py`        | Roller-shutter, ability, pending-unbind and revocation tables/helpers                                                                                                 |
 | `rootfs/opt/custom_broker/blueprints/device.py`                      | `devList` ability/roller-shutter metadata, forget queue                                                                                                               |
 | `rootfs/opt/custom_broker/blueprints/admin.py`                       | Forgetting from the Web UI, ingress-only administration                                                                                                               |
@@ -47,8 +47,8 @@ prominent fork notice at the top; the full list of behaviour changes is in
   `test_supervisor_network.py`, `test_timezone_utils.py`,
   `test_mrs100_roller_shutter.py`, `test_broker_agent_timezone.py`,
   `test_broker_agent_unbind.py`, `test_broker_agent_disconnect.py`,
-  `test_profile_engine_parity.py`, `test_tuning.py`, `test_tuning_api.py`,
-  `test_tuning_probe.py`.
+  `test_broker_agent_ability.py`, `test_profile_engine_parity.py`,
+  `test_tuning.py`, `test_tuning_api.py`, `test_tuning_probe.py`.
 - Documentation: `README.md`, `docs/specs/MRS100.md`, `docs/design/MRS100_PATCH.md`, `docs/design/TUNING-PAGE.md`,
   `docs/guides/DEVICE-TUNING.md`, `docs/architecture/ADR-001-shared-profile-engine.md`,
   `docs/testing/TESTING.md`, `docs/operations/BUILDING.md`, `RELEASE_NOTES.md`, `MODIFICATIONS.md`, `LEGAL.md`, `NOTICE`.

@@ -1,6 +1,7 @@
 // Modified or added for the MRS100 fork of ha-meross-local-broker (2026-11).
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { fakeAsync, TestBed, tick } from '@angular/core/testing';
+import { Clipboard } from '@angular/cdk/clipboard';
 import { FormsModule } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -32,6 +33,16 @@ const VALIDATION: any = {
   summary: {},
   diff: '@@ -1 +1 @@\n+profile: tuned',
   diff_base: 'bundled',
+};
+
+const PROFILE_SUMMARY: any = {
+  id: 'p1',
+  version: '1',
+  source: 'bundled',
+  hash: 'h',
+  requires_engine: null,
+  devices_affected: 1,
+  override_file: null,
 };
 
 const COMMAND: any = {
@@ -101,8 +112,10 @@ describe('TuningComponent', () => {
   let service: jasmine.SpyObj<TuningService>;
   let dialog: { open: jasmine.Spy };
   let snackBar: { open: jasmine.Spy };
+  let clipboard: { copy: jasmine.Spy };
 
   beforeEach(() => {
+    localStorage.removeItem('tuning-show-all-profiles');
     service = jasmine.createSpyObj<TuningService>('TuningService', [
       'listProfiles',
       'listDevices',
@@ -181,6 +194,7 @@ describe('TuningComponent', () => {
     dialog = { open: jasmine.createSpy('open') };
     dialog.open.and.returnValue({ afterClosed: () => of(true) });
     snackBar = { open: jasmine.createSpy('open') };
+    clipboard = { copy: jasmine.createSpy('copy') };
 
     TestBed.configureTestingModule({
       declarations: [TuningComponent],
@@ -189,6 +203,7 @@ describe('TuningComponent', () => {
         { provide: TuningService, useValue: service },
         { provide: MatDialog, useValue: dialog },
         { provide: MatSnackBar, useValue: snackBar },
+        { provide: Clipboard, useValue: clipboard },
       ],
       schemas: [NO_ERRORS_SCHEMA],
     });
@@ -204,6 +219,30 @@ describe('TuningComponent', () => {
     expect(component.revision).toBe('r1');
     expect(component.profiles.length).toBe(1);
     expect(component.devices.length).toBe(1);
+  });
+
+  it('filters profiles to detected ones and searches all', () => {
+    component.profiles = [
+      { ...PROFILE_SUMMARY, id: 'detected', devices_affected: 1 },
+      { ...PROFILE_SUMMARY, id: 'hidden', devices_affected: 0 },
+    ];
+    expect(component.filteredProfiles.map((item) => item.id)).toEqual(['detected']);
+    expect(component.detectedProfileCount).toBe(1);
+
+    component.showAllProfiles = true;
+    expect(component.filteredProfiles.length).toBe(2);
+
+    component.profileFilter = 'hid';
+    expect(component.filteredProfiles.map((item) => item.id)).toEqual(['hidden']);
+  });
+
+  it('persists the show-all toggle and copies identifiers', () => {
+    component.persistShowAll(true);
+    expect(localStorage.getItem('tuning-show-all-profiles')).toBe('1');
+
+    component.copyValue('abc', 'Revision');
+    expect(clipboard.copy).toHaveBeenCalledWith('abc');
+    expect(snackBar.open).toHaveBeenCalled();
   });
 
   it('loads and validates a selected profile', fakeAsync(() => {
@@ -284,6 +323,13 @@ describe('TuningComponent', () => {
     expect(component.commands.length).toBe(1);
     expect(component.commandChannel['cover.set_position']).toBe(0);
     expect(component.commandValue['cover.set_position']).toBe(0);
+  });
+
+  it('explains when no profile matches a device', () => {
+    service.deviceState.and.returnValue(of({ ...DEVICE_STATE, profile: null } as any));
+    component.selectDevice('d1');
+    expect(service.deviceCommands).not.toHaveBeenCalled();
+    expect(component.commandsNote).toContain('No profile matches');
   });
 
   it('prepares and confirms a device command', () => {

@@ -5,15 +5,65 @@
 
 .page-title {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
   margin-bottom: 8px;
 
+  > div {
+    flex: 1;
+    min-width: 0;
+  }
+
   h1 {
     margin: 0;
     font-size: 20px;
   }
+}
+
+.revision-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  margin: 4px 0 0;
+}
+
+.token {
+  display: inline-block;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  font-family: monospace;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  vertical-align: bottom;
+  white-space: nowrap;
+}
+
+.copy-button {
+  flex: 0 0 auto;
+  width: 32px;
+  height: 32px;
+  line-height: 32px;
+}
+
+.profile-filters {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 4px 8px;
+}
+
+.filter-field {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.empty-filter {
+  padding: 8px 4px;
 }
 
 .tab-body {
@@ -48,8 +98,15 @@
 .hash-row {
   display: flex;
   flex-direction: column;
-  word-break: break-all;
+  gap: 2px;
   margin: 8px 0;
+}
+
+.hash-line {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
 }
 
 .actions,

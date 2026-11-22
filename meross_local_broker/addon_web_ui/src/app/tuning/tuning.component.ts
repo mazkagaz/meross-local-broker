@@ -1,5 +1,6 @@
 // Modified or added for the MRS100 fork of ha-meross-local-broker (2026-11).
 import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Clipboard } from '@angular/cdk/clipboard';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { of, Subject, Subscription } from 'rxjs';
@@ -40,6 +41,8 @@ export class TuningComponent implements OnInit, OnDestroy {
   profiles: TuningProfileSummary[] = [];
   devices: TuningDeviceSummary[] = [];
   auditEntries: TuningAuditEntry[] = [];
+  showAllProfiles = false;
+  profileFilter = '';
 
   selectedProfileId: string | null = null;
   profile: TuningProfileDetail | null = null;
@@ -76,15 +79,22 @@ export class TuningComponent implements OnInit, OnDestroy {
   commandChannel: { [key: string]: number } = {};
   commandValue: { [key: string]: number } = {};
   commandBusy = false;
+  commandsNote = '';
 
   entityColumns = ['key', 'platform', 'namespace', 'channel', 'commands'];
 
   private subscriptions = new Subscription();
   private validationInput = new Subject<ValidationInput>();
 
-  constructor(private tuning: TuningService, private dialog: MatDialog, private snackBar: MatSnackBar) {}
+  constructor(
+    private tuning: TuningService,
+    private dialog: MatDialog,
+    private snackBar: MatSnackBar,
+    private clipboard: Clipboard
+  ) {}
 
   ngOnInit(): void {
+    this.showAllProfiles = localStorage.getItem('tuning-show-all-profiles') === '1';
     this.subscriptions.add(
       this.validationInput
         .pipe(
@@ -141,6 +151,34 @@ export class TuningComponent implements OnInit, OnDestroy {
         (error) => this.fail(error, 'Audit')
       )
     );
+  }
+
+  get filteredProfiles(): TuningProfileSummary[] {
+    const term = this.profileFilter.trim().toLowerCase();
+    if (term) {
+      return this.profiles.filter((item) => item.id.toLowerCase().includes(term));
+    }
+    if (this.showAllProfiles) {
+      return this.profiles;
+    }
+    return this.profiles.filter((item) => item.devices_affected > 0);
+  }
+
+  get detectedProfileCount(): number {
+    return this.profiles.filter((item) => item.devices_affected > 0).length;
+  }
+
+  persistShowAll(value: boolean): void {
+    this.showAllProfiles = value;
+    localStorage.setItem('tuning-show-all-profiles', value ? '1' : '0');
+  }
+
+  copyValue(value: string, label: string): void {
+    if (!value) {
+      return;
+    }
+    this.clipboard.copy(value);
+    this.snackBar.open(`${label} copied.`, 'Dismiss', { duration: 2000 });
   }
 
   selectProfile(profileId: string): void {
@@ -363,7 +401,16 @@ export class TuningComponent implements OnInit, OnDestroy {
           const polling = state.polling && state.polling.length ? state.polling[0] : null;
           this.simNamespace = polling ? polling.namespace : '';
           this.simMethod = 'PUSH';
-          this.loadCommands(uuid);
+          this.commands = [];
+          this.commandCatalog = null;
+          this.commandsNote = '';
+          if (state.profile) {
+            this.loadCommands(uuid);
+          } else {
+            this.commandsNote =
+              'No profile matches this device. The broker requests the ability ' +
+              'document from the device; reload once it has answered.';
+          }
         },
         (error) => this.fail(error, 'Device state')
       )
@@ -512,7 +559,17 @@ export class TuningComponent implements OnInit, OnDestroy {
             }
           }
         },
-        (error) => this.fail(error, 'Commands')
+        (error) => {
+          if (error && error.status === 409) {
+            this.commands = [];
+            this.commandCatalog = null;
+            this.commandsNote =
+              'No profile matches this device. The broker requests the ability ' +
+              'document from the device; reload once it has answered.';
+          } else {
+            this.fail(error, 'Commands');
+          }
+        }
       )
     );
   }

@@ -12,7 +12,11 @@ n’est jamais modifié : seules les surcharges sous `/data/device_profiles` son
 ## Onglet Profils
 
 - Liste des profils effectifs : version, source (`bundled`/`override`), hash et
-  nombre d’appareils impactés.
+  nombre d’appareils impactés. Par défaut, seuls les profils détectés sont
+  affichés ; la recherche couvre tout le catalogue et l’option **Show all**
+  affiche aussi les profils non détectés (choix mémorisé).
+- La révision et les hashes sont tronqués avec la valeur complète en infobulle
+  et un bouton de copie.
 - Éditeur YAML avec validation continue : erreurs avec ligne et colonne,
   avertissements du moteur partagé, diff unifié contre la base effective
   (`bundled` ou `override`).
@@ -77,3 +81,12 @@ accepte `?profile_id=` et `?device_uuid=` pour filtrer.
 
 Les jetons de confirmation et les identifiants MQTT de lecture restent en
 mémoire et ne sont jamais persistés.
+
+## Aucun profil associé à un appareil
+
+Si la fiche affiche **No profile matches this device**, le broker n’a pas encore
+reçu le document de capacités (`Appliance.System.Ability`). Depuis la 1.4.1,
+l’agent le demande automatiquement au démarrage, lors des rafraîchissements et
+à la première publication de l’appareil (cooldown de 5 min, rafraîchissement
+quotidien). Recharger la page après la réponse de l’appareil. Si l’appareil ne
+répond jamais à cette requête, le matching reste indisponible pour ce modèle.

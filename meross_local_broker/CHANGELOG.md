@@ -1,3 +1,14 @@
+## 1.4.1
+
+- L’agent demande `Appliance.System.Ability` quand le document manque ou date de
+  plus de 24 h (cooldown 5 min) : le tuning associe désormais les profils qui
+  déclarent des capacités requises (par exemple MRS100).
+- Tuning : message inline quand aucun profil ne correspond ; révision et hashes
+  tronqués avec tooltip et copie.
+- Tuning : liste limitée aux profils détectés par défaut, avec recherche et
+  option « Show all » persistée.
+- Aucun changement de profil ni d’API.
+
 ## 1.4.0
 
 - Moteur de profils partagé avec l’intégration : copie épinglée dans

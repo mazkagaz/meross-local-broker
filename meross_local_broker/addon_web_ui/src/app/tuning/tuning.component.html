@@ -5,8 +5,20 @@ Modified or added for the MRS100 fork of ha-meross-local-broker (2026-11).
   <div class="page-title">
     <div>
       <h1>Device tuning</h1>
-      <p class="meta">
-        Catalogue revision {{ revision }} — {{ profiles.length }} profile(s), {{ devices.length }} device(s)
+      <p class="meta revision-row">
+        <span>Catalogue revision</span>
+        <code class="token" [matTooltip]="revision">{{ revision }}</code>
+        <button
+          mat-icon-button
+          type="button"
+          class="copy-button"
+          matTooltip="Copy revision"
+          aria-label="Copy revision"
+          (click)="copyValue(revision, 'Revision')"
+        >
+          <mat-icon>content_copy</mat-icon>
+        </button>
+        <span>— {{ profiles.length }} profile(s), {{ devices.length }} device(s)</span>
       </p>
     </div>
     <button mat-stroked-button type="button" (click)="loadAll()">Refresh</button>
@@ -17,11 +29,24 @@ Modified or added for the MRS100 fork of ha-meross-local-broker (2026-11).
       <div class="tab-body" fxLayout="row" fxLayoutGap="16px" fxLayout.lt-md="column">
         <mat-card class="list-card">
           <mat-card-title>Profiles</mat-card-title>
-          <mat-card-subtitle>Revision {{ revision }}</mat-card-subtitle>
+          <mat-card-subtitle class="revision-row">
+            <span>Revision</span>
+            <code class="token" [matTooltip]="revision">{{ revision }}</code>
+            <span>— {{ detectedProfileCount }} detected / {{ profiles.length }}</span>
+          </mat-card-subtitle>
+          <div class="profile-filters">
+            <mat-form-field appearance="outline" class="filter-field">
+              <mat-label>Search profile</mat-label>
+              <input matInput [(ngModel)]="profileFilter" placeholder="id" />
+            </mat-form-field>
+            <mat-slide-toggle [checked]="showAllProfiles" (change)="persistShowAll($event.checked)">
+              Show all
+            </mat-slide-toggle>
+          </div>
           <mat-nav-list>
             <a
               mat-list-item
-              *ngFor="let item of profiles"
+              *ngFor="let item of filteredProfiles"
               (click)="selectProfile(item.id)"
               [class.selected]="item.id === selectedProfileId"
             >
@@ -31,6 +56,7 @@ Modified or added for the MRS100 fork of ha-meross-local-broker (2026-11).
               </span>
             </a>
           </mat-nav-list>
+          <p class="meta empty-filter" *ngIf="!filteredProfiles.length">No profile matches this filter.</p>
           <mat-divider></mat-divider>
           <div class="stack">
             <button mat-stroked-button type="button" (click)="exportProfiles('zip', 'overrides')">
@@ -56,9 +82,48 @@ Modified or added for the MRS100 fork of ha-meross-local-broker (2026-11).
               {{ profile.version || '?' }} · {{ profile.source }} · {{ profile.devices_affected }} device(s)
             </mat-card-subtitle>
             <div class="hash-row meta">
-              <span>catalog {{ profile.catalog_hash }}</span>
-              <span *ngIf="profile.override_hash">override {{ profile.override_hash }}</span>
-              <span>revision {{ profile.revision }}</span>
+              <div class="hash-line">
+                <span>catalog</span>
+                <code class="token" [matTooltip]="profile.catalog_hash">{{ profile.catalog_hash }}</code>
+                <button
+                  mat-icon-button
+                  type="button"
+                  class="copy-button"
+                  matTooltip="Copy catalog hash"
+                  aria-label="Copy catalog hash"
+                  (click)="copyValue(profile.catalog_hash, 'Catalog hash')"
+                >
+                  <mat-icon>content_copy</mat-icon>
+                </button>
+              </div>
+              <div class="hash-line" *ngIf="profile.override_hash">
+                <span>override</span>
+                <code class="token" [matTooltip]="profile.override_hash">{{ profile.override_hash }}</code>
+                <button
+                  mat-icon-button
+                  type="button"
+                  class="copy-button"
+                  matTooltip="Copy override hash"
+                  aria-label="Copy override hash"
+                  (click)="copyValue(profile.override_hash, 'Override hash')"
+                >
+                  <mat-icon>content_copy</mat-icon>
+                </button>
+              </div>
+              <div class="hash-line">
+                <span>revision</span>
+                <code class="token" [matTooltip]="profile.revision">{{ profile.revision }}</code>
+                <button
+                  mat-icon-button
+                  type="button"
+                  class="copy-button"
+                  matTooltip="Copy revision"
+                  aria-label="Copy revision"
+                  (click)="copyValue(profile.revision, 'Revision')"
+                >
+                  <mat-icon>content_copy</mat-icon>
+                </button>
+              </div>
             </div>
             <div class="actions">
               <button
@@ -300,7 +365,9 @@ Modified or added for the MRS100 fork of ha-meross-local-broker (2026-11).
                 Send
               </button>
             </div>
-            <p class="meta" *ngIf="!commands.length">No declared command for this profile.</p>
+            <p class="meta" *ngIf="!commands.length">
+              {{ commandsNote || 'No declared command for this profile.' }}
+            </p>
           </mat-card>
 
           <mat-card>

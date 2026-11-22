@@ -102,7 +102,9 @@ Capture : start/stop/status/draft sous `/_admin_/tuning/capture`, le brouillon
 `test_tuning_api.py`, `test_tuning_probe.py`. Limite assumée : le broker ne
 conserve pas d’état générique par namespace ; les valeurs d’instance exposées
 sont `last_seen`, la capacité et le cache volet. Un cache générique pourra
-suivre en V2.
+suivre en V2. Depuis 1.4.1, l’agent demande `Appliance.System.Ability` quand le
+document manque ou est ancien (cooldown 5 min, rafraîchissement 24 h), ce qui
+alimente le matching des profils du tuning.
 
 ## Étape 3 — UI V1
 

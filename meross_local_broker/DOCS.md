@@ -121,7 +121,9 @@ L'icône **tune** ouvre la page de tuning (ingress Supervisor uniquement) :
 au profil livré, import/export, état d'un appareil, simulation de trames, GET
 live en lecture seule, capture et commandes typées avec confirmation. Le
 catalogue livré reste en lecture seule ; seules les surcharges sous
-`/data/device_profiles` sont écrites. Disponible depuis le broker 1.4.0.
+`/data/device_profiles` sont écrites. Disponible depuis le broker 1.4.0 ; le
+matching des profils, qui dépend du document de capacités de l'appareil, est
+automatique depuis 1.4.1.
 
 ## Dépannage
 
