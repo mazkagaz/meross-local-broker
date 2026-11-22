@@ -169,6 +169,12 @@ export interface TuningReadResult {
   profile_id: string;
 }
 
+export interface TuningAbilityResult {
+  uuid: string;
+  count: number;
+  namespaces: string[];
+}
+
 export interface TuningCommand {
   id: string;
   entity: string;

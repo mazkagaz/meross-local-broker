@@ -85,18 +85,32 @@ class AbilityRequestTest(unittest.TestCase):
         broker = make_broker()
         db = FakeDbHelper(
             [make_device()],
-            {DEVICE_UUID: SimpleNamespace(updated_at=datetime.now())},
+            {DEVICE_UUID: SimpleNamespace(
+                updated_at=datetime.now(),
+                ability_json='{"Appliance.System.All": {}}')},
         )
         with mock.patch.object(broker_agent, "dbhelper", db):
             broker._issue_devices_discovery()
         self.assertEqual(ability_messages(broker), [])
+
+    def test_empty_ability_is_requested_again(self):
+        broker = make_broker()
+        db = FakeDbHelper(
+            [make_device()],
+            {DEVICE_UUID: SimpleNamespace(
+                updated_at=datetime.now(), ability_json="{}")},
+        )
+        with mock.patch.object(broker_agent, "dbhelper", db):
+            broker._issue_devices_discovery()
+        self.assertEqual(len(ability_messages(broker)), 1)
 
     def test_stale_ability_is_refreshed(self):
         broker = make_broker()
         db = FakeDbHelper(
             [make_device()],
             {DEVICE_UUID: SimpleNamespace(
-                updated_at=datetime.now() - timedelta(days=2))},
+                updated_at=datetime.now() - timedelta(days=2),
+                ability_json='{"Appliance.System.All": {}}')},
         )
         with mock.patch.object(broker_agent, "dbhelper", db):
             broker._issue_devices_discovery()

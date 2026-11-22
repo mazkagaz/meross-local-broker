@@ -80,6 +80,7 @@ export class TuningComponent implements OnInit, OnDestroy {
   commandValue: { [key: string]: number } = {};
   commandBusy = false;
   commandsNote = '';
+  abilityBusy = false;
 
   entityColumns = ['key', 'platform', 'namespace', 'channel', 'commands'];
 
@@ -537,6 +538,26 @@ export class TuningComponent implements OnInit, OnDestroy {
           (result) => (this.readResult = result),
           (error) => (this.readError = tuningErrorMessage(error))
         )
+    );
+  }
+
+  refreshAbility(): void {
+    if (!this.selectedDeviceUuid || this.abilityBusy) {
+      return;
+    }
+    this.abilityBusy = true;
+    this.subscriptions.add(
+      this.tuning.refreshAbility(this.selectedDeviceUuid).subscribe(
+        (result) => {
+          this.abilityBusy = false;
+          this.snackBar.open(`Ability refreshed (${result.count} namespaces).`, 'Dismiss', { duration: 4000 });
+          this.selectDevice(this.selectedDeviceUuid);
+        },
+        (error) => {
+          this.abilityBusy = false;
+          this.fail(error, 'Ability');
+        }
+      )
     );
   }
 

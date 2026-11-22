@@ -549,6 +549,59 @@ class TuningStoreTest(unittest.TestCase):
         self.assertEqual(result["typed"]["entities"]["cover"],
                          {"position": 42})
 
+    def test_refresh_ability_fetches_and_stores_the_document(self):
+        self._install_mrs100()
+        probe = FakeProbe(result={
+            "ok": True, "method": "GETACK",
+            "payload": {"ability": {
+                "Appliance.RollerShutter.State": {},
+                "Appliance.System.All": {}}}})
+        self.store._probe = probe
+        stored = []
+        self.store._set_ability = lambda device_uuid, ability: stored.append(
+            (device_uuid, ability))
+        clock = SimpleNamespace(now=100.0)
+        self.store._clock = lambda: clock.now
+
+        result = self.store.refresh_ability(UUID)
+        self.assertEqual(result["count"], 2)
+        self.assertEqual(stored[0][0], UUID)
+        self.assertIn("Appliance.RollerShutter.State", stored[0][1])
+        self.assertEqual(probe.sends[0][1], "GET")
+        self.assertEqual(probe.sends[0][2], "Appliance.System.Ability")
+        entries = self.store.audit_entries()
+        self.assertEqual(entries[0]["action"], "device.ability")
+
+        with self.assertRaises(TuningRateLimited):
+            self.store.refresh_ability(UUID)
+
+    def test_refresh_ability_rejects_empty_or_error(self):
+        self._install_mrs100()
+        stored = []
+        self.store._set_ability = lambda device_uuid, ability: stored.append(
+            ability)
+        clock = SimpleNamespace(now=100.0)
+        self.store._clock = lambda: clock.now
+
+        self.store._probe = FakeProbe(result={
+            "ok": True, "method": "GETACK", "payload": {"ability": {}}})
+        with self.assertRaises(TuningError):
+            self.store.refresh_ability(UUID)
+        self.assertEqual(stored, [])
+
+        clock.now += 5
+        self._install_mrs100(online=False)
+        with self.assertRaises(TuningConflict):
+            self.store.refresh_ability(UUID)
+
+        clock.now += 5
+        self._install_mrs100()
+        self.store._probe = FakeProbe(result={
+            "ok": False, "method": "ERROR", "payload": {}})
+        with self.assertRaises(TuningError):
+            self.store.refresh_ability(UUID)
+        self.assertEqual(stored, [])
+
     def test_read_device_degrades_explicitly(self):
         self._install_device(abilities=["Appliance.Control.ToggleX"])
         self.store._probe = FakeProbe(error=TuningTimeout("no answer"))

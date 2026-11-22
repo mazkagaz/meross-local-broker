@@ -26,17 +26,23 @@ DEVICE_UUID = "0123456789abcdef0123456789abcdef"
 
 
 class FakeProbe:
-    def __init__(self):
+    def __init__(self, result=None):
         self.calls = []
         self.sends = []
+        self.result = result
+
+    def _invoke(self, default):
+        return dict(self.result) if self.result is not None else default
 
     def read(self, uuid, user, namespace, payload, timeout):
         self.calls.append((uuid, namespace, payload, timeout))
-        return {"ok": True, "method": "GETACK", "payload": {}}
+        return self._invoke(
+            {"ok": True, "method": "GETACK", "payload": {}})
 
     def send(self, uuid, user, method, namespace, payload, timeout):
         self.sends.append((uuid, method, namespace, payload, timeout))
-        return {"ok": True, "method": "SETACK", "payload": {}}
+        return self._invoke(
+            {"ok": True, "method": "SETACK", "payload": {}})
 
 
 class TuningApiTest(unittest.TestCase):
@@ -367,6 +373,39 @@ class TuningApiTest(unittest.TestCase):
             f"/_admin_/tuning/devices/{DEVICE_UUID}/commands/cover.open",
             json={"channel": 0})
         self.assertEqual(response.status_code, 409)
+
+    def test_ability_refresh_endpoint(self):
+        self._install_mrs100()
+        stored = []
+        self.store._set_ability = lambda device_uuid, ability: stored.append(
+            ability)
+        self.store._probe = FakeProbe(result={
+            "ok": True, "method": "GETACK",
+            "payload": {"ability": {
+                "Appliance.RollerShutter.State": {},
+                "Appliance.System.All": {}}}})
+        self.store._clock = lambda: 100.0
+
+        response = self.client.post(
+            f"/_admin_/tuning/devices/{DEVICE_UUID}/ability", json={})
+        self.assertEqual(response.status_code, 200, response.get_json())
+        self.assertEqual(response.get_json()["count"], 2)
+        self.assertIn("Appliance.RollerShutter.State",
+                      response.get_json()["namespaces"])
+        self.assertEqual(len(stored), 1)
+
+        response = self.client.post(
+            f"/_admin_/tuning/devices/{DEVICE_UUID}/ability", json={})
+        self.assertEqual(response.status_code, 429)
+
+        self._install_mrs100(online=False)
+        response = self.client.post(
+            f"/_admin_/tuning/devices/{DEVICE_UUID}/ability", json={})
+        self.assertEqual(response.status_code, 409)
+
+        response = self.client.post(
+            "/_admin_/tuning/devices/missing/ability", json={})
+        self.assertEqual(response.status_code, 404)
 
     def test_capture_endpoints(self):
         manager = CaptureManager(str(Path(self.temporary.name) / "capture"))

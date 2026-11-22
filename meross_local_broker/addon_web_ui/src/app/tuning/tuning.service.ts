@@ -5,6 +5,7 @@ import { Observable } from 'rxjs';
 import { environment } from '@env/environment';
 
 import {
+  TuningAbilityResult,
   TuningAuditEntry,
   TuningCaptureDraft,
   TuningCaptureStatus,
@@ -141,6 +142,14 @@ export class TuningService {
     return this.http.post<TuningReadResult>(this.base + '/tuning/devices/' + encodeURIComponent(uuid) + '/read', body, {
       headers: this.jsonHeaders(),
     });
+  }
+
+  refreshAbility(uuid: string): Observable<TuningAbilityResult> {
+    return this.http.post<TuningAbilityResult>(
+      this.base + '/tuning/devices/' + encodeURIComponent(uuid) + '/ability',
+      {},
+      { headers: this.jsonHeaders() }
+    );
   }
 
   deviceCommands(uuid: string): Observable<TuningCommandCatalog> {

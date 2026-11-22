@@ -1,3 +1,15 @@
+# Notes de version — 1.4.2
+
+## 1.4.2 — rafraîchir l’ability depuis le tuning
+
+- Nouveau bouton **Refresh ability** dans la fiche appareil du tuning (et
+  `POST /_admin_/tuning/devices/{uuid}/ability`) : le broker demande
+  `Appliance.System.Ability` avec une identité app, comme l’intégration, puis
+  enregistre le document. Les profils sont associés immédiatement.
+- L’agent demande à nouveau l’ability si le document en cache est vide,
+  incomplet ou corrompu, et n’enregistre plus un document vide.
+- Aucun changement de profil ni de rupture d’API.
+
 # Notes de version — 1.4.1
 
 ## 1.4.1 — matching des profils et confort du tuning

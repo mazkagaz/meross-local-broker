@@ -93,6 +93,17 @@ describe('TuningService', () => {
     request.flush({ ok: true });
   });
 
+  it('refreshes a device ability', () => {
+    service.refreshAbility('dev-1').subscribe();
+    const request = http.expectOne(base + '/tuning/devices/dev-1/ability');
+    expect(request.request.method).toBe('POST');
+    request.flush({
+      uuid: 'dev-1',
+      count: 1,
+      namespaces: ['Appliance.System.All'],
+    });
+  });
+
   it('lists and executes typed commands', () => {
     service.deviceCommands('dev-1').subscribe();
     const catalogRequest = http.expectOne(base + '/tuning/devices/dev-1/commands');

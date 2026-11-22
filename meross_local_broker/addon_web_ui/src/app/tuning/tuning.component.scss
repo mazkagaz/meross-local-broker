@@ -196,6 +196,17 @@
   }
 }
 
+.commands-empty {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+
+  .meta {
+    margin: 0;
+  }
+}
+
 .command-row {
   display: flex;
   flex-wrap: wrap;

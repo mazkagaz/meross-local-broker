@@ -53,6 +53,7 @@ COMMAND_COOLDOWN_DEFAULT = 1.0
 COMMAND_TOKEN_TTL = 60.0
 MAX_SIMULATION_CHANNEL = 64
 SYSTEM_ALL = "Appliance.System.All"
+SYSTEM_ABILITY = "Appliance.System.Ability"
 
 
 class TuningError(ValueError):
@@ -256,6 +257,7 @@ class TuningStore:
                  statuses=dbhelper.get_roller_shutter_statuses,
                  configs=dbhelper.get_roller_shutter_configs,
                  adjusts=dbhelper.get_roller_shutter_adjusts,
+                 set_ability=dbhelper.set_device_ability,
                  probe: Optional[MqttProbe] = None,
                  clock=time.monotonic,
                  read_cooldown: float = READ_COOLDOWN_DEFAULT,
@@ -273,6 +275,9 @@ class TuningStore:
         self._statuses = statuses
         self._configs = configs
         self._adjusts = adjusts
+        self._set_ability = set_ability
+        self._last_ability: Dict[str, float] = {}
+        self._ability_lock = threading.Lock()
         self._probe = probe
         self._clock = clock
         self._read_cooldown = float(read_cooldown)
@@ -795,6 +800,47 @@ class TuningStore:
                 ca=os.environ.get("TUNING_MQTT_CA",
                                   "/data/mqtt/certs/ca.crt"))
         return self._probe
+
+    def refresh_ability(self, uuid: str,
+                        actor: str = "unknown") -> Dict[str, Any]:
+        """Ask the device for its ability document as an app identity."""
+        device = self._device(uuid)
+        if device is None:
+            raise TuningNotFound(f"unknown device {uuid}")
+        if device.online_status != OnlineStatus.ONLINE:
+            raise TuningConflict("device is offline")
+        owner = getattr(device, "owner_user", None)
+        if owner is None:
+            raise TuningConflict("device has no owner account")
+        now = self._clock()
+        with self._ability_lock:
+            last = self._last_ability.get(uuid)
+            if last is not None and now - last < self._read_cooldown:
+                raise TuningRateLimited(
+                    "wait before refreshing the ability again",
+                    self._read_cooldown - (now - last))
+            self._last_ability[uuid] = now
+        response = self._probe_client().send(
+            uuid, owner, "GET", SYSTEM_ABILITY, {}, self._read_timeout)
+        if response.get("method") == "ERROR":
+            raise TuningError("device rejected the ability request")
+        payload = response.get("payload") or {}
+        ability = (payload.get("ability", payload)
+                   if isinstance(payload, dict) else {})
+        if not isinstance(ability, dict) or not ability:
+            raise TuningError("device returned an empty ability document")
+        self._set_ability(device_uuid=uuid, ability=ability)
+        self._audit({
+            "action": "device.ability",
+            "device_uuid": uuid,
+            "actor": actor,
+            "namespaces": len(ability),
+        })
+        return {
+            "uuid": uuid,
+            "count": len(ability),
+            "namespaces": sorted(ability),
+        }
 
     # -- V2 typed commands ---------------------------------------------
     @staticmethod

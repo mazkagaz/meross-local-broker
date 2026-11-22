@@ -365,9 +365,20 @@ Modified or added for the MRS100 fork of ha-meross-local-broker (2026-11).
                 Send
               </button>
             </div>
-            <p class="meta" *ngIf="!commands.length">
-              {{ commandsNote || 'No declared command for this profile.' }}
-            </p>
+            <div *ngIf="!commands.length" class="commands-empty">
+              <p class="meta">
+                {{ commandsNote || 'No declared command for this profile.' }}
+              </p>
+              <button
+                *ngIf="commandsNote"
+                mat-stroked-button
+                type="button"
+                [disabled]="abilityBusy"
+                (click)="refreshAbility()"
+              >
+                Refresh ability
+              </button>
+            </div>
           </mat-card>
 
           <mat-card>

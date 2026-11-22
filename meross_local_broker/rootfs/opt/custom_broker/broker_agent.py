@@ -251,9 +251,16 @@ class Broker:
         getter = getattr(dbhelper, 'get_device_ability', None)
         row = getter(device_uuid) if getter is not None else None
         if row is not None and row.updated_at is not None:
-            age = now - row.updated_at.timestamp()
-            if age < _ABILITY_REFRESH_INTERVAL_SECONDS:
-                return False
+            stored = None
+            if row.ability_json:
+                try:
+                    stored = json.loads(row.ability_json)
+                except ValueError:
+                    stored = None
+            if isinstance(stored, dict) and stored:
+                age = now - row.updated_at.timestamp()
+                if age < _ABILITY_REFRESH_INTERVAL_SECONDS:
+                    return False
         return self._issue_device_get_ability(device_uuid)
 
     def refresh_stale_devices(self) -> List[str]:
@@ -357,12 +364,17 @@ class Broker:
         if namespace == 'Appliance.System.Ability' and method == 'GETACK':
             body = payload.get('payload', {}) or {}
             ability = body.get('ability', body)
-            if isinstance(ability, dict):
+            if isinstance(ability, dict) and ability:
                 set_ability = getattr(dbhelper, 'set_device_ability', None)
                 if set_ability is not None:
                     set_ability(device_uuid=device_uuid, ability=ability)
+                l.info("Stored Appliance.System.Ability for device %s (%d namespaces)",
+                       device_uuid, len(ability))
                 if _ROLLER_SHUTTER_STATE_NS in ability:
                     dbhelper.update_device_channel(device_uuid=device_uuid, channel_id=0)
+            else:
+                l.warning("Ignoring empty Appliance.System.Ability from device %s",
+                          device_uuid)
 
         # Cache cover state/calibration reported by the device. Adjustment is a
         # report/result, not a desired config; it is never replayed.

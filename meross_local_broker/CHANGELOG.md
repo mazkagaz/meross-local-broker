@@ -1,3 +1,12 @@
+## 1.4.2
+
+- Tuning : bouton et endpoint **Refresh ability** qui demande le document de
+  capacités à l’appareil avec une identité app (comme l’intégration) et le
+  stocke ; les commandes apparaissent ensuite sans attendre l’agent.
+- L’agent redemande l’ability quand le document stocké est vide ou corrompu,
+  et n’enregistre plus un document vide.
+- Aucun changement de profil ni d’API existante.
+
 ## 1.4.1
 
 - L’agent demande `Appliance.System.Ability` quand le document manque ou date de

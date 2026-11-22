@@ -309,6 +309,16 @@ def execute_command(uuid: str, command_id: str):
         return _error(error)
 
 
+@tuning_blueprint.route(
+    "/tuning/devices/<uuid>/ability", methods=["POST"])
+def refresh_ability(uuid: str):
+    try:
+        return jsonify(get_tuning_store().refresh_ability(
+            uuid, actor=_actor()))
+    except TuningError as error:
+        return _error(error)
+
+
 @tuning_blueprint.route("/tuning/capture/status", methods=["GET"])
 def capture_status():
     return jsonify(get_capture_manager().status() or {})

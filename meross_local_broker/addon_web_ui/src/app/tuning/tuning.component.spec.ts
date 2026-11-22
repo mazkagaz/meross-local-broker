@@ -136,6 +136,7 @@ describe('TuningComponent', () => {
       'readDevice',
       'deviceCommands',
       'executeCommand',
+      'refreshAbility',
     ]);
     service.listProfiles.and.returnValue(
       of({
@@ -190,6 +191,7 @@ describe('TuningComponent', () => {
       } as any)
     );
     service.executeCommand.and.returnValue(of({} as any));
+    service.refreshAbility.and.returnValue(of({ uuid: 'd1', count: 2, namespaces: [] } as any));
 
     dialog = { open: jasmine.createSpy('open') };
     dialog.open.and.returnValue({ afterClosed: () => of(true) });
@@ -330,6 +332,16 @@ describe('TuningComponent', () => {
     component.selectDevice('d1');
     expect(service.deviceCommands).not.toHaveBeenCalled();
     expect(component.commandsNote).toContain('No profile matches');
+  });
+
+  it('refreshes the ability when no profile matches', () => {
+    service.deviceState.and.returnValue(of({ ...DEVICE_STATE, profile: null } as any));
+    component.selectDevice('d1');
+    component.refreshAbility();
+    expect(service.refreshAbility).toHaveBeenCalledWith('d1');
+    expect(snackBar.open).toHaveBeenCalled();
+    expect(service.deviceState).toHaveBeenCalledTimes(2);
+    expect(component.abilityBusy).toBeFalse();
   });
 
   it('prepares and confirms a device command', () => {

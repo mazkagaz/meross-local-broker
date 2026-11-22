@@ -104,7 +104,9 @@ conserve pas d’état générique par namespace ; les valeurs d’instance expo
 sont `last_seen`, la capacité et le cache volet. Un cache générique pourra
 suivre en V2. Depuis 1.4.1, l’agent demande `Appliance.System.Ability` quand le
 document manque ou est ancien (cooldown 5 min, rafraîchissement 24 h), ce qui
-alimente le matching des profils du tuning.
+alimente le matching des profils du tuning. Depuis 1.4.2, un endpoint et un
+bouton **Refresh ability** le demandent immédiatement avec une identité app,
+et un cache vide ou corrompu est traité comme absent.
 
 ## Étape 3 — UI V1
 
@@ -197,6 +199,7 @@ tester une commande V2 confirmée.
 | POST    | `/_admin_/profiles/{id}/backups/{file}/restore`     | oui | restaurer un backup             |
 | GET     | `/_admin_/tuning/audit`                             | oui | journal d’audit                 |
 | POST    | `/_admin_/tuning/devices/{uuid}/read`               | oui | GET live                        |
+| POST    | `/_admin_/tuning/devices/{uuid}/ability`            | oui | rafraîchir l’ability            |
 | GET     | `/_admin_/tuning/capture/status`                    | oui | session de capture              |
 | POST    | `/_admin_/tuning/capture/start`                     | oui | démarrer une capture            |
 | POST    | `/_admin_/tuning/capture/stop`                      | oui | arrêter la capture              |
@@ -256,6 +259,10 @@ Accès : ingress admin uniquement. L’acteur vient des en-têtes
   propriétaire/aucun profil, `429` cooldown par appareil (`Retry-After`),
   `504` timeout, `503` MQTT local indisponible. GET signé uniquement, jamais
   SET ; réponse assainie.
+- **Ability** `POST /_admin_/tuning/devices/{uuid}/ability` → demande
+  `Appliance.System.Ability` avec une identité app, stocke le document et
+  renvoie `{count, namespaces}`. `404` appareil inconnu, `409` hors ligne/sans
+  propriétaire, `429` cooldown, `400` document vide ou refusé, `504` timeout.
 - **Capture** `GET /_admin_/tuning/capture/status`, `POST .../start`
   `{uuid, type?, duration_s?, max_bytes?}`, `POST .../stop`, `POST .../draft`
   `{type}` → brouillon YAML pour l’éditeur. Une seule session active.
