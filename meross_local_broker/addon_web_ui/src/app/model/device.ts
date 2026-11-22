@@ -16,6 +16,14 @@ export interface DeviceChannel {
   // TODO: define this interface
 }
 
+export interface DeviceProfile {
+  id: string;
+  version: string | null;
+  source: string;
+  hash: string | null;
+  requiresEngine?: string | null;
+}
+
 export interface Device {
   readonly mac: string;
   readonly uuid: string;
@@ -32,4 +40,5 @@ export interface Device {
   domain: string;
   reservedDomain: string;
   bridgeStatus: BridgeStatus;
+  profile?: DeviceProfile | null;
 }

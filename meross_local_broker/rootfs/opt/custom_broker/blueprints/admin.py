@@ -18,13 +18,35 @@ from model.exception import BadRequestError
 from constants import DEFAULT_USER_ID
 from s6 import service_manager
 from setup import setup_account
-from profiles import reload_catalog
+from profiles import get_catalog, reload_catalog
+import profile_match
 from capture import get_capture_manager
 from datetime import datetime
 
 
 admin_blueprint = Blueprint('admin', __name__)
 _LOGGER = get_logger(__name__)
+
+
+def _serialized_devices(devices) -> List[Dict]:
+    """Serialize devices and attach their matched profile, when available."""
+    serialized = Device.serialize_list(devices)
+    try:
+        matches = profile_match.match_devices(
+            get_catalog(), devices, dbhelper.get_device_ability)
+    except Exception as ex:  # noqa: BLE001 - the list must not fail on profiles
+        _LOGGER.warning("Device profile matching failed: %s", ex)
+        matches = {}
+    for item in serialized:
+        info = matches.get(item.get("uuid"))
+        item["profile"] = ({
+            "id": info["id"],
+            "version": info["version"],
+            "source": info["source"],
+            "hash": info["hash"],
+            "requiresEngine": info["requires_engine"],
+        } if info else None)
+    return serialized
 
 
 @admin_blueprint.route('/profiles/reload', methods=['POST'])
@@ -84,7 +106,7 @@ def capture_draft():
 def list_devices() -> List[Dict]:
     """ List all devices """
     devices = dbhelper.get_all_devices()
-    return jsonify(Device.serialize_list(devices))
+    return jsonify(_serialized_devices(devices))
 
 
 @admin_blueprint.route('/devices/<uuid>', methods=['PUT'])
@@ -118,7 +140,7 @@ def update_device(uuid: str) -> Dict:
 
     dbhelper.update_device(device)
 
-    return jsonify(Device.serialize(device))
+    return jsonify(_serialized_devices([device])[0])
 
 
 @admin_blueprint.route('/devices/<uuid>', methods=['DELETE'])

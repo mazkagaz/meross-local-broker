@@ -93,8 +93,26 @@ export class HomeComponent implements AfterViewInit, OnInit, OnDestroy {
 
   private applyColumns(): void {
     this.devicesColumns = this.advanced
-      ? ['deviceId', 'type', 'network', 'userId', 'status']
+      ? ['deviceId', 'type', 'network', 'userId', 'profile', 'status']
       : ['deviceId', 'type', 'status'];
+  }
+
+  profileVersion(device: Device): string {
+    if (!device.profile) {
+      return '—';
+    }
+    return device.profile.version || device.profile.id;
+  }
+
+  isCustomProfile(device: Device): boolean {
+    return !!device.profile && device.profile.source === 'override';
+  }
+
+  profileTooltip(device: Device): string {
+    if (!device.profile) {
+      return 'No matched profile';
+    }
+    return `${device.profile.id} · ${device.profile.source}`;
   }
 
   deviceIcon(device: Device): string {

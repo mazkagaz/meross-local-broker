@@ -34,6 +34,7 @@ describe('HomeComponent', () => {
   );
 
   beforeEach(() => {
+    localStorage.removeItem('broker-advanced');
     fixture = TestBed.createComponent(HomeComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
@@ -41,5 +42,42 @@ describe('HomeComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('shows the profile column only in advanced mode', () => {
+    const device: any = {
+      profile: {
+        id: 'meross.mrs100',
+        version: '2026.11.2',
+        source: 'bundled',
+        hash: 'h',
+      },
+    };
+    expect(component.profileVersion(device)).toBe('2026.11.2');
+    expect(component.isCustomProfile(device)).toBeFalse();
+    expect(component.profileTooltip(device)).toBe('meross.mrs100 · bundled');
+    expect(component.profileVersion({ profile: null } as any)).toBe('—');
+    expect(component.profileTooltip({ profile: null } as any)).toBe('No matched profile');
+
+    (component as any).advanced = true;
+    (component as any).applyColumns();
+    expect(component.devicesColumns).toContain('profile');
+
+    (component as any).advanced = false;
+    (component as any).applyColumns();
+    expect(component.devicesColumns).not.toContain('profile');
+  });
+
+  it('marks an override profile as custom', () => {
+    const device: any = {
+      profile: {
+        id: 'meross.mod',
+        version: '2',
+        source: 'override',
+        hash: 'h',
+      },
+    };
+    expect(component.isCustomProfile(device)).toBeTrue();
+    expect(component.profileTooltip(device)).toBe('meross.mod · override');
   });
 });

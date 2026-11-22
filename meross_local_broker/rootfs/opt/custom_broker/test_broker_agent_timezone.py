@@ -12,6 +12,7 @@ from types import SimpleNamespace
 from unittest import mock
 
 import broker_agent
+from compat import OnlineStatus
 
 DEVICE_UUID = "2310184977069551370248e1e9de3638"
 DEVICE_KEY = "7b9ebd3edc1f13c6cb3f0d70d4ce066f"
@@ -29,14 +30,20 @@ class FakeDbHelper:
     """Just enough of DbHelper for _handle_message_to_agent on a plain plug (no hub)."""
 
     def __init__(self):
-        self.device = SimpleNamespace(uuid=DEVICE_UUID, owner_user=SimpleNamespace(mqtt_key=DEVICE_KEY),
-                                      child_subdevices=[])
+        self.device = SimpleNamespace(
+            uuid=DEVICE_UUID,
+            online_status=OnlineStatus.ONLINE,
+            owner_user=SimpleNamespace(user_id=1, mqtt_key=DEVICE_KEY),
+            child_subdevices=[])
 
     def get_device_by_uuid(self, device_uuid):
         return self.device
 
     def get_all_devices(self):
         return [self.device]
+
+    def get_device_ability(self, device_uuid):
+        return None
 
     def update_device(self, device):
         return device

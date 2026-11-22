@@ -1,6 +1,6 @@
 // Modified or added for the MRS100 fork of ha-meross-local-broker (2026-11).
 import { NO_ERRORS_SCHEMA } from '@angular/core';
-import { fakeAsync, TestBed, tick } from '@angular/core/testing';
+import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { Clipboard } from '@angular/cdk/clipboard';
 import { FormsModule } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
@@ -109,6 +109,7 @@ const DEVICE_STATE: any = {
 
 describe('TuningComponent', () => {
   let component: TuningComponent;
+  let fixture: ComponentFixture<TuningComponent>;
   let service: jasmine.SpyObj<TuningService>;
   let dialog: { open: jasmine.Spy };
   let snackBar: { open: jasmine.Spy };
@@ -209,10 +210,12 @@ describe('TuningComponent', () => {
       ],
       schemas: [NO_ERRORS_SCHEMA],
     });
-    const fixture = TestBed.createComponent(TuningComponent);
+    fixture = TestBed.createComponent(TuningComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
+
+  afterEach(() => fixture.destroy());
 
   it('loads inventory on init', () => {
     expect(service.listProfiles).toHaveBeenCalled();
@@ -221,6 +224,23 @@ describe('TuningComponent', () => {
     expect(component.revision).toBe('r1');
     expect(component.profiles.length).toBe(1);
     expect(component.devices.length).toBe(1);
+  });
+
+  it('polls the inventory', () => {
+    const profiles = (service.listProfiles as jasmine.Spy).calls.count();
+    const devices = (service.listDevices as jasmine.Spy).calls.count();
+    component.pollInventory();
+    expect(service.listProfiles).toHaveBeenCalledTimes(profiles + 1);
+    expect(service.listDevices).toHaveBeenCalledTimes(devices + 1);
+  });
+
+  it('reloads a selected device when its profile appears', () => {
+    component.selectedDeviceUuid = 'd1';
+    component.deviceState = { ...DEVICE_STATE, profile: null } as any;
+    service.listDevices.and.returnValue(of([{ ...DEVICE_STATE.device, profile: 'p1' } as any]));
+    component.loadDevices();
+    expect(service.deviceState).toHaveBeenCalledTimes(1);
+    expect(service.deviceCommands).toHaveBeenCalledWith('d1');
   });
 
   it('filters profiles to detected ones and searches all', () => {
@@ -335,7 +355,7 @@ describe('TuningComponent', () => {
   });
 
   it('refreshes the ability when no profile matches', () => {
-    service.deviceState.and.returnValue(of({ ...DEVICE_STATE, profile: null } as any));
+    service.deviceState.and.returnValues(of({ ...DEVICE_STATE, profile: null } as any), of(DEVICE_STATE as any));
     component.selectDevice('d1');
     component.refreshAbility();
     expect(service.refreshAbility).toHaveBeenCalledWith('d1');

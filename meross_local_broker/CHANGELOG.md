@@ -1,3 +1,15 @@
+## 1.4.3
+
+- Ability : l’agent ne consomme plus le cooldown pour un appareil hors ligne,
+  le réinitialise à la déconnexion et demande l’ability avec une origine app ;
+  la récupération se fait donc dès la première publication après reconnexion.
+- Tuning : rafraîchissement automatique des listes (polling 20 s) et rechargement
+  de l’appareil sélectionné quand son profil apparaît ; le refresh manuel
+  recharge aussi l’inventaire.
+- Panneau principal : en mode avancé, colonne Profile avec la version appliquée
+  et un badge Custom pour les surcharges.
+- Matching partagé entre l’admin et le tuning ; aucun changement de profil.
+
 ## 1.4.2
 
 - Tuning : bouton et endpoint **Refresh ability** qui demande le document de

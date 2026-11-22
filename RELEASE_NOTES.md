@@ -1,3 +1,18 @@
+# Notes de version — 1.4.3
+
+## 1.4.3 — profils détectés automatiquement et visibles sur l’accueil
+
+- L’ability est maintenant récupérée automatiquement dès qu’un appareil est en
+  ligne : plus de cooldown consommé hors ligne, réinitialisation à la
+  déconnexion et requête avec une origine app.
+- Le tuning se rafraîchit seul (listes toutes les 20 s) et recharge la fiche
+  sélectionnée dès que son profil apparaît ; le bouton Refresh ability reste
+  disponible en secours.
+- Le panneau principal affiche, en mode avancé, une colonne **Profile** avec la
+  version appliquée et un badge **Custom** lorsque le profil vient de
+  `/data/device_profiles`.
+- Matching partagé entre l’admin et le tuning ; profils et API inchangés.
+
 # Notes de version — 1.4.2
 
 ## 1.4.2 — rafraîchir l’ability depuis le tuning

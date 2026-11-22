@@ -113,6 +113,14 @@ Upstream: https://github.com/albertogeniola/ha-meross-local-broker (Apache-2.0).
           </td>
         </ng-container>
 
+        <ng-container matColumnDef="profile">
+          <th class="p10" mat-header-cell *matHeaderCellDef>Profile</th>
+          <td class="p10" mat-cell *matCellDef="let element" [matTooltip]="profileTooltip(element)">
+            <span>{{ profileVersion(element) }}</span>
+            <span class="custom-badge" *ngIf="isCustomProfile(element)">Custom</span>
+          </td>
+        </ng-container>
+
         <ng-container matColumnDef="status">
           <th class="p10" mat-header-cell *matHeaderCellDef mat-sort-header>Status</th>
           <td class="p10" mat-cell *matCellDef="let element" [matTooltip]="'Last message on ' + element.lastSeenTime">

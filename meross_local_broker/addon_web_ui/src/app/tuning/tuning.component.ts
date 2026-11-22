@@ -1,5 +1,5 @@
 // Modified or added for the MRS100 fork of ha-meross-local-broker (2026-11).
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, NgZone, OnDestroy, OnInit } from '@angular/core';
 import { Clipboard } from '@angular/cdk/clipboard';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -86,12 +86,14 @@ export class TuningComponent implements OnInit, OnDestroy {
 
   private subscriptions = new Subscription();
   private validationInput = new Subject<ValidationInput>();
+  private pollTimer: ReturnType<typeof setInterval> | null = null;
 
   constructor(
     private tuning: TuningService,
     private dialog: MatDialog,
     private snackBar: MatSnackBar,
-    private clipboard: Clipboard
+    private clipboard: Clipboard,
+    private zone: NgZone
   ) {}
 
   ngOnInit(): void {
@@ -112,10 +114,22 @@ export class TuningComponent implements OnInit, OnDestroy {
     );
     this.loadAll();
     this.refreshCapture();
+    this.zone.runOutsideAngular(() => {
+      this.pollTimer = setInterval(() => this.zone.run(() => this.pollInventory()), 20000);
+    });
   }
 
   ngOnDestroy(): void {
+    if (this.pollTimer !== null) {
+      clearInterval(this.pollTimer);
+      this.pollTimer = null;
+    }
     this.subscriptions.unsubscribe();
+  }
+
+  pollInventory(): void {
+    this.loadProfiles();
+    this.loadDevices();
   }
 
   loadAll(): void {
@@ -139,7 +153,10 @@ export class TuningComponent implements OnInit, OnDestroy {
   loadDevices(): void {
     this.subscriptions.add(
       this.tuning.listDevices().subscribe(
-        (devices) => (this.devices = devices),
+        (devices) => {
+          this.devices = devices;
+          this.syncSelectedDeviceProfile();
+        },
         (error) => this.fail(error, 'Devices')
       )
     );
@@ -552,6 +569,8 @@ export class TuningComponent implements OnInit, OnDestroy {
           this.abilityBusy = false;
           this.snackBar.open(`Ability refreshed (${result.count} namespaces).`, 'Dismiss', { duration: 4000 });
           this.selectDevice(this.selectedDeviceUuid);
+          this.loadProfiles();
+          this.loadDevices();
         },
         (error) => {
           this.abilityBusy = false;
@@ -702,6 +721,18 @@ export class TuningComponent implements OnInit, OnDestroy {
     anchor.download = download.filename;
     anchor.click();
     URL.revokeObjectURL(url);
+  }
+
+  private syncSelectedDeviceProfile(): void {
+    if (!this.selectedDeviceUuid) {
+      return;
+    }
+    const row = this.devices.find((device) => device.uuid === this.selectedDeviceUuid);
+    const listed = row && row.profile ? row.profile : null;
+    const current = this.deviceState && this.deviceState.profile ? this.deviceState.profile.id : null;
+    if (listed !== current) {
+      this.selectDevice(this.selectedDeviceUuid);
+    }
   }
 
   private commandMessage(command: TuningCommand, preview: TuningCommandPreview): string {

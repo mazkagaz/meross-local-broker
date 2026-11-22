@@ -233,10 +233,18 @@ class Broker:
         device = dbhelper.get_device_by_uuid(device_uuid=device_uuid)
         if device is None or device.owner_user is None:
             return False
+        if device.online_status != OnlineStatus.ONLINE:
+            # Do not burn the retry cooldown on a device that cannot answer.
+            return False
+        owner = device.owner_user
+        # Use an app-like origin: some firmwares only answer Ability to an
+        # application identity, not to the agent's /_agent topic.
+        header_from = f"/app/{owner.user_id}-brokerability/subscribe"
         msg, _ = _build_mqtt_message(method="GET",
                                      namespace=_ABILITY_NAMESPACE,
                                      payload={},
-                                     dev_key=device.owner_user.mqtt_key)
+                                     dev_key=owner.mqtt_key,
+                                     header_from=header_from)
         self.c.publish(topic=f"/appliance/{device_uuid}/subscribe", payload=msg)
         self._ability_request_ts[device_uuid] = time.time()
         l.info("Requested %s from device %s", _ABILITY_NAMESPACE, device_uuid)
@@ -564,6 +572,7 @@ class Broker:
             if uuid in self._devices_sys_info_timestamp:
                 del self._devices_sys_info_timestamp[uuid]
             self._cover_config_reapply_ts.pop(uuid, None)
+            self._ability_request_ts.pop(uuid, None)
 
             # Stop the corresponding bridge
             bridge = self._bridges.get(uuid)

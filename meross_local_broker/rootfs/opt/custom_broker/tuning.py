@@ -29,6 +29,7 @@ import paho.mqtt.client as mqtt
 import yaml
 
 import profile_engine
+import profile_match
 from capture import sanitize
 from compat import OnlineStatus
 from db_helper import dbhelper
@@ -345,41 +346,15 @@ class TuningStore:
     @staticmethod
     def _profile_meta(catalog: ProfileCatalog,
                       profile_id: str) -> profile_engine.ProfileMeta:
-        data = catalog.profiles[profile_id]
-        return profile_engine.ProfileMeta(
-            id=profile_id,
-            version=data["profile"].get("version"),
-            source=catalog.sources.get(profile_id, "bundled"),
-            digest=catalog.profile_hashes()[profile_id],
-            requires_engine=data["profile"].get("requires_engine"),
-            data=data,
-        )
+        return profile_match.profile_meta(catalog, profile_id)
 
     def _match_devices(self, catalog: ProfileCatalog) -> Dict[str, str]:
-        metas = [self._profile_meta(catalog, profile_id)
-                 for profile_id in catalog.profiles]
-        matches: Dict[str, str] = {}
-        for device in self._devices():
-            abilities = set()
-            row = self._ability(device.uuid)
-            if row is not None and row.ability_json:
-                try:
-                    payload = json.loads(row.ability_json)
-                    if isinstance(payload, dict):
-                        abilities = set(payload)
-                except (TypeError, ValueError):
-                    pass
-            context = profile_engine.MatchContext(
-                type=device.device_type or "",
-                sub_type=device.sub_type,
-                mac=device.mac,
-                abilities=frozenset(abilities),
-                is_hub=bool(device.child_subdevices)
-                or (device.device_type or "").startswith("msh"),
-            )
-            result = profile_engine.match_candidates(metas, context)
-            matches[device.uuid] = result.profile.id if result.profile else ""
-        return matches
+        matches = profile_match.match_devices(
+            catalog, self._devices(), self._ability)
+        return {
+            uuid: (info["id"] if info else "")
+            for uuid, info in matches.items()
+        }
 
     def get_profile(self, profile_id: str) -> Dict[str, Any]:
         catalog = self.catalog()

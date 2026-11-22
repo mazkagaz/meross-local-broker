@@ -8,9 +8,11 @@ from types import SimpleNamespace
 from unittest import mock
 
 import broker_agent
+from compat import OnlineStatus
 
 MQTT_KEY = "0123456789abcdef0123456789abcdef"
 DEVICE_UUID = "aabbccddeeff00112233445566778899"
+USER_ID = 7
 
 
 class FakeMqttClient:
@@ -47,10 +49,13 @@ def make_broker():
     return broker
 
 
-def make_device(owner=True):
+def make_device(owner=True, online=True):
     return SimpleNamespace(
         uuid=DEVICE_UUID,
-        owner_user=(SimpleNamespace(mqtt_key=MQTT_KEY) if owner else None),
+        online_status=(OnlineStatus.ONLINE if online
+                       else OnlineStatus.OFFLINE),
+        owner_user=(SimpleNamespace(user_id=USER_ID, mqtt_key=MQTT_KEY)
+                    if owner else None),
     )
 
 
@@ -75,7 +80,9 @@ class AbilityRequestTest(unittest.TestCase):
         header = message["header"]
         self.assertEqual(header["method"], "GET")
         self.assertEqual(header["namespace"], "Appliance.System.Ability")
-        self.assertEqual(header["from"], "/_agent")
+        self.assertEqual(
+            header["from"],
+            f"/app/{USER_ID}-brokerability/subscribe")
         expected = hashlib.md5(
             f"{header['messageId']}{MQTT_KEY}{header['timestamp']}".encode()
         ).hexdigest()
@@ -130,6 +137,34 @@ class AbilityRequestTest(unittest.TestCase):
         with mock.patch.object(broker_agent, "dbhelper", db):
             self.assertFalse(broker._issue_device_get_ability(DEVICE_UUID))
         self.assertEqual(broker.c.published, [])
+
+    def test_offline_device_is_not_requested(self):
+        broker = make_broker()
+        db = FakeDbHelper([make_device(online=False)])
+        with mock.patch.object(broker_agent, "dbhelper", db):
+            broker._issue_devices_discovery()
+        self.assertEqual(ability_messages(broker), [])
+        self.assertNotIn(DEVICE_UUID, broker._ability_request_ts)
+
+    def test_disconnect_clears_the_retry_cooldown(self):
+        broker = make_broker()
+        broker._ability_request_ts[DEVICE_UUID] = 1.0
+
+        def get_device(device_uuid=None, **_kwargs):
+            return make_device()
+
+        def update_status(**_kwargs):
+            return None
+
+        db = SimpleNamespace(
+            get_device_by_uuid=get_device,
+            update_device_status=update_status)
+        payload = {"event": "disconnect", "data": {
+            "client_id": f"fmware:{DEVICE_UUID}_abc",
+            "username": "u", "address": "a", "reason": 0}}
+        with mock.patch.object(broker_agent, "dbhelper", db):
+            broker._handle_device_disconnected(payload)
+        self.assertNotIn(DEVICE_UUID, broker._ability_request_ts)
 
     def test_stale_refresh_loop_requests_ability(self):
         broker = make_broker()
