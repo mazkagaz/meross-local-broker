@@ -85,11 +85,11 @@ mémoire et ne sont jamais persistés.
 ## Aucun profil associé à un appareil
 
 Si la fiche affiche **No profile matches this device**, le broker n’a pas encore
-reçu le document de capacités (`Appliance.System.Ability`). Depuis la 1.4.3,
-l’agent le demande automatiquement dès que l’appareil est en ligne, avec une
-origine app (les demandes hors ligne ne consomment plus le cooldown) ; la page
-se rafraîchit toutes les 20 s et recharge la fiche dès que le profil apparaît.
-Un document vide ou corrompu est considéré comme absent.
+reçu le document de capacités (`Appliance.System.Ability`). Depuis la 1.4.4,
+l’agent le demande automatiquement dès que l’appareil est en ligne et traite la
+réponse sur `/_agent` (les demandes hors ligne ne consomment plus le cooldown) ;
+la page se rafraîchit toutes les 20 s et recharge la fiche dès que le profil
+apparaît. Un document vide ou corrompu est considéré comme absent.
 
 Le bouton **Refresh ability** (1.4.2+) reste disponible en secours : il demande
 immédiatement le document avec une identité app et recharge l’inventaire. Si

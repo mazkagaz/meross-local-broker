@@ -1,3 +1,16 @@
+# Notes de version — 1.4.4
+
+## 1.4.4 — récupération automatique de l’ability
+
+- Les appareils publient leurs réponses sur le topic `header.from`. La demande
+  d’ability de l’agent repart donc sur `/_agent`, où l’agent est abonné, et le
+  GETACK y est maintenant traité et stocké. Les profils se remplissent seuls
+  dès qu’un appareil est en ligne, sans clic.
+- Le chemin « topic de publication » reste supporté via un helper commun ;
+  les documents vides et les réponses sans origine appareil sont ignorés.
+- Le reste de 1.4.3 est inchangé : refresh manuel de secours, polling du
+  tuning, colonne Profile sur l’accueil.
+
 # Notes de version — 1.4.3
 
 ## 1.4.3 — profils détectés automatiquement et visibles sur l’accueil

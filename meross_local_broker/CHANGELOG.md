@@ -1,3 +1,14 @@
+## 1.4.4
+
+- Correctif Ability : la demande de l’agent repart avec `from: /_agent` (topic
+  auquel l’agent est abonné) et le GETACK reçu sur ce topic est désormais
+  traité et stocké (`Stored Appliance.System.Ability …`). La récupération
+  automatique fonctionne donc réellement dès qu’un appareil est en ligne.
+- Le traitement du GETACK sur le topic de publication est conservé via un
+  helper partagé (stockage, canal volet, document vide ignoré).
+- Tests : requête avec `from: /_agent`, stockage sur `/_agent`, document vide
+  et origine inconnue ignorés.
+
 ## 1.4.3
 
 - Ability : l’agent ne consomme plus le cooldown pour un appareil hors ligne,

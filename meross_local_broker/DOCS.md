@@ -123,7 +123,7 @@ live en lecture seule, capture et commandes typées avec confirmation. Le
 catalogue livré reste en lecture seule ; seules les surcharges sous
 `/data/device_profiles` sont écrites. Disponible depuis le broker 1.4.0 ; le
 matching des profils, qui dépend du document de capacités de l'appareil, est
-automatique depuis 1.4.3 dès que l'appareil est en ligne. Le bouton **Refresh
+automatique et fiable depuis 1.4.4 dès que l'appareil est en ligne. Le bouton **Refresh
 ability** reste disponible en secours sur la fiche appareil. Le panneau
 principal (mode avancé) affiche la version du profil appliqué et un badge
 **Custom** pour une surcharge.

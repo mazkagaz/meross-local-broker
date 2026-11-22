@@ -39,7 +39,7 @@ d'intégration spécifiques sont bienvenues.
 
 | Brique                         | Version minimale | Remarques                                    |
 | ------------------------------ | ---------------- | -------------------------------------------- |
-| Broker                         | 1.4.3            | tuning auto, colonne Profile ; 1.3.1 minimum |
+| Broker                         | 1.4.4            | ability auto fiable, colonne Profile ; 1.3.1 |
 | Intégration Meross Local Cloud | 3.1.0            | moteur profils 2.4 ; 3.1.1 recommandée       |
 | Meross Local Pairer            | 2.0.9            | découverte et appairage HTTPS uniquement     |
 
@@ -141,8 +141,9 @@ MQTT, puis le compte local. Les ports sont préremplis par la découverte mDNS.
 
 Le broker doit être en **1.3.1 ou plus récent** : l'intégration récupère et
 épingle sa CA (`/ca.crt`). La page de tuning nécessite **1.4.0 ou plus récent** ;
-**1.4.3** rend l’association des profils automatique (le refresh manuel de
-l’ability reste disponible). Les options « ignorer la validation » n'existent plus.
+**1.4.4** rend l’association des profils automatique et fiable (le refresh
+manuel de l’ability reste disponible). Les options « ignorer la validation »
+n'existent plus.
 L'option User-Agent de l'intégration se règle dans
 **Paramètres → Appareils et services → Meross Local Cloud → Configurer**.
 

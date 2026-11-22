@@ -27,6 +27,8 @@ class FakeDbHelper:
     def __init__(self, devices, abilities=None):
         self.devices = list(devices)
         self.abilities = dict(abilities or {})
+        self.stored_abilities = []
+        self.channels = []
 
     def get_all_devices(self):
         return list(self.devices)
@@ -39,6 +41,12 @@ class FakeDbHelper:
 
     def get_device_ability(self, device_uuid):
         return self.abilities.get(device_uuid)
+
+    def set_device_ability(self, device_uuid, ability):
+        self.stored_abilities.append(ability)
+
+    def update_device_channel(self, device_uuid, channel_id):
+        self.channels.append((device_uuid, channel_id))
 
 
 def make_broker():
@@ -66,6 +74,17 @@ def ability_messages(broker):
     ]
 
 
+def ability_getack(abilities):
+    return {
+        "header": {
+            "namespace": "Appliance.System.Ability",
+            "method": "GETACK",
+            "from": f"/appliance/{DEVICE_UUID}/publish",
+        },
+        "payload": {"ability": abilities},
+    }
+
+
 class AbilityRequestTest(unittest.TestCase):
     def test_discovery_requests_missing_ability(self):
         broker = make_broker()
@@ -80,9 +99,7 @@ class AbilityRequestTest(unittest.TestCase):
         header = message["header"]
         self.assertEqual(header["method"], "GET")
         self.assertEqual(header["namespace"], "Appliance.System.Ability")
-        self.assertEqual(
-            header["from"],
-            f"/app/{USER_ID}-brokerability/subscribe")
+        self.assertEqual(header["from"], "/_agent")
         expected = hashlib.md5(
             f"{header['messageId']}{MQTT_KEY}{header['timestamp']}".encode()
         ).hexdigest()
@@ -172,6 +189,37 @@ class AbilityRequestTest(unittest.TestCase):
         with mock.patch.object(broker_agent, "dbhelper", db):
             broker.refresh_stale_devices()
         self.assertEqual(len(ability_messages(broker)), 1)
+
+    def test_agent_topic_ability_getack_is_stored(self):
+        broker = make_broker()
+        db = FakeDbHelper([make_device()])
+        payload = ability_getack({
+            "Appliance.System.All": {},
+            "Appliance.RollerShutter.State": {},
+        })
+        with mock.patch.object(broker_agent, "dbhelper", db):
+            broker._handle_message_to_agent("/_agent", payload)
+
+        self.assertEqual(len(db.stored_abilities), 1)
+        self.assertIn("Appliance.RollerShutter.State",
+                      db.stored_abilities[0])
+        self.assertEqual(db.channels, [(DEVICE_UUID, 0)])
+
+    def test_agent_topic_empty_ability_is_ignored(self):
+        broker = make_broker()
+        db = FakeDbHelper([make_device()])
+        with mock.patch.object(broker_agent, "dbhelper", db):
+            broker._handle_message_to_agent("/_agent", ability_getack({}))
+        self.assertEqual(db.stored_abilities, [])
+
+    def test_agent_topic_ability_without_device_origin_is_ignored(self):
+        broker = make_broker()
+        db = FakeDbHelper([make_device()])
+        payload = ability_getack({"Appliance.System.All": {}})
+        payload["header"]["from"] = "/_agent"
+        with mock.patch.object(broker_agent, "dbhelper", db):
+            broker._handle_message_to_agent("/_agent", payload)
+        self.assertEqual(db.stored_abilities, [])
 
 
 if __name__ == "__main__":

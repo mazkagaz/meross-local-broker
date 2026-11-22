@@ -237,14 +237,10 @@ class Broker:
             # Do not burn the retry cooldown on a device that cannot answer.
             return False
         owner = device.owner_user
-        # Use an app-like origin: some firmwares only answer Ability to an
-        # application identity, not to the agent's /_agent topic.
-        header_from = f"/app/{owner.user_id}-brokerability/subscribe"
         msg, _ = _build_mqtt_message(method="GET",
                                      namespace=_ABILITY_NAMESPACE,
                                      payload={},
-                                     dev_key=owner.mqtt_key,
-                                     header_from=header_from)
+                                     dev_key=owner.mqtt_key)
         self.c.publish(topic=f"/appliance/{device_uuid}/subscribe", payload=msg)
         self._ability_request_ts[device_uuid] = time.time()
         l.info("Requested %s from device %s", _ABILITY_NAMESPACE, device_uuid)
@@ -370,19 +366,7 @@ class Broker:
         namespace = payload.get('header', {}).get('namespace', {})
         method = payload.get('header', {}).get('method', {})
         if namespace == 'Appliance.System.Ability' and method == 'GETACK':
-            body = payload.get('payload', {}) or {}
-            ability = body.get('ability', body)
-            if isinstance(ability, dict) and ability:
-                set_ability = getattr(dbhelper, 'set_device_ability', None)
-                if set_ability is not None:
-                    set_ability(device_uuid=device_uuid, ability=ability)
-                l.info("Stored Appliance.System.Ability for device %s (%d namespaces)",
-                       device_uuid, len(ability))
-                if _ROLLER_SHUTTER_STATE_NS in ability:
-                    dbhelper.update_device_channel(device_uuid=device_uuid, channel_id=0)
-            else:
-                l.warning("Ignoring empty Appliance.System.Ability from device %s",
-                          device_uuid)
+            self._store_device_ability(device_uuid, payload)
 
         # Cache cover state/calibration reported by the device. Adjustment is a
         # report/result, not a desired config; it is never replayed.
@@ -452,6 +436,25 @@ class Broker:
                                               dev_key=dev_key)
         self.c.publish(topic=f"/appliance/{device_uuid}/subscribe", payload=msg)
         self._timezone_sync_attempts[device_uuid] = now
+        return True
+
+    def _store_device_ability(self, device_uuid: str,
+                              payload: dict) -> bool:
+        """Cache a non-empty ability document, whatever its delivery path."""
+        body = payload.get('payload', {}) or {}
+        ability = body.get('ability', body)
+        if not isinstance(ability, dict) or not ability:
+            l.warning("Ignoring empty Appliance.System.Ability from device %s",
+                      device_uuid)
+            return False
+        set_ability = getattr(dbhelper, 'set_device_ability', None)
+        if set_ability is not None:
+            set_ability(device_uuid=device_uuid, ability=ability)
+        l.info("Stored Appliance.System.Ability for device %s (%d namespaces)",
+               device_uuid, len(ability))
+        if _ROLLER_SHUTTER_STATE_NS in ability:
+            dbhelper.update_device_channel(
+                device_uuid=device_uuid, channel_id=0)
         return True
 
     def _handle_message_to_agent(self, topic: str, payload: dict) -> None:
@@ -539,6 +542,14 @@ class Broker:
 
             if self.bridging_enabled:
                 self._get_or_create_bridge(device_uuid=device.uuid)
+
+        elif namespace == _ABILITY_NAMESPACE and method == 'GETACK':
+            match = APPLIANCE_PUBLISH_TOPIC_RE.fullmatch(from_appliance or '')
+            if match is None:
+                l.warning("Unable to identify the device for an "
+                          "Appliance.System.Ability response")
+                return
+            self._store_device_ability(match.group(1), payload)
 
         elif namespace == 'Appliance.System.Time' and method == 'SETACK':
             match = APPLIANCE_PUBLISH_TOPIC_RE.fullmatch(from_appliance or '')

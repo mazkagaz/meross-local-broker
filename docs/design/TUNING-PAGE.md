@@ -106,11 +106,12 @@ suivre en V2. Depuis 1.4.1, l’agent demande `Appliance.System.Ability` quand l
 document manque ou est ancien (cooldown 5 min, rafraîchissement 24 h), ce qui
 alimente le matching des profils du tuning. Depuis 1.4.2, un endpoint et un
 bouton **Refresh ability** le demandent immédiatement avec une identité app,
-et un cache vide ou corrompu est traité comme absent. Depuis 1.4.3, la demande
+et un cache vide ou corrompu est traité comme absent. Depuis 1.4.4, la demande
 automatique est faite dès que l’appareil est en ligne (aucun cooldown consommé
-hors ligne, cooldown réinitialisé à la déconnexion) avec une origine app, et
-l’UI rafraîchit ses listes toutes les 20 s. Le panneau principal affiche aussi
-la version du profil et un badge Custom en mode avancé.
+hors ligne, cooldown réinitialisé à la déconnexion), avec `from: /_agent` et
+traitement du GETACK sur ce topic ; l’UI rafraîchit ses listes toutes les 20 s.
+Le panneau principal affiche aussi la version du profil et un badge Custom en
+mode avancé.
 
 ## Étape 3 — UI V1
 
