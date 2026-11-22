@@ -1,6 +1,6 @@
 # Page de tuning des appareils — plan V1 → V2
 
-**Statut** : proposition de conception, non implémentée.
+**Statut** : implémentation en cours — étapes 0 et 1 faites (backend V1).
 **Objectif** : une page de l’UI broker (ingress uniquement) pour exporter,
 importer, modifier et tester les profils et les réglages d’instance des
 appareils. Livrer une V1 sûre, avec une architecture qui accepte la V2 sans
@@ -61,6 +61,16 @@ propagation de révision.
 **Tests** : YAML valide/invalide, conflit de révision, limites, import
 malveillant, écriture partielle, rollback, permissions, rechargement.
 
+**État (2026-11-21)** : fait. Le store (`tuning.py`) et le blueprint
+(`blueprints/tuning.py`) sont enregistrés sous `/_admin_/`. Écritures atomiques
+(temp + fsync + replace), backup horodaté avant chaque mutation (20 par
+profil), verrou optimiste par hash, rechargement du catalogue et propagation de
+révision, audit JSONL (acteur HA, date, hash avant/après), export YAML/ZIP avec
+manifeste et import dry-run avec limites. La validation réutilise le schéma,
+le linter et le moteur partagé, et renvoie un diff unifié contre la base
+effective (`bundled`, `override` ou `none`). Tests : `test_tuning.py` (10),
+`test_tuning_api.py` (5), suite broker complète verte.
+
 ## Étape 2 — Aperçu et test V1
 
 2.1 Endpoint état d’un appareil : descripteur, profil/source/hash, valeurs
@@ -119,20 +129,65 @@ clic, réponse inattendue.
 
 ## API cible
 
-| Méthode | Route                                               | V1  | Rôle                           |
-| ------- | --------------------------------------------------- | --- | ------------------------------ |
-| GET     | `/_admin_/tuning/devices`                           | oui | appareils + profil/source/état |
-| GET     | `/_admin_/profiles`                                 | oui | inventaire effectif            |
-| GET     | `/_admin_/profiles/{id}`                            | oui | profil effectif + hashes       |
-| POST    | `/_admin_/profiles/validate`                        | oui | validation + diff              |
-| POST    | `/_admin_/profiles/{id}/preview`                    | oui | simulation de trames           |
-| PUT     | `/_admin_/profiles/{id}/override`                   | oui | appliquer (révision attendue)  |
-| DELETE  | `/_admin_/profiles/{id}/override`                   | oui | revenir au livré               |
-| GET     | `/_admin_/profiles/export`                          | oui | YAML/ZIP                       |
-| POST    | `/_admin_/profiles/import`                          | oui | dry-run puis apply             |
-| POST    | `/_admin_/tuning/devices/{uuid}/read`               | oui | GET live                       |
-| GET     | `/_admin_/tuning/devices/{uuid}/commands`           | V2  | commandes autorisées           |
-| POST    | `/_admin_/tuning/devices/{uuid}/commands/{command}` | V2  | SET typé confirmé              |
+| Méthode | Route                                               | V1      | Rôle                            |
+| ------- | --------------------------------------------------- | ------- | ------------------------------- |
+| GET     | `/_admin_/tuning/devices`                           | oui     | appareils + profil/source/état  |
+| GET     | `/_admin_/profiles`                                 | oui     | inventaire effectif             |
+| GET     | `/_admin_/profiles/{id}`                            | oui     | profil effectif + hashes + diff |
+| POST    | `/_admin_/profiles/validate`                        | oui     | validation + diff               |
+| POST    | `/_admin_/profiles/{id}/preview`                    | étape 2 | simulation de trames            |
+| PUT     | `/_admin_/profiles/{id}/override`                   | oui     | appliquer (révision attendue)   |
+| DELETE  | `/_admin_/profiles/{id}/override`                   | oui     | revenir au livré                |
+| GET     | `/_admin_/profiles/export`                          | oui     | YAML/ZIP                        |
+| POST    | `/_admin_/profiles/import`                          | oui     | dry-run puis apply              |
+| GET     | `/_admin_/profiles/{id}/backups`                    | oui     | backups horodatés               |
+| POST    | `/_admin_/profiles/{id}/backups/{file}/restore`     | oui     | restaurer un backup             |
+| GET     | `/_admin_/tuning/audit`                             | oui     | journal d’audit                 |
+| POST    | `/_admin_/tuning/devices/{uuid}/read`               | étape 2 | GET live                        |
+| GET     | `/_admin_/tuning/devices/{uuid}/commands`           | V2      | commandes autorisées            |
+| POST    | `/_admin_/tuning/devices/{uuid}/commands/{command}` | V2      | SET typé confirmé               |
+
+## Contrats backend (étape 1)
+
+Accès : ingress admin uniquement. L’acteur vient des en-têtes
+`X-Remote-User-Display-Name`, `X-Remote-User-Name`, `X-Remote-User-Id`
+(défaut `unknown`).
+
+- **Validation** `POST /_admin_/profiles/validate`
+  corps `{yaml, profile_id?, expected_hash?}` →
+  `{valid, profile_id, errors[], warnings[], summary, diff, diff_base}`.
+  `diff` est un diff unifié base effective → proposition ; `diff_base` vaut
+  `bundled`, `override` ou `none`. Les erreurs YAML portent ligne et colonne.
+  `400` si `yaml` n’est pas une chaîne.
+- **Profil** `GET /_admin_/profiles/{id}` → métadonnées, `yaml` effectif,
+  `bundled_yaml`, `override_yaml`, hashes, `revision`, `diff`
+  livré → surcharge, impact et backups. `404` si inconnu.
+- **Écriture** `PUT /_admin_/profiles/{id}/override` corps
+  `{yaml, expected_hash?}` → `{id, revision, override_hash, diff, warnings}`.
+  `400` invalide, `409` hash attendu différent. Une surcharge crée un profil ;
+  le livré n’est jamais modifié.
+- **Suppression** `DELETE /_admin_/profiles/{id}/override` corps
+  `{expected_hash?}` → `{id, revision, removed}`. `404` sans surcharge,
+  `409` conflit.
+- **Export** `GET /_admin_/profiles/export?format=yaml|zip&source=overrides|effective&id=...`.
+  YAML : profil unique (`id` requis). ZIP : toutes les surcharges ou tous les
+  profils effectifs, avec `manifest.json` (révision, source, horodatage,
+  hashes). `400` source inconnue, `404` surcharge absente.
+- **Import** `POST /_admin_/profiles/import?dry_run=true|false` JSON
+  `{profiles: [{id, yaml}]}` ou multipart `file` (`.yaml`/`.zip`) →
+  `{dry_run, revision, profiles[]}`. Tout est validé avant écriture ; doublons
+  d’id refusés. Limites : 2 Mo, 200 entrées, 256 Ko et 5000 lignes par profil,
+  profondeur 32. `400` contenu invalide.
+- **Backups** `GET /_admin_/profiles/{id}/backups` →
+  `[{file, created_at, hash}]` ; `POST .../{file}/restore` →
+  `{id, revision, restored}`. `404` backup inconnu, `409` backup qui ne valide
+  plus.
+- **Audit** `GET /_admin_/tuning/audit?limit=1..500&profile_id=...` → entrées
+  récentes d’abord.
+
+Stockage : surcharges `/data/device_profiles` (catalogue livré en lecture
+seule), backups `/data/profile_backups`, audit `/data/profile_audit.jsonl`.
+Fichiers en `0600`, écriture atomique avec fsync du fichier et du répertoire.
 
 ## Risques et parades
 
@@ -147,9 +202,9 @@ clic, réponse inattendue.
 
 ## Jalons
 
-- **M0** : moteur partagé et CI de parité.
-- **M1** : backend V1 lecture/validation/export.
-- **M2** : backend V1 application/rollback/audit.
+- **M0** : moteur partagé et CI de parité. — atteint (étape 0).
+- **M1** : backend V1 lecture/validation/export. — atteint (étape 1).
+- **M2** : backend V1 application/rollback/audit. — atteint (étape 1).
 - **M3** : UI V1 complète.
 - **M4** : GET et simulation dans l’UI.
 - **M5** : backend V2 commandes typées.

@@ -1,3 +1,11 @@
+## Unreleased
+
+- Moteur de profils partagé avec l’intégration : copie épinglée dans
+  `profile_engine/`, provenance et contrôle de parité en CI.
+- API de tuning sous `/_admin_` : inventaire, validation avec diff unifié,
+  surcharges atomiques avec backup et verrou optimiste, export/import YAML/ZIP,
+  restauration de backups et audit. Le catalogue livré reste en lecture seule.
+
 ## 1.3.1
 
 - Profil MRS100 `2026.11.2` : `Appliance.RollerShutter.Adjust` n’est plus

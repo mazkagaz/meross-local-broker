@@ -10,6 +10,7 @@ from werkzeug.exceptions import HTTPException
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 from blueprints.admin import admin_blueprint
+from blueprints.tuning import tuning_blueprint
 from blueprints.auth import auth_blueprint
 from blueprints.log import log_blueprint
 from blueprints.device import device_blueprint
@@ -60,6 +61,7 @@ app.register_blueprint(device_blueprint, url_prefix="/v1/Device")
 app.register_blueprint(hub_blueprint, url_prefix='/v1/Hub')
 app.register_blueprint(devs_blueprint, url_prefix="/_devs_")
 app.register_blueprint(admin_blueprint, url_prefix="/_admin_")
+app.register_blueprint(tuning_blueprint, url_prefix="/_admin_")
 
 # Initialize DB
 init_db()

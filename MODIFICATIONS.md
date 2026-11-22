@@ -33,6 +33,8 @@ prominent fork notice at the top; the full list of behaviour changes is in
 | `rootfs/opt/custom_broker/rate_limit.py`                             | Login rate limiting                                                                                                                         |
 | `rootfs/opt/custom_broker/timezone_utils.py`                         | Timezone/DST payloads                                                                                                                       |
 | `rootfs/opt/custom_broker/supervisor_network.py`, `mdns_register.py` | LAN address discovery and mDNS advertisement                                                                                                |
+| `rootfs/opt/custom_broker/profile_engine/`                           | Shared profile engine, copied byte-for-byte from the HA integration and pinned by CI                                                        |
+| `rootfs/opt/custom_broker/tuning.py`, `blueprints/tuning.py`         | Admin tuning API under `/_admin_`: validation + diff, atomic overrides, backups, export/import, audit                                       |
 | `rootfs/etc/mosquitto`, `cont-init.d`, `services.d`, `usr/local/bin` | Valid local CA, HTTPS-only LAN access, ingress-only admin API, service scripts                                                              |
 | `rootfs/etc/nginx/ingress.conf`                                      | TLS listener, ACLs, ingress routing                                                                                                         |
 | `addon_web_ui`                                                       | HA-themed panel, status diodes, paired devices, full-page logs                                                                              |
@@ -43,10 +45,11 @@ prominent fork notice at the top; the full list of behaviour changes is in
 - Tests: `test_http_api.py`, `test_mqtt_integrity.py`,
   `test_supervisor_network.py`, `test_timezone_utils.py`,
   `test_mrs100_roller_shutter.py`, `test_broker_agent_timezone.py`,
-  `test_broker_agent_unbind.py`, `test_broker_agent_disconnect.py`.
-- Documentation: `README.md`, `docs/specs/MRS100.md`, `docs/design/MRS100_PATCH.md`, `docs/testing/TESTING.md`,
-  `docs/operations/BUILDING.md`, `RELEASE_NOTES.md`, `MODIFICATIONS.md`, `LEGAL.md`, `NOTICE`.
-- Tooling: `configure.sh`, `push.sh`, `branding/`.
+  `test_broker_agent_unbind.py`, `test_broker_agent_disconnect.py`,
+  `test_profile_engine_parity.py`, `test_tuning.py`, `test_tuning_api.py`.
+- Documentation: `README.md`, `docs/specs/MRS100.md`, `docs/design/MRS100_PATCH.md`, `docs/design/TUNING-PAGE.md`,
+  `docs/testing/TESTING.md`, `docs/operations/BUILDING.md`, `RELEASE_NOTES.md`, `MODIFICATIONS.md`, `LEGAL.md`, `NOTICE`.
+- Tooling: `configure.sh`, `push.sh`, `branding/`, `tools/sync_profile_engine.py`.
 
 New files are copyright 2026 the MRS100 fork contributors and licensed under
 the Apache License, Version 2.0.
