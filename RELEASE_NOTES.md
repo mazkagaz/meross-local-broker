@@ -1,3 +1,23 @@
+# Notes de version — 1.4.0
+
+## 1.4.0 — page de tuning et commandes typées
+
+- Page **Device tuning** dans le panneau du broker, réservée à l’ingress
+  Supervisor : éditeur YAML (CodeMirror 6 épinglé), validation continue avec
+  diff, application de surcharges avec backup et rollback, import/export
+  YAML/ZIP et audit.
+- Onglet Appareils : descripteur, entités attendues, plan de polling, cache
+  volet, simulation de trames, GET live en lecture seule et capture avec
+  brouillon injecté dans l’éditeur.
+- Commandes typées : catalogue dérivé du profil, payload généré (jamais saisi
+  en brut), confirmation à usage unique, une commande à la fois, cooldown et
+  audit avec snapshots avant/après.
+- Moteur de profils partagé avec l’intégration, copie épinglée et contrôle de
+  parité en CI.
+- Compatibilité : aucune rupture d’API, catalogue inchangé (19 profils) ;
+  intégration 3.1.0 minimum, pairer 2.0.9 minimum. La mise à jour redémarre le
+  conteneur : les appareils se reconnectent automatiquement.
+
 # Notes de version — 1.3.1
 
 ## 1.3.1 — maintien d’état du volet

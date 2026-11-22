@@ -114,6 +114,15 @@ l'intégration Home Assistant, au plus tard 60 secondes après la suppression.
 L'intégration supprime alors l'appareil et ses entités ; un appareil qui
 disparaît sans Unbind est proposé à la suppression après 48 heures.
 
+## Tuning des appareils
+
+L'icône **tune** ouvre la page de tuning (ingress Supervisor uniquement) :
+édition des profils avec validation et diff, surcharges avec backup et retour
+au profil livré, import/export, état d'un appareil, simulation de trames, GET
+live en lecture seule, capture et commandes typées avec confirmation. Le
+catalogue livré reste en lecture seule ; seules les surcharges sous
+`/data/device_profiles` sont écrites. Disponible depuis le broker 1.4.0.
+
 ## Dépannage
 
 | Problème                  | Vérifier                                                    |

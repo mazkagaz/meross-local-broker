@@ -1,4 +1,4 @@
-## Unreleased
+## 1.4.0
 
 - Moteur de profils partagé avec l’intégration : copie épinglée dans
   `profile_engine/`, provenance et contrôle de parité en CI.
