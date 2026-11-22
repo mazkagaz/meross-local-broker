@@ -1,3 +1,16 @@
+# Notes de version — 1.4.8
+
+## 1.4.8 — présence et réglages du volet
+
+- Profil MRS100 `2026.11.4` : entité **Position** en curseur (0–100 %) et
+  durées d’ouverture/fermeture en champ de saisie avec unité `s` et flèches,
+  bornées à 10–120 secondes.
+- Le champ de profil `mode: slider|box` choisit la présentation par entité ;
+  le moteur passe en **2.5.1**. Installer l’intégration **3.2.2** pour en
+  profiter ; les versions antérieures gardent le curseur.
+- CI : pin de l’intégration 3.2.2 et provenance moteur régénérée.
+- Aucun changement d’API ; pairer 2.0.9 inchangé.
+
 # Notes de version — 1.4.7
 
 ## 1.4.7 — correctif CI et provenance du moteur

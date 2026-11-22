@@ -1,3 +1,14 @@
+## 1.4.8
+
+- Profil MRS100 `2026.11.4` : nouvelle entité **Position** (`number` 0–100 %,
+  curseur) juste avant les durées, et durées d’ouverture/fermeture en champ de
+  saisie (`mode: box`, unité `s`, 10–120).
+- Moteur de profils **2.5.1** : champ `mode: slider|box` sur les entités
+  `number`, validé par le compilateur et le schéma. L’intégration 3.2.2 le
+  mappe sur `NumberMode` ; les versions antérieures ignorent le champ.
+- CI : pin de l’intégration 3.2.2 (`5ce5895`) et `UPSTREAM.md` régénéré.
+- Tests : 198 passed, 1 skipped ; lint et parité moteur vérifiés.
+
 ## 1.4.7
 
 - Correctif CI uniquement : le workflow de test épingle l’intégration **3.2.1**

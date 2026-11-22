@@ -531,10 +531,26 @@
             "light",
             "sensor",
             "binary_sensor",
-            "number",
             "button",
             "select"
           ]
+        }
+      }
+    },
+    "entity_number": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/entity_base"
+        }
+      ],
+      "unevaluatedProperties": false,
+      "properties": {
+        "platform": {
+          "const": "number"
+        },
+        "mode": {
+          "enum": ["slider", "box"],
+          "description": "Home Assistant presentation: slider (default) or typed box with steppers."
         }
       }
     },
@@ -635,6 +651,9 @@
       "oneOf": [
         {
           "$ref": "#/$defs/entity_simple"
+        },
+        {
+          "$ref": "#/$defs/entity_number"
         },
         {
           "$ref": "#/$defs/entity_climate"

@@ -58,9 +58,14 @@ class SharedProfileEngineTest(unittest.TestCase):
 
         self.assertEqual(runtime.dispatch(
             "Appliance.RollerShutter.Position", "PUSH",
-            {"position": [{"channel": 0, "position": 42}]}), 1)
+            {"position": [{"channel": 0, "position": 42}]}), 2)
         self.assertEqual(
             runtime.entities["cover"].values["position"], 42)
+        self.assertEqual(
+            runtime.entities["position"].values["value"], 42)
+        self.assertEqual(compiled.entities["open_duration"].mode, "box")
+        self.assertEqual(compiled.entities["close_duration"].mode, "box")
+        self.assertEqual(compiled.entities["position"].mode, "slider")
 
         self.assertEqual(runtime.dispatch(
             "Appliance.RollerShutter.Adjust", "PUSH",

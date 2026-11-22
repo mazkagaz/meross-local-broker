@@ -76,6 +76,9 @@ liste), utile pour les codes d’état des capteurs.
 entité, sans entité Home Assistant séparée. Le MRS100 l’utilise pour piloter
 l’icône du cover depuis `RollerShutter.State` ; les moteurs antérieurs ignorent
 ce champ et continuent à lire `state`.
+`mode` (entités `number` uniquement, moteur 2.5+) choisit la présentation
+Home Assistant : `slider` (défaut) ou `box` (champ saisi avec flèches). Il vaut
+mieux ne pas imposer la même présentation à toutes les valeurs d’un appareil.
 `legacy_classifiers` permet de conserver l’identifiant historique d’une
 entité lors de la bascule vers les entités profils.
 

@@ -37,11 +37,11 @@ d'intégration spécifiques sont bienvenues.
 
 ## Compatibilité des versions
 
-| Brique                         | Version minimale | Remarques                                                 |
-| ------------------------------ | ---------------- | --------------------------------------------------------- |
-| Broker                         | 1.4.7            | capture, profil MRS100 2026.11.3 ; 3.2.0+ pour les icônes |
-| Intégration Meross Local Cloud | 3.2.0            | moteur profils 2.5 ; 3.2.1 recommandée                    |
-| Meross Local Pairer            | 2.0.9            | découverte et appairage HTTPS uniquement                  |
+| Brique                         | Version minimale | Remarques                                                    |
+| ------------------------------ | ---------------- | ------------------------------------------------------------ |
+| Broker                         | 1.4.8            | profil MRS100 2026.11.4 ; 3.2.2 pour la présentation number  |
+| Intégration Meross Local Cloud | 3.2.2            | moteur profils 2.5.1 ; Position et durées en champ de saisie |
+| Meross Local Pairer            | 2.0.9            | découverte et appairage HTTPS uniquement                     |
 
 ## Ports
 
@@ -143,9 +143,9 @@ Le broker doit être en **1.3.1 ou plus récent** : l'intégration récupère et
 épingle sa CA (`/ca.crt`). La page de tuning nécessite **1.4.0 ou plus récent** ;
 **1.4.4** rend l’association des profils automatique et fiable (le refresh
 manuel de l’ability reste disponible). **1.4.6** livre le profil MRS100
-`2026.11.3` et ses icônes de mouvement ; installer l’intégration **3.2.0+**
-(3.2.1 conseillée) au préalable. Les options « ignorer la validation »
-n'existent plus.
+`2026.11.3` et ses icônes de mouvement ; **1.4.8** ajoute l’entité Position et
+les durées en champ de saisie. Installer l’intégration **3.2.2** au préalable.
+Les options « ignorer la validation » n'existent plus.
 L'option User-Agent de l'intégration se règle dans
 **Paramètres → Appareils et services → Meross Local Cloud → Configurer**.
 
@@ -193,8 +193,10 @@ le **MRS100** :
 
 - **Ouvrir/fermer** : entité `cover`. Son icône affiche une flèche haut/bas
   pendant le mouvement, puis un volet ouvert, fermé ou partiel à l’arrêt.
-- **Durées** : entités `number` (10 à 120 secondes). Les valeurs sont
-  persistées par l'add-on et réappliquées après reconnexion.
+- **Position** : entité `number` en curseur, de 0 à 100 %, synchronisée avec
+  le cover.
+- **Durées** : entités `number` en champ de saisie (10 à 120 secondes). Les
+  valeurs sont persistées par l'add-on et réappliquées après reconnexion.
 - **Calibration** : bouton **Start calibration**, puis suivi dans
   **Calibration status** (`in_progress`, `success`, `timeout`,
   `motor_blocked`, `failed_N`). **Stop calibration** interrompt le mouvement.
