@@ -1,3 +1,11 @@
+## 1.4.7
+
+- Correctif CI uniquement : le workflow de test épingle l’intégration **3.2.1**
+  (`22e489b`) au lieu de 3.1.4, et `profile_engine/UPSTREAM.md` est régénéré
+  avec ce commit et les hashes du moteur 2.5. La vérification de parité passe.
+- Aucun changement fonctionnel par rapport à 1.4.6 ; image reconstruite pour
+  publier un tag vert.
+
 ## 1.4.6
 
 - Profil MRS100 `2026.11.3` : source auxiliaire `movement` sur le cover

@@ -39,7 +39,7 @@ d'intégration spécifiques sont bienvenues.
 
 | Brique                         | Version minimale | Remarques                                                 |
 | ------------------------------ | ---------------- | --------------------------------------------------------- |
-| Broker                         | 1.4.6            | capture, profil MRS100 2026.11.3 ; 3.2.0+ pour les icônes |
+| Broker                         | 1.4.7            | capture, profil MRS100 2026.11.3 ; 3.2.0+ pour les icônes |
 | Intégration Meross Local Cloud | 3.2.0            | moteur profils 2.5 ; 3.2.1 recommandée                    |
 | Meross Local Pairer            | 2.0.9            | découverte et appairage HTTPS uniquement                  |
 

@@ -1,3 +1,13 @@
+# Notes de version — 1.4.7
+
+## 1.4.7 — correctif CI et provenance du moteur
+
+- Aucun changement fonctionnel par rapport à 1.4.6.
+- Le workflow de test épingle désormais l’intégration **3.2.1** (`22e489b`) ;
+  `profile_engine/UPSTREAM.md` est régénéré avec le commit et les hashes du
+  moteur 2.5. La vérification de parité moteur repasse au vert.
+- L’image est reconstruite pour publier un tag dont la CI est verte.
+
 # Notes de version — 1.4.6
 
 ## 1.4.6 — icônes de volet et profil MRS100 2026.11.3
