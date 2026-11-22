@@ -4,14 +4,26 @@
     {
       "source": "README.fr.md",
       "translation": "README.md",
-      "source_sha256": "f6187996fccd62dc9e0cabacd73b8aa7140347e8dfb5926e2f1999e59a643994",
-      "translation_sha256": "db06fe7e2730d759b712f5b696c99f67fa76680bc21e328e466212ffb333f89a"
+      "source_sha256": "3fa3a437e1f7408b0f3c4db2c212a0f2655a705cd51e6831709ebda7f72c1ea1",
+      "translation_sha256": "c091f045a7a88dc9e333ac1b66bfe428bf0645db67bacb792c347f5cd07d4147"
     },
     {
       "source": "meross_local_broker/DOCS.fr.md",
       "translation": "meross_local_broker/DOCS.md",
       "source_sha256": "6ccdf37816e34471ccb24579ba06c0b5b39da555ee0a3d22463ed89fa49544b2",
       "translation_sha256": "b0d0717f41147559b537618bf3f79505917b35407f4c86eb1831a65d08cb1159"
+    },
+    {
+      "source": "docs/guides/DEVICE-TUNING.fr.md",
+      "translation": "docs/guides/DEVICE-TUNING.md",
+      "source_sha256": "305851ecff16ca326f14872295cee7e672b98f74ffe625555bd54155cb153b7f",
+      "translation_sha256": "0f9a1d10e97645c436bb678f8366e969b88e92f8991337b904e3b89f3adf9dea"
+    },
+    {
+      "source": "docs/guides/OVERRIDE-MRS100-MOVEMENT.fr.md",
+      "translation": "docs/guides/OVERRIDE-MRS100-MOVEMENT.md",
+      "source_sha256": "3c2f96c222b82fdb36d48589a4c84b1a4bf8d09066f6289bf264768f2243bd92",
+      "translation_sha256": "1cea480cf615eb9f00c753c16c90f36bcdd077ec139163088d1885c8c0b3131c"
     }
   ]
 }

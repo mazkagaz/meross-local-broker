@@ -38,8 +38,8 @@ pour les formats et les contrats.
 
 ### Guides
 
-- [Tuning des appareils](guides/DEVICE-TUNING.md)
-- [Ajouter une fonctionnalité sans coder — exemple MRS100](guides/OVERRIDE-MRS100-MOVEMENT.md)
+- [Tuning des appareils](guides/DEVICE-TUNING.fr.md)
+- [Ajouter une fonctionnalité sans coder — exemple MRS100](guides/OVERRIDE-MRS100-MOVEMENT.fr.md)
 
 ### Tests
 

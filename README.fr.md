@@ -291,11 +291,11 @@ l'ingress Supervisor. Elle regroupe :
 
 Le catalogue livré reste en lecture seule ; seules les surcharges sous
 `/data/device_profiles` sont écrites. Guide complet :
-[`docs/guides/DEVICE-TUNING.md`](docs/guides/DEVICE-TUNING.md).
+[`docs/guides/DEVICE-TUNING.fr.md`](docs/guides/DEVICE-TUNING.fr.md).
 
 **Exemple sans code** : ajouter un capteur `Movement` à un MRS100 à partir
 d’une capture réelle, en surcharge locale —
-[`docs/guides/OVERRIDE-MRS100-MOVEMENT.md`](docs/guides/OVERRIDE-MRS100-MOVEMENT.md).
+[`docs/guides/OVERRIDE-MRS100-MOVEMENT.fr.md`](docs/guides/OVERRIDE-MRS100-MOVEMENT.fr.md).
 
 ## Journaux
 
@@ -331,7 +331,7 @@ appareils. Laisser vide pour utiliser le fuseau de Home Assistant.
 - [Vue d’architecture](docs/architecture/OVERVIEW.md)
 - [Contrats API](docs/specs/API-CONTRACTS.md)
 - [Auteur de profils](docs/specs/PROFILE-AUTHORING.md)
-- [Ajouter une fonctionnalité sans coder — exemple MRS100](docs/guides/OVERRIDE-MRS100-MOVEMENT.md)
+- [Ajouter une fonctionnalité sans coder — exemple MRS100](docs/guides/OVERRIDE-MRS100-MOVEMENT.fr.md)
 - [Volets MRS100](docs/specs/MRS100.md)
 - [Format de capture](docs/specs/CAPTURE-FORMAT.md)
 - [Plans et guides de conception](docs/design/)

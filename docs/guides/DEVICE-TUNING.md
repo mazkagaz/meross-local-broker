@@ -1,110 +1,108 @@
-# Tuning des appareils
+**English** · [Français](DEVICE-TUNING.fr.md)
 
-La page de tuning permet d’exporter, importer, modifier et tester les profils
-d’appareils, puis d’envoyer des commandes typées à un appareil. Elle est
-accessible uniquement via l’ingress admin de Home Assistant : icône **tune**
-dans l’en-tête, ou route `/tuning`.
+# Device tuning
 
-Aucune action de cette page ne fonctionne hors ingress. Le catalogue livré
-n’est jamais modifié : seules les surcharges sous `/data/device_profiles` sont
-écrites, après validation.
+The tuning page exports, imports, edits and tests device profiles, then sends
+typed commands to a device. It is only reachable through the Home Assistant
+admin ingress: the **tune** icon in the header, or the `/tuning` route.
 
-## Onglet Profils
+No action on this page works outside ingress. The bundled catalog is never
+modified: only overrides under `/data/device_profiles` are written, after
+validation.
 
-- Liste des profils effectifs : version, source (`bundled`/`override`), hash et
-  nombre d’appareils impactés. Par défaut, seuls les profils détectés sont
-  affichés ; la recherche couvre tout le catalogue et l’option **Show all**
-  affiche aussi les profils non détectés (choix mémorisé).
-- La révision et les hashes sont tronqués avec la valeur complète en infobulle
-  et un bouton de copie.
-- Éditeur YAML avec validation continue : erreurs avec ligne et colonne,
-  avertissements du moteur partagé, diff unifié contre la base effective
-  (`bundled` ou `override`).
-- **Apply override** : confirmation avec impact, écriture atomique, sauvegarde
-  préalable, verrou optimiste par hash et rechargement du catalogue.
-- **Revert to bundled** : supprime la surcharge (avec backup préalable).
-- **Backups** : liste horodatée ; chaque restauration est elle aussi
-  sauvegardée avant écriture.
-- **Import** : fichier YAML ou ZIP, validation et dry-run d’abord, application
-  après confirmation. Les doublons d’id, entrées hors limites et chemins
-  d’archive sont refusés.
-- **Export** : YAML d’un profil ou ZIP (surcharges ou catalogue effectif) avec
-  manifeste.
+## Profiles tab
 
-Limites serveur : 256 Ko et 5000 lignes par profil, profondeur 32 ; import
-2 Mo et 200 profils. Les fichiers sont écrits avec fsync et permissions
-restreintes.
+- Effective profile list: version, source (`bundled`/`override`), hash and
+  number of affected devices. By default only detected profiles are shown;
+  search covers the whole catalog and the **Show all** option also shows
+  undetected profiles (the choice is remembered).
+- The revision and hashes are truncated, with the full value in a tooltip and a
+  copy button.
+- YAML editor with continuous validation: errors with line and column, shared
+  engine warnings, unified diff against the effective base (`bundled` or
+  `override`).
+- **Apply override**: confirmation with impact, atomic write, prior backup,
+  optimistic hash lock and catalog reload.
+- **Revert to bundled**: removes the override (with a prior backup).
+- **Backups**: timestamped list; each restore is also backed up before writing.
+- **Import**: YAML or ZIP file, validation and dry-run first, then application
+  after confirmation. Duplicate ids, out-of-limit entries and archive paths are
+  refused.
+- **Export**: YAML for one profile or ZIP (overrides or effective catalog) with
+  a manifest.
 
-## Onglet Appareils
+Server limits: 256 KB and 5000 lines per profile, depth 32; import 2 MB and 200
+profiles. Files are written with fsync and restricted permissions.
 
-- Descripteur, profil associé (source et hash), entités attendues, plan de
-  polling, document de capacité et cache volet (`status`, `config`, `adjust`).
-- **Simulate a frame** : rejoue une trame `GETACK`, `SETACK` ou `PUSH` dans le
-  moteur partagé sans rien envoyer à l’appareil. Les canaux peuvent être
-  déduits du payload ; un sous-appareil peut être ciblé par id et type.
-- **Live read** : GET signé en lecture seule, limité aux namespaces déclarés
-  par le profil (plus `Appliance.System.All`). Cooldown par appareil, timeout
-  borné ; la réponse est assainie et les valeurs typées sont extraites.
-- **Commands** : commandes déclarées par le profil, générées par substitution
-  des canaux et valeurs (`$channel`, `$value`) — jamais de payload brut.
-  Chaque envoi exige une confirmation à usage unique (jeton de 60 s lié à
-  l’appareil et à la commande), un appareil en ligne, une seule commande à la
-  fois et un cooldown. L’action est auditée avec un snapshot avant/après.
-- **Capture** : démarrer/arrêter une session pour l’appareil sélectionné, puis
-  injecter le brouillon YAML dans l’éditeur. Seules les trames de cet appareil
-  sont conservées, y compris les PUSH déclenchés à l’interrupteur ; durée et
-  taille sont bornées. **Download ZIP** exporte `session.json`,
-  `frames.jsonl` et le brouillon — déjà assainis — pour partager une capture.
-  Le brouillon est un point de départ (`draft.<type>`) à compléter et valider
-  avant application.
+## Devices tab
 
-## Onglet Audit
+- Descriptor, matched profile (source and hash), expected entities, polling
+  plan, ability document and shutter cache (`status`, `config`, `adjust`).
+- **Simulate a frame**: replays a `GETACK`, `SETACK` or `PUSH` frame in the
+  shared engine without sending anything to the device. Channels can be
+  inferred from the payload; a subdevice can be targeted by id and type.
+- **Live read**: signed read-only GET, limited to the namespaces declared by
+  the profile (plus `Appliance.System.All`). Per-device cooldown, bounded
+  timeout; the response is sanitized and typed values are extracted.
+- **Commands**: profile-declared commands, generated by channel and value
+  substitution (`$channel`, `$value`) — never a raw payload. Each send requires
+  one-time confirmation (60 s token bound to the device and command), an online
+  device, one command at a time and a cooldown. The action is audited with a
+  before/after snapshot.
+- **Capture**: start/stop a session for the selected device, then inject the
+  YAML draft into the editor. Only frames from that device are kept, including
+  PUSH messages triggered by the wall switch; duration and size are bounded.
+  **Download ZIP** exports `session.json`, `frames.jsonl` and the draft —
+  already sanitized — so a capture can be shared. The draft is a starting point
+  (`draft.<type>`) to complete and validate before applying.
 
-Journal des actions : acteur Home Assistant, date, action, profil, révision,
-hash avant/après, et pour les commandes le résultat et les snapshots. L’API
-accepte `?profile_id=` et `?device_uuid=` pour filtrer.
+## Audit tab
 
-## Codes d’erreur utiles
+Action log: Home Assistant actor, date, action, profile, revision, before/after
+hash, and for commands the result and snapshots. The API accepts
+`?profile_id=` and `?device_uuid=` filters.
 
-- `400` : YAML ou commande invalide, valeur/canal hors contraintes.
-- `404` : profil, appareil ou backup inconnu.
-- `409` : conflit de hash, appareil hors ligne, jeton expiré/réutilisé,
-  commande déjà en cours.
-- `429` : cooldown de lecture ou de commande (`Retry-After`).
-- `503` : broker MQTT local indisponible.
-- `504` : l’appareil n’a pas répondu dans le délai.
+## Useful error codes
 
-## Fichiers
+- `400`: invalid YAML or command, value/channel outside constraints.
+- `404`: unknown profile, device or backup.
+- `409`: hash conflict, device offline, expired/reused token, command already
+  in progress.
+- `429`: read or command cooldown (`Retry-After`).
+- `503`: local MQTT broker unavailable.
+- `504`: the device did not answer within the timeout.
 
-| Chemin                      | Contenu                                            |
-| --------------------------- | -------------------------------------------------- |
-| `/data/device_profiles`     | surcharges YAML (catalogue livré en lecture seule) |
-| `/data/profile_backups`     | backups horodatés (20 par profil)                  |
-| `/data/profile_audit.jsonl` | audit des profils et des commandes                 |
-| `/data/capture`             | sessions de capture et brouillons                  |
+## Files
 
-Les jetons de confirmation et les identifiants MQTT de lecture restent en
-mémoire et ne sont jamais persistés.
+| Path                        | Content                                       |
+| --------------------------- | --------------------------------------------- |
+| `/data/device_profiles`     | YAML overrides (bundled catalog is read-only) |
+| `/data/profile_backups`     | timestamped backups (20 per profile)          |
+| `/data/profile_audit.jsonl` | profile and command audit                     |
+| `/data/capture`             | capture sessions and drafts                   |
 
-## Aucun profil associé à un appareil
+Confirmation tokens and MQTT read credentials stay in memory and are never
+persisted.
 
-Si la fiche affiche **No profile matches this device**, le broker n’a pas encore
-reçu le document de capacités (`Appliance.System.Ability`). Depuis la 1.4.4,
-l’agent le demande automatiquement dès que l’appareil est en ligne et traite la
-réponse sur `/_agent` (les demandes hors ligne ne consomment plus le cooldown) ;
-la page se rafraîchit toutes les 20 s et recharge la fiche dès que le profil
-apparaît. Un document vide ou corrompu est considéré comme absent.
+## No profile matched to a device
 
-Le bouton **Refresh ability** (1.4.2+) reste disponible en secours : il demande
-immédiatement le document avec une identité app et recharge l’inventaire. Si
-l’appareil ne répond jamais à cette requête, le matching reste indisponible
-pour ce modèle.
+If the page shows **No profile matches this device**, the broker has not yet
+received the ability document (`Appliance.System.Ability`). Since 1.4.4, the
+agent requests it automatically as soon as the device is online and handles the
+response on `/_agent` (offline requests no longer consume the cooldown); the
+page refreshes every 20 s and reloads the page as soon as the profile appears.
+An empty or corrupted document is treated as absent.
 
-Le panneau principal (liste **Paired devices**, mode avancé) affiche aussi la
-version du profil appliqué et un badge **Custom** lorsque le profil vient de
+The **Refresh ability** button (1.4.2+) remains available as a fallback: it
+requests the document immediately with an app identity and reloads the
+inventory. If the device never answers this request, matching remains
+unavailable for that model.
+
+The main panel (**Paired devices** list, advanced mode) also shows the applied
+profile version and a **Custom** badge when the profile comes from
 `/data/device_profiles`.
 
-## Voir aussi
+## See also
 
-- [Ajouter une fonctionnalité sans coder — exemple MRS100](OVERRIDE-MRS100-MOVEMENT.md) :
-  capture, surcharge et validation d’un capteur `Movement`.
+- [Add a feature without code — MRS100 example](OVERRIDE-MRS100-MOVEMENT.md):
+  capture, override and validation of a `Movement` sensor.

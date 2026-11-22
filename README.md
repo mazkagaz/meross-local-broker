@@ -284,12 +284,11 @@ Supervisor ingress. It provides:
 
 The bundled catalog stays read-only; only overrides under
 `/data/device_profiles` are written. Full guide:
-[`docs/guides/DEVICE-TUNING.md`](docs/guides/DEVICE-TUNING.md) (French).
+[`docs/guides/DEVICE-TUNING.md`](docs/guides/DEVICE-TUNING.md).
 
 **No-code example**: add a `Movement` sensor to an MRS100 from a real capture,
 as a local override —
-[`docs/guides/OVERRIDE-MRS100-MOVEMENT.md`](docs/guides/OVERRIDE-MRS100-MOVEMENT.md)
-(French).
+[`docs/guides/OVERRIDE-MRS100-MOVEMENT.md`](docs/guides/OVERRIDE-MRS100-MOVEMENT.md).
 
 ## Logs
 
