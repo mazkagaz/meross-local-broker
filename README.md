@@ -1,348 +1,349 @@
-# Meross Local Broker — add-on Home Assistant
+**English** · [Français](README.fr.md)
+
+# Meross Local Broker — Home Assistant add-on
 
 ![Meross Local Broker](branding/meross-local-broker-banner.jpeg)
 
-Add-on **non officiel** qui remplace le cloud Meross par un broker local pour
-Home Assistant. Il permet de contrôler les appareils Meross sur le réseau local,
-sans dépendre du cloud pour l'usage quotidien.
+**Unofficial** add-on that replaces the Meross cloud with a local broker for
+Home Assistant. It controls Meross devices on the local network, without
+depending on the cloud for daily operation.
 
 ![aarch64](https://img.shields.io/badge/aarch64-yes-green.svg)
 ![amd64](https://img.shields.io/badge/amd64-yes-green.svg)
 
-## Les trois briques du montage
+## The three building blocks
 
-| Brique                  | Rôle                              | Dépôt                                                                           |
+| Component               | Role                              | Repository                                                                      |
 | ----------------------- | --------------------------------- | ------------------------------------------------------------------------------- |
-| **Meross Local Broker** | add-on : broker MQTT + API locale | [mazkagaz/meross-local-broker](https://github.com/mazkagaz/meross-local-broker) |
-| **Meross Local Cloud**  | intégration Home Assistant (HACS) | [mazkagaz/meross-local-cloud](https://github.com/mazkagaz/meross-local-cloud)   |
-| **Meross Local Pairer** | application Android d'appairage   | [mazkagaz/meross-local-pairer](https://github.com/mazkagaz/meross-local-pairer) |
+| **Meross Local Broker** | add-on: MQTT broker + local API   | [mazkagaz/meross-local-broker](https://github.com/mazkagaz/meross-local-broker) |
+| **Meross Local Cloud**  | Home Assistant integration (HACS) | [mazkagaz/meross-local-cloud](https://github.com/mazkagaz/meross-local-cloud)   |
+| **Meross Local Pairer** | Android pairing app               | [mazkagaz/meross-local-pairer](https://github.com/mazkagaz/meross-local-pairer) |
 
 ```
-Appareil Meross ──MQTT/TLS──> add-on Meross Local Broker ──API/MQTT──> intégration HA
+Meross device ──MQTT/TLS──> Meross Local Broker add-on ──API/MQTT──> HA integration
                                       ^
-                                      │ appairage initial
+                                      │ initial pairing
                              Meross Local Pairer (Android)
 ```
 
-## Compatibilité
+## Compatibility
 
-Le broker fonctionne avec les appareils Meross qui acceptent un broker local.
-Le **MRS100** (volet roulant) sert de référence de validation ; toutes les
-autres familles du catalogue (multiprises, capteurs, garage, purificateur,
-MST, compteurs, MSXH0, HP110, MTS9, thermostats…) attendent des testeurs sur
-matériel réel. Ouvrez une
-[issue](https://github.com/mazkagaz/meross-local-broker/issues) en précisant le
-modèle, le firmware et les fonctions qui marchent ou non. Les demandes
-d'intégration spécifiques sont bienvenues.
+The broker works with Meross devices that accept a local broker. The
+**MRS100** (roller shutter) is the validation reference; all other families in
+the catalog (power strips, sensors, garage doors, purifier, MST, energy meters,
+MSXH0, HP110, MTS9, thermostats…) need testers on real hardware. Open an
+[issue](https://github.com/mazkagaz/meross-local-broker/issues) with the model,
+firmware and the functions that work or fail. Requests for specific device
+families are welcome.
 
-## Compatibilité des versions
+## Version compatibility
 
-| Brique                         | Version minimale | Remarques                                                    |
-| ------------------------------ | ---------------- | ------------------------------------------------------------ |
-| Broker                         | 1.4.8            | profil MRS100 2026.11.4 ; 3.2.2 pour la présentation number  |
-| Intégration Meross Local Cloud | 3.2.2            | moteur profils 2.5.1 ; Position et durées en champ de saisie |
-| Meross Local Pairer            | 2.0.9            | découverte et appairage HTTPS uniquement                     |
+| Component                      | Minimum version | Notes                                                   |
+| ------------------------------ | --------------- | ------------------------------------------------------- |
+| Broker                         | 1.4.8           | MRS100 profile 2026.11.4; 3.2.2 for number presentation |
+| Meross Local Cloud integration | 3.2.2           | profile engine 2.5.1; Position and typed durations      |
+| Meross Local Pairer            | 2.0.9           | HTTPS discovery and pairing only                        |
 
 ## Ports
 
-| Port         | Usage                                     | Actif par défaut |
-| ------------ | ----------------------------------------- | ---------------- |
-| **2001/tcp** | MQTT/TLS (appareils)                      | oui              |
-| **2003/tcp** | API HTTP **ingress Supervisor seulement** | oui              |
-| **2004/tcp** | API HTTPS (TLS)                           | oui              |
+| Port         | Use                                   | Enabled by default |
+| ------------ | ------------------------------------- | ------------------ |
+| **2001/tcp** | MQTT/TLS (devices)                    | yes                |
+| **2003/tcp** | HTTP API, **Supervisor ingress only** | yes                |
+| **2004/tcp** | HTTPS API (TLS)                       | yes                |
 
-Le port **2003** n'est plus accessible depuis le LAN : il sert uniquement à
-l'**ingress Home Assistant** (panneau web et administration via le Supervisor).
-Les clients LAN (intégration HA, pairer) utilisent exclusivement **HTTPS 2004**.
+Port **2003** is no longer reachable from the LAN: it only serves the
+**Home Assistant ingress** (web panel and administration through the
+Supervisor). LAN clients (HA integration, pairer) use **HTTPS 2004** only.
 
-L'API d'administration (renommage/suppression depuis le panneau web, services,
-journaux) n'est accessible qu'à travers l'**ingress Home Assistant**, avec
-l'identité de l'utilisateur HA. Aucun port de débogage n'est publié : le mode
-`debug_mode` ne fait qu'activer les journaux détaillés.
+The administration API (renaming/removing from the web panel, services, logs)
+is only reachable through the **Home Assistant ingress**, with the HA user
+identity. No debug port is published: `debug_mode` only enables detailed logs.
 
-## Avant de commencer
+## Before you start
 
-- Home Assistant OS ou Supervised (l'add-on a besoin du Supervisor).
-- HACS installé, pour l'intégration Home Assistant.
-- Un appareil Meross à appairer et un Wi-Fi **2,4 GHz en WPA2**.
-- Un téléphone Android pour Meross Local Pairer.
-- Installations **amd64** ou **aarch64** uniquement (les architectures 32 bits
-  ne sont plus construites).
+- Home Assistant OS or Supervised (the add-on needs the Supervisor).
+- HACS installed, for the Home Assistant integration.
+- A Meross device to pair and a **2.4 GHz WPA2** Wi-Fi network.
+- An Android phone for Meross Local Pairer.
+- **amd64** or **aarch64** installations only (32-bit architectures are no
+  longer built).
 
-## Installation complète
+## Full installation
 
-### 1. Installer l'add-on
+### 1. Install the add-on
 
-Dans Home Assistant :
+In Home Assistant:
 
-1. **Paramètres → Modules complémentaires → Boutique de modules**.
-2. Menu **⋮ → Dépôts**.
-3. Ajouter `https://github.com/mazkagaz/meross-local-broker`.
-4. Installer **Meross Local Broker**, puis démarrer.
+1. **Settings → Add-ons → Add-on store**.
+2. Menu **⋮ → Repositories**.
+3. Add `https://github.com/mazkagaz/meross-local-broker`.
+4. Install **Meross Local Broker**, then start it.
 
-Le bouton ci-dessous ouvre directement la boîte de dialogue :
+The button below opens the dialog directly:
 
-[![Ouvrir mon Home Assistant](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fmazkagaz%2Fmeross-local-broker)
+[![Open your Home Assistant instance](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fmazkagaz%2Fmeross-local-broker)
 
-### 2. Créer le compte local du broker
+### 2. Create the broker's local account
 
-1. Ouvrir le panneau **Meross Local Broker** de l'add-on.
-2. Créer un compte local, par exemple `meross-local`, avec un mot de passe.
-3. Aucun identifiant cloud Meross n’est demandé : ce compte reste local.
-4. Valider. L'add-on redémarre ses services.
+1. Open the add-on's **Meross Local Broker** panel.
+2. Create a local account, for example `meross-local`, with a password.
+3. No Meross cloud credentials are requested: this account stays local.
+4. Confirm. The add-on restarts its services.
 
-Ce compte sert uniquement au broker local. Ce n'est pas votre compte Meross
-cloud.
+This account is only used by the local broker. It is not your Meross cloud
+account.
 
-En cas de besoin, la même opération peut être faite en ligne de commande
-(remplacer l'adresse et le mot de passe) :
+If needed, the same operation can be done from the command line (replace the
+address and password):
 
 ```bash
 curl -sk -X PUT https://homeassistant.local:2004/_admin_/configuration \
   -H 'Content-Type: application/json' \
-  -d '{"email":"meross-local","password":"MotDePasseLocal"}'
+  -d '{"email":"meross-local","password":"LocalPassword"}'
 ```
 
-La réponse contient `userId` et `mqttKey`. Le `userId` vaut normalement `1`.
+The response contains `userId` and `mqttKey`. `userId` is normally `1`.
 
-### 3. Appairer un appareil Meross
+### 3. Pair a Meross device
 
-Suivre la procédure de
-[Meross Local Pairer](https://github.com/mazkagaz/meross-local-pairer#appairage-pas-à-pas).
-L'application configure l'appareil pour qu'il se connecte à cet add-on.
+Follow the
+[Meross Local Pairer](https://github.com/mazkagaz/meross-local-pairer#readme)
+procedure. The app configures the device to connect to this add-on.
 
-- **Sans Bluetooth LE** : appairage par l'AP Wi-Fi `Meross_*` de l'appareil.
-- **Avec Bluetooth LE** (publicité `MRBL_…`, notamment les MRS100 récents) :
-  utiliser l'appairage Bluetooth LE de Meross Local Pairer.
+- **Without Bluetooth LE**: pair through the device's `Meross_*` Wi-Fi AP.
+- **With Bluetooth LE** (`MRBL_…` advertisement, especially recent MRS100):
+  use Meross Local Pairer's Bluetooth LE pairing.
 
-Une fois l'appairage terminé :
+Once pairing is complete:
 
-- l'add-on doit journaliser la connexion de l'appareil et son passage **ONLINE** ;
-- la page **Paired devices** du panneau web doit afficher l'appareil.
+- the add-on must log the device connection and its **ONLINE** state;
+- the web panel's **Paired devices** page must show the device.
 
-### 4. Installer l'intégration Home Assistant
+### 4. Install the Home Assistant integration
 
-Suivre la procédure de
-[Meross Local Cloud](https://github.com/mazkagaz/meross-local-cloud#installation-avec-hacs).
-L'intégration s'installe avec **HACS**, puis se configure avec le compte local
-du broker.
+Follow the
+[Meross Local Cloud](https://github.com/mazkagaz/meross-local-cloud#install-with-hacs)
+procedure. The integration is installed with **HACS**, then configured with
+the broker's local account.
 
-Le formulaire demande l'adresse du broker (sans `https://`), les ports HTTPS et
-MQTT, puis le compte local. Les ports sont préremplis par la découverte mDNS.
+The form asks for the broker address (without `https://`), the HTTPS and MQTT
+ports, then the local account. The ports are pre-filled by mDNS discovery.
 
-| Champ             | Valeur usuelle                                  |
-| ----------------- | ----------------------------------------------- |
-| Adresse du broker | `homeassistant.local` ou l'IP de Home Assistant |
-| Port HTTPS        | `2004`                                          |
-| Port MQTT         | `2001`                                          |
-| Identifiant local | le compte local, par exemple `meross-local`     |
-| Mot de passe      | le mot de passe local                           |
-| Code MFA          | seulement si le compte local l'exige            |
+| Field          | Usual value                                    |
+| -------------- | ---------------------------------------------- |
+| Broker address | `homeassistant.local` or the Home Assistant IP |
+| HTTPS port     | `2004`                                         |
+| MQTT port      | `2001`                                         |
+| Local login    | the local account, for example `meross-local`  |
+| Password       | the local password                             |
+| MFA code       | only if the local account requires it          |
 
-Le broker doit être en **1.3.1 ou plus récent** : l'intégration récupère et
-épingle sa CA (`/ca.crt`). La page de tuning nécessite **1.4.0 ou plus récent** ;
-**1.4.4** rend l’association des profils automatique et fiable (le refresh
-manuel de l’ability reste disponible). **1.4.6** livre le profil MRS100
-`2026.11.3` et ses icônes de mouvement ; **1.4.8** ajoute l’entité Position et
-les durées en champ de saisie. Installer l’intégration **3.2.2** au préalable.
-Les options « ignorer la validation » n'existent plus.
-L'option User-Agent de l'intégration se règle dans
-**Paramètres → Appareils et services → Meross Local Cloud → Configurer**.
+The broker must be **1.3.1 or newer**: the integration fetches and pins its CA
+(`/ca.crt`). The tuning page requires **1.4.0 or newer**; **1.4.4** makes
+profile matching automatic and reliable (manual ability refresh remains
+available). **1.4.6** ships the MRS100 `2026.11.3` profile and its movement
+icons; **1.4.8** adds the Position entity and typed durations. Install the
+**3.2.2** integration first. The “ignore validation” options no longer exist.
+The integration's User-Agent option is set in
+**Settings → Devices & services → Meross Local Cloud → Configure**.
 
 ### TLS
 
-Le listener MQTT **2001** et le listener HTTPS **2004** partagent la même
-autorité de certification locale (`/data/mqtt/certs`). Cette CA est valide
-(`CA:TRUE`) et le certificat serveur contient les IP LAN. Le port **2003** est
-en HTTP simple mais **réservé à l'ingress du Supervisor** ; le LAN passe par
-HTTPS 2004.
+The **2001** MQTT listener and the **2004** HTTPS listener share the same local
+certificate authority (`/data/mqtt/certs`). This CA is valid (`CA:TRUE`) and
+the server certificate contains the LAN IPs. Port **2003** is plain HTTP but
+**reserved for the Supervisor ingress**; the LAN uses HTTPS 2004.
 
-HTTPS est **toujours actif** : l'intégration et le pairer refusent le HTTP en
-clair, et le port 2003 n'est joignable que par l'ingress du Supervisor. Une CA
-locale invalide (créée avant 1.0.0) est régénérée automatiquement au
-démarrage, avec sauvegarde dans `/data/mqtt/certs.bak-*`.
+HTTPS is **always enabled**: the integration and the pairer refuse cleartext
+HTTP, and port 2003 is only reachable through the Supervisor ingress. An
+invalid local CA (created before 1.0.0) is regenerated automatically at
+startup, with a backup in `/data/mqtt/certs.bak-*`.
 
-Les publications des appareils sont contrôlées (signature, fraîcheur,
-anti-rejeu) et chaque appareil ne peut utiliser que ses propres topics.
-L'option **`mqtt_integrity_mode`** vaut `observe` par défaut (écarts
-journalisés) ; passer à `enforce` après une période de vérification.
+Device publications are checked (signature, freshness, anti-replay) and each
+device can only use its own topics. The **`mqtt_integrity_mode`** option
+defaults to `observe` (mismatches are logged); switch to `enforce` after a
+verification period.
 
-Le certificat du serveur est auto-signé par la CA locale. Pour le valider côté
-client, récupérer la CA sur `https://homeassistant.local:2004/ca.crt`,
-comparer son empreinte avec celle du fichier `/data/mqtt/certs/ca.crt`, puis
-l'importer. Depuis **1.0.0**, la CA est valide (`CA:TRUE`) et le certificat
-serveur contient les adresses IPv4 LAN : l'intégration et le pairer vérifient
-la chaîne. Les options « ignorer la validation » ont été supprimées.
+The server certificate is self-signed by the local CA. To validate it on the
+client side, fetch the CA from `https://homeassistant.local:2004/ca.crt`,
+compare its fingerprint with `/data/mqtt/certs/ca.crt`, then import it. Since
+**1.0.0**, the CA is valid (`CA:TRUE`) and the server certificate contains the
+LAN IPv4 addresses: the integration and the pairer verify the chain. The
+“ignore validation” options have been removed.
 
-### 5. Vérifier
+### 5. Verify
 
-Dans Home Assistant, l'appareil doit apparaître avec les entités
-correspondant à son type (prise, éclairage, volet, etc.).
+In Home Assistant, the device must appear with the entities for its type
+(plug, light, shutter, etc.).
 
-Pour un **MRS100**, l'intégration crée en plus :
+For an **MRS100**, the integration also creates:
 
-- une entité `cover` pour le volet ;
-- deux entités `number` pour les durées d'ouverture/fermeture ;
-- deux boutons de calibration ;
-- un capteur **Calibration status**.
+- a `cover` entity for the shutter;
+- a **Position** `number` entity (0–100 %);
+- two `number` entities for the open/close durations, as typed fields;
+- two calibration buttons;
+- a **Calibration status** sensor.
 
-## Utilisation
+## Usage
 
-Les appareils se pilotent avec leurs entités Home Assistant habituelles. Pour
-le **MRS100** :
+Devices are controlled with their usual Home Assistant entities. For the
+**MRS100**:
 
-- **Ouvrir/fermer** : entité `cover`. Son icône affiche une flèche haut/bas
-  pendant le mouvement, puis un volet ouvert, fermé ou partiel à l’arrêt.
-- **Position** : entité `number` en curseur, de 0 à 100 %, synchronisée avec
-  le cover.
-- **Durées** : entités `number` en champ de saisie (10 à 120 secondes). Les
-  valeurs sont persistées par l'add-on et réappliquées après reconnexion.
-- **Calibration** : bouton **Start calibration**, puis suivi dans
+- **Open/close**: `cover` entity. Its icon shows an up/down arrow while
+  moving, then an open, closed or partial shutter icon at rest.
+- **Position**: `number` slider, 0–100 %, synchronized with the cover.
+- **Durations**: `number` entities as typed fields (10–120 seconds). Values
+  are persisted by the add-on and re-applied after reconnection.
+- **Calibration**: **Start calibration** button, then track it in
   **Calibration status** (`in_progress`, `success`, `timeout`,
-  `motor_blocked`, `failed_N`). **Stop calibration** interrompt le mouvement.
+  `motor_blocked`, `failed_N`). **Stop calibration** interrupts the movement.
 
-Dans le panneau du broker, le mode avancé de la liste **Paired devices** affiche
-aussi le profil appliqué : sa version, et un badge **Custom** lorsque le profil
-vient de `/data/device_profiles`. `—` signifie qu’aucun profil n’est encore
-associé ; l’ability est alors demandée automatiquement.
+In the broker panel, the advanced mode of the **Paired devices** list also
+shows the applied profile: its version, and a **Custom** badge when the
+profile comes from `/data/device_profiles`. `—` means that no profile is
+matched yet; the ability document is then requested automatically.
 
-## Oublier un appareil
+## Forgetting a device
 
-**Forget device** (Web UI de l'add-on ou application d'appairage) supprime
-l'appareil et **révoque son MAC** : l'appareil garde ses identifiants MQTT, mais
-le broker refuse désormais sa connexion, donc il ne peut pas revenir tout seul.
+**Forget device** (add-on Web UI or pairing app) removes the device and
+**revokes its MAC**: the device keeps its MQTT credentials, but the broker now
+refuses its connection, so it cannot come back on its own.
 
-Un nouvel appairage réussi appelle `POST /v1/Device/claim` pour lever la
-révocation. L'appareil conserve le même UUID : dans Home Assistant, ses entités
-et les automatisations existantes restent valides après un cycle
-oubli/réappairage.
+A successful new pairing calls `POST /v1/Device/claim` to lift the revocation.
+The device keeps the same UUID: in Home Assistant, its entities and existing
+automations remain valid after a forget/re-pair cycle.
 
-Après un oubli, l'agent publie l'événement `Appliance.Control.Unbind` qui
-supprime les entités côté Home Assistant. Cette publication a lieu au plus tard
-**60 secondes** après la suppression (ou immédiatement à la reconnexion de
-l'agent) : c'est le délai normal pendant lequel les entités peuvent encore
-apparaître.
+After a forget, the agent publishes the `Appliance.Control.Unbind` event that
+removes the entities in Home Assistant. This publication happens at the latest
+**60 seconds** after removal (or immediately when the agent reconnects): that
+is the normal delay during which entities may still appear.
 
-Avec l'intégration **3.1.0 ou plus récente** :
+With integration **3.1.0 or newer**:
 
-- un Unbind reçu sur un appareil actif supprime immédiatement son entrée
-  d'appareil et ses entités dans Home Assistant ;
-- un appareil resté dans le registre HA sans être revu par le broker est
-  détecté au démarrage ; après **48 heures** d'absence, une réparation
-  « Appareil plus appairé » propose de le supprimer ;
-- si l'appareil revient avant, la réparation disparaît d'elle-même.
+- an Unbind received for an active device immediately removes its device entry
+  and entities in Home Assistant;
+- a device left in the HA registry without being seen by the broker is detected
+  at startup; after **48 hours** of absence, a “Device no longer paired” repair
+  offers to remove it;
+- if the device comes back before that, the repair disappears by itself.
 
 ## Options
 
-Les options se règlent dans **Paramètres → Applications → Meross Local Broker →
-Configuration**. Le détail figure dans [DOCS.md](meross_local_broker/DOCS.md).
+Options are set in **Settings → Add-ons → Meross Local Broker →
+Configuration**. Details are in [DOCS.md](meross_local_broker/DOCS.md) (also
+available in [French](meross_local_broker/DOCS.fr.md)).
 
-| Option                | Défaut    | Rôle                                                      |
-| --------------------- | --------- | --------------------------------------------------------- |
-| `advertise`           | `true`    | publication mDNS du broker et de l'API HTTPS              |
-| `debug_mode`          | `false`   | journaux détaillés                                        |
-| `device_timezone`     | vide      | fuseau (+ DST) poussé aux appareils ; vide = fuseau HA    |
-| `mqtt_integrity_mode` | `observe` | contrôle signature/fraîcheur/anti-rejeu des publications  |
-| `reinit_db`           | `false`   | efface compte local et appareils au démarrage (dépannage) |
+| Option                | Default   | Purpose                                                      |
+| --------------------- | --------- | ------------------------------------------------------------ |
+| `advertise`           | `true`    | mDNS advertisement of the broker and HTTPS API               |
+| `debug_mode`          | `false`   | detailed logs                                                |
+| `device_timezone`     | empty     | timezone (+ DST) pushed to devices; empty = HA timezone      |
+| `mqtt_integrity_mode` | `observe` | signature/freshness/anti-replay check of publications        |
+| `reinit_db`           | `false`   | erase local account and devices at startup (troubleshooting) |
 
-## Profils d'appareils (mode avancé)
+## Device profiles (advanced mode)
 
-Le catalogue de profils est livré dans l'add-on mais peut être surchargé sans
-reconstruire l'image : déposer des fichiers YAML dans `/data/device_profiles`.
-Un même `id` remplace le profil livré, un nouvel `id` l'ajoute. Un fichier
-invalide est ignoré et signalé ; le profil livré reste actif. Le rechargement
-se fait avec `POST /_admin_/profiles/reload` (ingress Supervisor) et renvoie
-les profils ajoutés, supprimés et modifiés. L'intégration vérifie la révision
-toutes les 60 s et recharge automatiquement son entrée quand elle change. Le
-catalogue est signé (Ed25519, clé dans `/data`) et l'intégration refuse une
-signature invalide. Avec l'option avancée d'entités profils, chaque appareil
-et sous-appareil expose une entité `update` (profil appliqué, version,
-réapplication).
+The profile catalog is shipped in the add-on but can be overridden without
+rebuilding the image: drop YAML files into `/data/device_profiles`. The same
+`id` replaces the bundled profile; a new `id` adds one. An invalid file is
+ignored and reported; the bundled profile stays active. Reload with
+`POST /_admin_/profiles/reload` (Supervisor ingress); the response lists added,
+removed and changed profiles. The integration checks the revision every 60 s;
+when it changes, it advertises the update with a persistent notification and
+offers manual installation from the profile's `update` entity. The catalog is
+signed (Ed25519, key in `/data`) and the integration rejects an invalid
+signature. With the advanced profile entities option, each device and
+subdevice exposes an `update` entity (applied profile, version,
+re-application).
 
-### Mode capture
+### Capture mode
 
-Pour un modèle non encore couvert, l’API d’administration (ingress Supervisor)
-permet de capturer temporairement les trames d’un appareil :
-`POST /_admin_/capture/start` avec `uuid`, `type`, puis `stop`. Les sessions
-sont écrites dans `/data/capture` avec des permissions restreintes ; secrets
-retirés et identifiants pseudonymisés. `POST /_admin_/capture/draft` produit
-un brouillon YAML des namespaces observés, à compléter puis déposer dans
-`/data/device_profiles`. Durée et taille sont bornées.
+For a model not yet covered, the administration API (Supervisor ingress) can
+temporarily capture device frames: `POST /_admin_/capture/start` with `uuid`,
+`type`, then `stop`. Sessions are written to `/data/capture` with restricted
+permissions; secrets are removed and identifiers pseudonymized.
+`POST /_admin_/capture/draft` produces a YAML draft of the observed
+namespaces, to complete and drop into `/data/device_profiles`. Duration and
+size are bounded.
 
-### Page de tuning
+### Tuning page
 
-Le panneau expose aussi une page **Device tuning** (icône tune), uniquement via
-l'ingress Supervisor. Elle regroupe :
+The panel also exposes a **Device tuning** page (tune icon), only through the
+Supervisor ingress. It provides:
 
-- **Profils** : éditeur YAML avec validation continue et diff, application de
-  surcharges avec backup et verrou optimiste, retour au profil livré,
-  restauration de backups, import/export YAML/ZIP et audit.
-- **Appareils** : descripteur, entités attendues, plan de polling, cache volet,
-  simulation de trames, GET live en lecture seule et capture avec brouillon
-  injecté dans l'éditeur. Les commandes déclarées par le profil y sont listées
-  avec confirmation à usage unique, payload généré par le profil (jamais saisi
-  en brut), une commande à la fois et audit avec snapshots avant/après.
-- **Audit** : historique des actions et résultats.
+- **Profiles**: YAML editor with continuous validation and diff, override
+  application with backup and optimistic lock, revert to the bundled profile,
+  backup restore, YAML/ZIP import/export and audit.
+- **Devices**: descriptor, expected entities, polling plan, shutter cache,
+  frame simulation, read-only live GET and capture with a draft injected into
+  the editor. Profile-declared commands are listed with one-time
+  confirmation, a profile-generated payload (never typed raw), one command at
+  a time and audit with before/after snapshots.
+- **Audit**: action and result history.
 
-Le catalogue livré reste en lecture seule ; seules les surcharges sous
-`/data/device_profiles` sont écrites. Guide complet :
-[`docs/guides/DEVICE-TUNING.md`](docs/guides/DEVICE-TUNING.md).
+The bundled catalog stays read-only; only overrides under
+`/data/device_profiles` are written. Full guide:
+[`docs/guides/DEVICE-TUNING.md`](docs/guides/DEVICE-TUNING.md) (French).
 
-**Exemple sans code** : ajouter un capteur `Movement` à un MRS100 à partir
-d’une capture réelle, en surcharge locale —
-[`docs/guides/OVERRIDE-MRS100-MOVEMENT.md`](docs/guides/OVERRIDE-MRS100-MOVEMENT.md).
+**No-code example**: add a `Movement` sensor to an MRS100 from a real capture,
+as a local override —
+[`docs/guides/OVERRIDE-MRS100-MOVEMENT.md`](docs/guides/OVERRIDE-MRS100-MOVEMENT.md)
+(French).
 
-## Journaux
+## Logs
 
-Le panneau du broker affiche quatre diodes, une par service. Cliquer sur une
-diode ouvre la page **Journaux** sur l'onglet du service choisi ; la flèche
-Retour ramène à l'accueil. La page propose la recherche (surlignage) et le
-filtre par niveau, la copie des lignes visibles, le téléchargement du journal
-complet, le suivi/pause et le retour à la ligne. Seul l'onglet affiché interroge
-l'API. Les journaux de l'agent pseudonymisent automatiquement UUID, MAC, IP,
-emails et secrets avant écriture, pour pouvoir être partagés sans masquage
-manuel.
+The broker panel shows four status LEDs, one per service. Clicking an LED opens
+the **Logs** page on the selected service tab; the Back arrow returns to the
+home page. The page offers search (with highlighting) and level filtering,
+copying visible lines, downloading the full log, follow/pause and return to the
+line. Only the displayed tab queries the API. Agent logs automatically
+pseudonymize UUIDs, MAC addresses, IPs, emails and secrets before writing, so
+they can be shared without manual masking.
 
-## Réglage `device_timezone`
+## `device_timezone` setting
 
-L'option `device_timezone` pousse le fuseau et les règles d'heure d'été aux
-appareils. Laisser vide pour utiliser le fuseau de Home Assistant.
+The `device_timezone` option pushes the timezone and daylight-saving rules to
+devices. Leave empty to use the Home Assistant timezone.
 
-## Dépannage
+## Troubleshooting
 
-| Problème                            | Vérifier                                                                 |
-| ----------------------------------- | ------------------------------------------------------------------------ |
-| L'add-on ne démarre pas             | architecture amd64/aarch64, logs du Supervisor, image GHCR publique      |
-| Aucun appareil dans l'add-on        | appairage Wi-Fi AP ou Bluetooth LE, port MQTT 2001, Wi-Fi 2,4 GHz WPA2   |
-| L'intégration ne voit pas le broker | adresse HTTPS 2004, compte local, broker 1.3.1+ (1.4.0 pour le tuning)   |
-| Entités absentes                    | appareil ONLINE dans l'add-on, puis redémarrer l'intégration             |
-| Entités fantômes après un oubli     | intégration 3.1.0+, attendre la réparation 48 h ou supprimer l'appareil  |
-| Durées non conservées               | logs `Stored roller-shutter config` / `Re-applied roller-shutter config` |
-| Appareil déjà lié au cloud Meross   | réinitialiser l'appareil avant l'appairage local                         |
+| Problem                                   | Check                                                                    |
+| ----------------------------------------- | ------------------------------------------------------------------------ |
+| The add-on does not start                 | amd64/aarch64 architecture, Supervisor logs, public GHCR image           |
+| No device in the add-on                   | Wi-Fi AP or Bluetooth LE pairing, MQTT port 2001, 2.4 GHz WPA2           |
+| The integration cannot see the broker     | HTTPS address 2004, local account, broker 1.3.1+ (1.4.0 for tuning)      |
+| Entities missing                          | device ONLINE in the add-on, then restart the integration                |
+| Ghost entities after forgetting           | integration 3.1.0+, wait for the 48 h repair or delete the device        |
+| Durations not kept                        | `Stored roller-shutter config` / `Re-applied roller-shutter config` logs |
+| Device already linked to the Meross cloud | reset the device before local pairing                                    |
 
-## Documentation technique
+## Technical documentation
 
-- [Index de la documentation](docs/README.md)
-- [Vue d’architecture](docs/architecture/OVERVIEW.md)
-- [Contrats API](docs/specs/API-CONTRACTS.md)
-- [Auteur de profils](docs/specs/PROFILE-AUTHORING.md)
-- [Ajouter une fonctionnalité sans coder — exemple MRS100](docs/guides/OVERRIDE-MRS100-MOVEMENT.md)
-- [Volets MRS100](docs/specs/MRS100.md)
-- [Format de capture](docs/specs/CAPTURE-FORMAT.md)
-- [Plans et guides de conception](docs/design/)
-- [Stratégie et scénarios de test](docs/testing/FUNCTIONAL-TESTS.md)
-- [Matrice de traçabilité](docs/testing/TRACEABILITY.md)
-- [Construction et publication](docs/operations/BUILDING.md)
-- [RELEASE_NOTES.md](RELEASE_NOTES.md) — évolutions depuis le fork.
-- [docs/device-profiles.schema.json](docs/device-profiles.schema.json) — schéma
-  de profil 2 et exemples dans [docs/profiles/](docs/profiles/).
+The technical documentation is currently in French; English translations are
+being added progressively.
 
-## Origine et licence
+- [Documentation index](docs/README.md)
+- [Architecture overview](docs/architecture/OVERVIEW.md)
+- [API contracts](docs/specs/API-CONTRACTS.md)
+- [Profile authoring](docs/specs/PROFILE-AUTHORING.md)
+- [Add a feature without code — MRS100 example](docs/guides/OVERRIDE-MRS100-MOVEMENT.md)
+- [MRS100 roller shutters](docs/specs/MRS100.md)
+- [Capture format](docs/specs/CAPTURE-FORMAT.md)
+- [Design plans and guides](docs/design/)
+- [Test strategy and scenarios](docs/testing/FUNCTIONAL-TESTS.md)
+- [Traceability matrix](docs/testing/TRACEABILITY.md)
+- [Build and release](docs/operations/BUILDING.md)
+- [RELEASE_NOTES.md](RELEASE_NOTES.md) — changes since the fork.
+- [docs/device-profiles.schema.json](docs/device-profiles.schema.json) — profile
+  schema 2 and examples in [docs/profiles/](docs/profiles/).
 
-Fork non officiel de
+## Origin and license
+
+Unofficial fork of
 [albertogeniola/ha-meross-local-broker](https://github.com/albertogeniola/ha-meross-local-broker),
-sous **Apache License 2.0**. Le texte de licence et l'attribution upstream sont
-conservés dans `LICENSE`, `NOTICE`, `MODIFICATIONS.md` et `LEGAL.md`.
+under the **Apache License 2.0**. The license text and upstream attribution are
+kept in `LICENSE`, `NOTICE`, `MODIFICATIONS.md` and `LEGAL.md`.
 
-Ce fork n'est ni affilié, ni approuvé, ni sponsorisé par Meross ou l'auteur
-upstream. Meross est une marque de son propriétaire respectif.
+This fork is neither affiliated with, approved by, nor sponsored by Meross or
+the upstream author. Meross is a trademark of its respective owner.

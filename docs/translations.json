@@ -1,0 +1,17 @@
+{
+  "source_language": "fr",
+  "pairs": [
+    {
+      "source": "README.fr.md",
+      "translation": "README.md",
+      "source_sha256": "f6187996fccd62dc9e0cabacd73b8aa7140347e8dfb5926e2f1999e59a643994",
+      "translation_sha256": "db06fe7e2730d759b712f5b696c99f67fa76680bc21e328e466212ffb333f89a"
+    },
+    {
+      "source": "meross_local_broker/DOCS.fr.md",
+      "translation": "meross_local_broker/DOCS.md",
+      "source_sha256": "6ccdf37816e34471ccb24579ba06c0b5b39da555ee0a3d22463ed89fa49544b2",
+      "translation_sha256": "b0d0717f41147559b537618bf3f79505917b35407f4c86eb1831a65d08cb1159"
+    }
+  ]
+}

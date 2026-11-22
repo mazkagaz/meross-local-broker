@@ -52,6 +52,9 @@ jobs:
           python tools/sync_profile_engine.py \
             --source "$MEROSS_CLOUD_REPO" --check
 
+      - name: Check documentation translations
+        run: python tools/check_docs_translations.py
+
       - name: Lint the bundled profiles
         working-directory: meross_local_broker/rootfs/opt/custom_broker
         run: python profile_lint.py

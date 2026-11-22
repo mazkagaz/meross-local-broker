@@ -50,3 +50,12 @@ pour les formats et les contrats.
 ### Exploitation
 
 - [Construction et publication](operations/BUILDING.md)
+
+### Traductions
+
+- [Politique de traduction](TRANSLATIONS.md)
+- [Glossaire français / anglais](TRANSLATION-GLOSSARY.md)
+
+Les documents techniques restent en français pour l’instant ; le README et le
+`DOCS.md` de l’add-on sont publiés en anglais avec une version française en
+`*.fr.md`.
