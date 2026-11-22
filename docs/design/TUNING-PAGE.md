@@ -1,6 +1,7 @@
 # Page de tuning des appareils — plan V1 → V2
 
-**Statut** : implémentation en cours — étapes 0 et 1 faites (backend V1).
+**Statut** : étapes 0 à 5 faites ; documentation faite, validation terrain en
+attente.
 **Objectif** : une page de l’UI broker (ingress uniquement) pour exporter,
 importer, modifier et tester les profils et les réglages d’instance des
 appareils. Livrer une V1 sûre, avec une architecture qui accepte la V2 sans
@@ -86,6 +87,23 @@ timeout, aucune mutation.
 **Tests** : appareil absent/hors ligne, payload malformé, namespace inconnu,
 canal absent, timeout, réponse vide.
 
+**État (2026-11-22)** : fait côté backend. `GET /_admin_/tuning/devices/{uuid}`
+expose le descripteur, le profil/source/hash, les entités attendues (canaux
+`$channels` dépliés), les modèles de sous-appareils, le plan de polling, la
+capacité et le cache volet (`status`/`config`/`adjust`). `POST /_admin_/profiles/{id}/preview` rejoue une trame `GETACK`/`SETACK`/`PUSH` dans
+le moteur partagé sans toucher l’appareil et renvoie les valeurs extraites, les
+canaux et sous-appareils. `POST /_admin_/tuning/devices/{uuid}/read` effectue un
+GET signé en lecture seule via un client MQTT éphémère (identité app dérivée du
+propriétaire), limité aux namespaces déclarés par le profil (plus
+`Appliance.System.All`), avec cooldown par appareil, timeout borné et
+`503`/`504` explicites. Les réponses sont assainies comme les captures.
+Capture : start/stop/status/draft sous `/_admin_/tuning/capture`, le brouillon
+étant renvoyé en YAML pour l’éditeur. Tests : `test_tuning.py`,
+`test_tuning_api.py`, `test_tuning_probe.py`. Limite assumée : le broker ne
+conserve pas d’état générique par namespace ; les valeurs d’instance exposées
+sont `last_seen`, la capacité et le cache volet. Un cache générique pourra
+suivre en V2.
+
 ## Étape 3 — UI V1
 
 3.1 Module Angular `tuning`, route et entrée de navigation.
@@ -98,6 +116,14 @@ canal absent, timeout, réponse vide.
 
 **Sortie V1** : comprendre, corriger, exporter, importer et appliquer un profil
 sans manipuler les fichiers à la main dans `/data/device_profiles`.
+
+**État (2026-11-22)** : fait. Module Angular `tuning` (route `/tuning`, icône
+dans l'en-tête), onglets Profils / Appareils / Audit, éditeur CodeMirror 6
+épinglé, validation continue avec diff, apply/revert/backups, import dry-run
+puis confirmation, export YAML/ZIP, état d'instance, simulation, GET live,
+commandes V2, capture et audit. Le brouillon de capture est injecté dans
+l'éditeur. Tests : 51 specs Karma (service, éditeur, composant), build de
+production vert.
 
 ## Étape 4 — Backend V2
 
@@ -112,12 +138,30 @@ modifier le YAML.
 4.6 Tests dégradés : hors ligne, timeout, refus broker, jeton expiré, double
 clic, réponse inattendue.
 
+**État (2026-11-22)** : fait. `GET /_admin_/tuning/devices/{uuid}/commands`
+dérive un catalogue typé des commandes déclarées (`id entité.commande`, type
+`number`/`action`, canaux, min/max/step, `value_scale`). `POST .../commands/{id}` génère le payload par substitution `$channel`/`$value`
+(jamais de payload brut), exige une confirmation à usage unique (jeton 60 s
+lié à l'appareil et à la commande), refuse hors ligne, double clic et commande
+concurrente, applique un cooldown et audite avec snapshots avant/après. Le GET
+live renvoie aussi les valeurs typées extraites par le moteur. Les écritures
+d'instance (durées, calibration, position) passent par ces commandes sans
+modifier le YAML. Limite : les commandes des modèles de sous-appareils ne sont
+pas exposées, faute de jeton `$subId` dans le moteur ; les modèles restent
+visibles en lecture seule.
+
 ## Étape 5 — UI V2
 
 5.1 Actions dans l’onglet Instance, générées depuis le profil.
 5.2 Dialogue de confirmation avec impact et payload résumé.
 5.3 Résultat et état rafraîchi ; audit accessible.
 5.4 Tests e2e : action autorisée, action refusée, hors ligne, annulation.
+
+**État (2026-11-22)** : fait. L'onglet Appareils liste les commandes typées avec
+canal et valeur contraints, affiche le payload généré dans la confirmation,
+désactive l'action pendant l'envoi et rafraîchit l'état et l'audit après
+l'ACK. Les scénarios dégradés sont couverts par les tests composant et API ;
+les e2e Protractor ne sont pas exécutés dans l'environnement de développement.
 
 ## Étape 6 — Documentation et livraison
 
@@ -127,27 +171,38 @@ clic, réponse inattendue.
 - Validation terrain : modifier un profil, l’appliquer sur un appareil réel,
   puis revenir au profil livré.
 
+**État (2026-11-22)** : documentation faite (guide
+`docs/guides/DEVICE-TUNING.md`, ADR du moteur partagé, contrats ci-dessous,
+notes de version). La validation terrain reste à faire avec un appareil réel :
+appliquer un override, vérifier le comportement, revenir au profil livré, puis
+tester une commande V2 confirmée.
+
 ## API cible
 
-| Méthode | Route                                               | V1      | Rôle                            |
-| ------- | --------------------------------------------------- | ------- | ------------------------------- |
-| GET     | `/_admin_/tuning/devices`                           | oui     | appareils + profil/source/état  |
-| GET     | `/_admin_/profiles`                                 | oui     | inventaire effectif             |
-| GET     | `/_admin_/profiles/{id}`                            | oui     | profil effectif + hashes + diff |
-| POST    | `/_admin_/profiles/validate`                        | oui     | validation + diff               |
-| POST    | `/_admin_/profiles/{id}/preview`                    | étape 2 | simulation de trames            |
-| PUT     | `/_admin_/profiles/{id}/override`                   | oui     | appliquer (révision attendue)   |
-| DELETE  | `/_admin_/profiles/{id}/override`                   | oui     | revenir au livré                |
-| GET     | `/_admin_/profiles/export`                          | oui     | YAML/ZIP                        |
-| POST    | `/_admin_/profiles/import`                          | oui     | dry-run puis apply              |
-| GET     | `/_admin_/profiles/{id}/backups`                    | oui     | backups horodatés               |
-| POST    | `/_admin_/profiles/{id}/backups/{file}/restore`     | oui     | restaurer un backup             |
-| GET     | `/_admin_/tuning/audit`                             | oui     | journal d’audit                 |
-| POST    | `/_admin_/tuning/devices/{uuid}/read`               | étape 2 | GET live                        |
-| GET     | `/_admin_/tuning/devices/{uuid}/commands`           | V2      | commandes autorisées            |
-| POST    | `/_admin_/tuning/devices/{uuid}/commands/{command}` | V2      | SET typé confirmé               |
+| Méthode | Route                                               | V1  | Rôle                            |
+| ------- | --------------------------------------------------- | --- | ------------------------------- |
+| GET     | `/_admin_/tuning/devices`                           | oui | appareils + profil/source/état  |
+| GET     | `/_admin_/tuning/devices/{uuid}`                    | oui | descripteur, entités, cache     |
+| GET     | `/_admin_/profiles`                                 | oui | inventaire effectif             |
+| GET     | `/_admin_/profiles/{id}`                            | oui | profil effectif + hashes + diff |
+| POST    | `/_admin_/profiles/validate`                        | oui | validation + diff               |
+| POST    | `/_admin_/profiles/{id}/preview`                    | oui | simulation de trames            |
+| PUT     | `/_admin_/profiles/{id}/override`                   | oui | appliquer (révision attendue)   |
+| DELETE  | `/_admin_/profiles/{id}/override`                   | oui | revenir au livré                |
+| GET     | `/_admin_/profiles/export`                          | oui | YAML/ZIP                        |
+| POST    | `/_admin_/profiles/import`                          | oui | dry-run puis apply              |
+| GET     | `/_admin_/profiles/{id}/backups`                    | oui | backups horodatés               |
+| POST    | `/_admin_/profiles/{id}/backups/{file}/restore`     | oui | restaurer un backup             |
+| GET     | `/_admin_/tuning/audit`                             | oui | journal d’audit                 |
+| POST    | `/_admin_/tuning/devices/{uuid}/read`               | oui | GET live                        |
+| GET     | `/_admin_/tuning/capture/status`                    | oui | session de capture              |
+| POST    | `/_admin_/tuning/capture/start`                     | oui | démarrer une capture            |
+| POST    | `/_admin_/tuning/capture/stop`                      | oui | arrêter la capture              |
+| POST    | `/_admin_/tuning/capture/draft`                     | oui | brouillon YAML                  |
+| GET     | `/_admin_/tuning/devices/{uuid}/commands`           | oui | commandes autorisées (V2)       |
+| POST    | `/_admin_/tuning/devices/{uuid}/commands/{command}` | oui | SET typé confirmé (V2)          |
 
-## Contrats backend (étape 1)
+## Contrats backend (étapes 1-2)
 
 Accès : ingress admin uniquement. L’acteur vient des en-têtes
 `X-Remote-User-Display-Name`, `X-Remote-User-Name`, `X-Remote-User-Id`
@@ -184,10 +239,38 @@ Accès : ingress admin uniquement. L’acteur vient des en-têtes
   plus.
 - **Audit** `GET /_admin_/tuning/audit?limit=1..500&profile_id=...` → entrées
   récentes d’abord.
+- **État appareil** `GET /_admin_/tuning/devices/{uuid}` → descripteur (sans
+  secret), profil/source/hash, entités attendues, modèles de sous-appareils,
+  plan de polling, capacité et cache volet. `404` si inconnu.
+- **Aperçu** `POST /_admin_/profiles/{id}/preview` corps
+  `{namespace, method, payload}` ou `{frame: {header, payload}}`, avec
+  `channels` et `subdevice` optionnels → valeurs extraites, compteurs
+  `applied`/`ignored`, `known_namespace`, erreurs et avertissements. Les canaux
+  sont déduits de la trame si `channels` est absent. `400` méthode non
+  porteuse d’état ou trame invalide, `404` profil inconnu.
+- **GET live** `POST /_admin_/tuning/devices/{uuid}/read` corps
+  `{namespace?, payload?, timeout_ms?}` → `{ok, method, header, payload, elapsed_ms, received_at, profile_id}`. Namespace limité au profil (plus
+  `Appliance.System.All`) ; `404` appareil inconnu, `409` hors ligne/sans
+  propriétaire/aucun profil, `429` cooldown par appareil (`Retry-After`),
+  `504` timeout, `503` MQTT local indisponible. GET signé uniquement, jamais
+  SET ; réponse assainie.
+- **Capture** `GET /_admin_/tuning/capture/status`, `POST .../start`
+  `{uuid, type?, duration_s?, max_bytes?}`, `POST .../stop`, `POST .../draft`
+  `{type}` → brouillon YAML pour l’éditeur. Une seule session active.
+- **Commandes (V2)** `GET /_admin_/tuning/devices/{uuid}/commands` →
+  catalogue typé (canaux, bornes, pas, `value_scale`) dérivé des commandes
+  déclarées. `POST .../commands/{id}` sans `confirm` → aperçu + jeton à usage
+  unique (60 s, lié à l’appareil et à la commande) ; avec `confirm: true` et
+  `token` → SET généré par le profil puis exécuté. `400` commande, valeur ou
+  canal invalide ; `409` hors ligne, jeton expiré/réutilisé ou commande
+  concurrente ; `429` cooldown ; `504` timeout ; `503` MQTT indisponible.
+  Jamais de payload brut ; audit `device.command` avec snapshots avant/après.
 
 Stockage : surcharges `/data/device_profiles` (catalogue livré en lecture
-seule), backups `/data/profile_backups`, audit `/data/profile_audit.jsonl`.
-Fichiers en `0600`, écriture atomique avec fsync du fichier et du répertoire.
+seule), backups `/data/profile_backups`, audit `/data/profile_audit.jsonl`,
+captures `/data/capture`. Fichiers en `0600`, écriture atomique avec fsync du
+fichier et du répertoire. Identifiants MQTT de lecture dérivés du propriétaire,
+jamais persistés.
 
 ## Risques et parades
 
@@ -205,10 +288,11 @@ Fichiers en `0600`, écriture atomique avec fsync du fichier et du répertoire.
 - **M0** : moteur partagé et CI de parité. — atteint (étape 0).
 - **M1** : backend V1 lecture/validation/export. — atteint (étape 1).
 - **M2** : backend V1 application/rollback/audit. — atteint (étape 1).
-- **M3** : UI V1 complète.
-- **M4** : GET et simulation dans l’UI.
-- **M5** : backend V2 commandes typées.
-- **M6** : UI V2 et validation terrain.
+- **M3** : UI V1 complète. — atteint (étape 3).
+- **M4** : GET et simulation dans l’UI. — atteint (étapes 2-3).
+- **M5** : backend V2 commandes typées. — atteint (étape 4).
+- **M6** : UI V2 et validation terrain. — UI faite (étape 5) ; validation
+  terrain en attente.
 
 ## Critères d’acceptation V1
 
@@ -228,3 +312,6 @@ Fichiers en `0600`, écriture atomique avec fsync du fichier et du répertoire.
 - Chaque action est auditée et rate-limitée.
 - Les échecs (hors ligne, timeout, refus, double clic) sont explicites et ne
   laissent pas l’UI dans un état trompeur.
+
+**Statut (2026-11-22)** : satisfaits côté code et tests (backend, API,
+composants). La validation sur un appareil réel reste à faire.

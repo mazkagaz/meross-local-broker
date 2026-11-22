@@ -5,6 +5,19 @@
 - API de tuning sous `/_admin_` : inventaire, validation avec diff unifié,
   surcharges atomiques avec backup et verrou optimiste, export/import YAML/ZIP,
   restauration de backups et audit. Le catalogue livré reste en lecture seule.
+- Aperçu : état d’un appareil (profil, entités, polling, cache volet),
+  simulation de trames `GETACK`/`SETACK`/`PUSH` dans le moteur partagé et GET
+  live en lecture seule limité aux namespaces du profil, avec cooldown,
+  timeout et erreurs explicites. Capture start/stop/status/draft sous
+  `/_admin_/tuning/capture`, brouillon renvoyé en YAML.
+- Page de tuning dans l’UI broker (route `/tuning`, icône dans l’en-tête) :
+  éditeur YAML CodeMirror 6 épinglé, validation continue avec diff,
+  apply/rollback/backups, import/export, état d’instance, simulation, GET live,
+  capture, commandes et audit.
+- Commandes typées V2 : catalogue dérivé du profil (canaux, bornes, pas,
+  `value_scale`), payload généré par substitution, confirmation à usage unique
+  (60 s), une commande à la fois, cooldown, audit avec snapshots avant/après.
+  Aucun payload brut, aucune écriture du YAML pour les actions d’instance.
 
 ## 1.3.1
 

@@ -256,6 +256,25 @@ retirés et identifiants pseudonymisés. `POST /_admin_/capture/draft` produit
 un brouillon YAML des namespaces observés, à compléter puis déposer dans
 `/data/device_profiles`. Durée et taille sont bornées.
 
+### Page de tuning
+
+Le panneau expose aussi une page **Device tuning** (icône tune), uniquement via
+l'ingress Supervisor. Elle regroupe :
+
+- **Profils** : éditeur YAML avec validation continue et diff, application de
+  surcharges avec backup et verrou optimiste, retour au profil livré,
+  restauration de backups, import/export YAML/ZIP et audit.
+- **Appareils** : descripteur, entités attendues, plan de polling, cache volet,
+  simulation de trames, GET live en lecture seule et capture avec brouillon
+  injecté dans l'éditeur. Les commandes déclarées par le profil y sont listées
+  avec confirmation à usage unique, payload généré par le profil (jamais saisi
+  en brut), une commande à la fois et audit avec snapshots avant/après.
+- **Audit** : historique des actions et résultats.
+
+Le catalogue livré reste en lecture seule ; seules les surcharges sous
+`/data/device_profiles` sont écrites. Guide complet :
+[`docs/guides/DEVICE-TUNING.md`](docs/guides/DEVICE-TUNING.md).
+
 ## Journaux
 
 Le panneau du broker affiche quatre diodes, une par service. Cliquer sur une
