@@ -1,3 +1,18 @@
+## 1.4.6
+
+- Profil MRS100 `2026.11.3` : source auxiliaire `movement` sur le cover
+  (`Appliance.RollerShutter.State`), champs réels `timestamp` et `stoppedBy`
+  déclarés. L’icône du volet affiche les flèches haut/bas pendant le mouvement
+  et un état ouvert/fermé/partiel à l’arrêt, sans entité supplémentaire.
+- Moteur de profils **2.5** : le schéma et le compilateur acceptent `movement`
+  sur une entité. Les anciens moteurs ignorent ce champ et continuent à lire la
+  position.
+- Recommandé avec l’intégration **3.2.0+** (3.2.1 conseillée) pour les icônes
+  et l’installation manuelle des mises à jour de profil. Aucun changement
+  d’API ; le catalogue livré change de version et déclenche donc le signal de
+  mise à jour côté intégration.
+- Tests : 198 passed, 1 skipped ; parité moteur et lint de profil vérifiés.
+
 ## 1.4.5
 
 - Correctif capture : la session est autoritative sur disque

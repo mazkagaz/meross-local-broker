@@ -67,11 +67,15 @@ entities:
 
 Tronc commun : `key`, `platform`, `name`, `channel`, `device`
 (`hub`/`subdevice`), `device_class`, `entity_category`, `unit`, `min_value`,
-`max_value`, `step`, `state`, `commands`, `capabilities`, `quirks`.
+`max_value`, `step`, `state`, `movement`, `commands`, `capabilities`, `quirks`.
 Les entrées de `state.fields` sont un chemin (`"togglex[0].onoff"`) ou un
 objet `{ path, scale, offset }` pour une mise à l’échelle par champ.
 `on_values: [23, 25]` transforme la valeur brute en booléen (membre de la
 liste), utile pour les codes d’état des capteurs.
+`movement` (moteur 2.5+) est une seconde source d’état compilée dans la même
+entité, sans entité Home Assistant séparée. Le MRS100 l’utilise pour piloter
+l’icône du cover depuis `RollerShutter.State` ; les moteurs antérieurs ignorent
+ce champ et continuent à lire `state`.
 `legacy_classifiers` permet de conserver l’identifiant historique d’une
 entité lors de la bascule vers les entités profils.
 

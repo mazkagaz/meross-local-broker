@@ -37,11 +37,11 @@ d'intégration spécifiques sont bienvenues.
 
 ## Compatibilité des versions
 
-| Brique                         | Version minimale | Remarques                                    |
-| ------------------------------ | ---------------- | -------------------------------------------- |
-| Broker                         | 1.4.4            | ability auto fiable, colonne Profile ; 1.3.1 |
-| Intégration Meross Local Cloud | 3.1.0            | moteur profils 2.4 ; 3.1.1 recommandée       |
-| Meross Local Pairer            | 2.0.9            | découverte et appairage HTTPS uniquement     |
+| Brique                         | Version minimale | Remarques                                                 |
+| ------------------------------ | ---------------- | --------------------------------------------------------- |
+| Broker                         | 1.4.6            | capture, profil MRS100 2026.11.3 ; 3.2.0+ pour les icônes |
+| Intégration Meross Local Cloud | 3.2.0            | moteur profils 2.5 ; 3.2.1 recommandée                    |
+| Meross Local Pairer            | 2.0.9            | découverte et appairage HTTPS uniquement                  |
 
 ## Ports
 
@@ -142,7 +142,9 @@ MQTT, puis le compte local. Les ports sont préremplis par la découverte mDNS.
 Le broker doit être en **1.3.1 ou plus récent** : l'intégration récupère et
 épingle sa CA (`/ca.crt`). La page de tuning nécessite **1.4.0 ou plus récent** ;
 **1.4.4** rend l’association des profils automatique et fiable (le refresh
-manuel de l’ability reste disponible). Les options « ignorer la validation »
+manuel de l’ability reste disponible). **1.4.6** livre le profil MRS100
+`2026.11.3` et ses icônes de mouvement ; installer l’intégration **3.2.0+**
+(3.2.1 conseillée) au préalable. Les options « ignorer la validation »
 n'existent plus.
 L'option User-Agent de l'intégration se règle dans
 **Paramètres → Appareils et services → Meross Local Cloud → Configurer**.
@@ -189,7 +191,8 @@ Pour un **MRS100**, l'intégration crée en plus :
 Les appareils se pilotent avec leurs entités Home Assistant habituelles. Pour
 le **MRS100** :
 
-- **Ouvrir/fermer** : entité `cover`.
+- **Ouvrir/fermer** : entité `cover`. Son icône affiche une flèche haut/bas
+  pendant le mouvement, puis un volet ouvert, fermé ou partiel à l’arrêt.
 - **Durées** : entités `number` (10 à 120 secondes). Les valeurs sont
   persistées par l'add-on et réappliquées après reconnexion.
 - **Calibration** : bouton **Start calibration**, puis suivi dans

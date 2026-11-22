@@ -130,6 +130,10 @@ Le catalogue livré n’est jamais modifié : la surcharge reste dans
 `/data/device_profiles`. Une fois la méthode validée, la même entité pourra
 être ajoutée au profil livré dans une version ultérieure du broker.
 
+La version livrée du profil MRS100 utilise désormais ce signal directement sur
+le cover, via une source `movement` sans entité visible ; cet exercice reste la
+méthode générale pour ajouter d’autres fonctionnalités par surcharge.
+
 ## Pourquoi cela fonctionne sans code
 
 Le moteur de profils partagé transforme une trame `namespace + méthode + canal + chemin` en valeurs d’entité. L’intégration consomme ensuite les entités

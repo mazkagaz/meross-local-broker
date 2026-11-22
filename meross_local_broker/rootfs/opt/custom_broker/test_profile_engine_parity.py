@@ -68,6 +68,13 @@ class SharedProfileEngineTest(unittest.TestCase):
         self.assertEqual(
             runtime.entities["calibration_status"].values["value"], 2)
 
+        self.assertEqual(runtime.dispatch(
+            "Appliance.RollerShutter.State", "PUSH",
+            {"state": [{"channel": 0, "state": 2,
+                        "timestamp": 1795356738}]}), 1)
+        self.assertEqual(
+            runtime.entities["cover"].values["movement"], 2)
+
     def test_vendored_modules_match_the_integration(self):
         source_root = os.environ.get("MEROSS_CLOUD_REPO")
         if not source_root:

@@ -498,6 +498,10 @@
         "state": {
           "$ref": "#/$defs/state"
         },
+        "movement": {
+          "$ref": "#/$defs/state",
+          "description": "Optional auxiliary state (e.g. cover direction) compiled into the same entity."
+        },
         "commands": {
           "type": "object",
           "additionalProperties": {

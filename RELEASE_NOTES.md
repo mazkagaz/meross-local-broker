@@ -1,3 +1,19 @@
+# Notes de version — 1.4.6
+
+## 1.4.6 — icônes de volet et profil MRS100 2026.11.3
+
+- Le profil MRS100 déclare un état auxiliaire `movement` alimenté par
+  `Appliance.RollerShutter.State` : flèche haut à l’ouverture, flèche bas à la
+  fermeture, puis icône volet ouvert (`position = 100`), fermé (`0`) ou partiel
+  à l’arrêt. Aucune entité supplémentaire n’est créée.
+- Les PUSH `State` réels (`state`, `timestamp`, `stoppedBy`) sont documentés
+  dans le profil ; le moteur partagé passe en **2.5** et accepte `movement`
+  sur une entité. Les moteurs antérieurs ignorent ce champ.
+- Cette version sert un nouveau profil, donc l’intégration **3.2.0+** (3.2.1
+  conseillée) détecte la mise à jour, affiche une notification persistante et
+  propose l’installation manuelle depuis l’entité `update`.
+- Aucun changement d’API ; pairer 2.0.9 inchangé.
+
 # Notes de version — 1.4.5
 
 ## 1.4.5 — capture des trames réparée

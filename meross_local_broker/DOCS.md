@@ -126,7 +126,10 @@ matching des profils, qui dépend du document de capacités de l'appareil, est
 automatique et fiable depuis 1.4.4 dès que l'appareil est en ligne. Le bouton **Refresh
 ability** reste disponible en secours sur la fiche appareil. Le panneau
 principal (mode avancé) affiche la version du profil appliqué et un badge
-**Custom** pour une surcharge.
+**Custom** pour une surcharge. Depuis 1.4.6, le profil MRS100 `2026.11.3`
+porte le mouvement du volet ; avec l’intégration 3.2.0+, une nouvelle version
+de profil déclenche une notification persistante et une installation manuelle
+depuis l’entité `update`.
 
 ## Dépannage
 
