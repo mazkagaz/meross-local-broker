@@ -9,10 +9,14 @@ from pathlib import Path
 
 from flask import Blueprint, jsonify, request, send_file
 
+from capture import get_capture_manager
 from tuning import (
     TuningConflict,
     TuningError,
     TuningNotFound,
+    TuningRateLimited,
+    TuningTimeout,
+    TuningUnavailable,
     get_tuning_store,
 )
 
@@ -38,6 +42,17 @@ def _error(error: Exception):
         status = 404
     elif isinstance(error, TuningConflict):
         status = 409
+    elif isinstance(error, TuningTimeout):
+        status = 504
+    elif isinstance(error, TuningUnavailable):
+        status = 503
+    elif isinstance(error, TuningRateLimited):
+        response = jsonify({
+            "error": str(error), "type": type(error).__name__,
+            "retry_after": error.retry_after})
+        response.status_code = 429
+        response.headers["Retry-After"] = str(error.retry_after)
+        return response
     else:
         status = 400
     return jsonify({"error": str(error), "type": type(error).__name__}), status
@@ -57,6 +72,14 @@ def _yaml_body() -> tuple[str, str | None]:
 @tuning_blueprint.route("/tuning/devices", methods=["GET"])
 def list_devices():
     return jsonify(get_tuning_store().list_devices())
+
+
+@tuning_blueprint.route("/tuning/devices/<uuid>", methods=["GET"])
+def device_state(uuid: str):
+    try:
+        return jsonify(get_tuning_store().device_state(uuid))
+    except TuningError as error:
+        return _error(error)
 
 
 @tuning_blueprint.route("/profiles", methods=["GET"])
@@ -83,6 +106,33 @@ def validate_profile():
 def get_profile(profile_id: str):
     try:
         return jsonify(get_tuning_store().get_profile(profile_id))
+    except TuningError as error:
+        return _error(error)
+
+
+@tuning_blueprint.route("/profiles/<profile_id>/preview", methods=["POST"])
+def preview_profile(profile_id: str):
+    body = request.get_json(silent=True) or {}
+    if not isinstance(body, dict):
+        return _error(TuningError("body must be an object"))
+    namespace = body.get("namespace")
+    method = body.get("method")
+    payload = body.get("payload")
+    frame = body.get("frame")
+    if isinstance(frame, dict):
+        header = frame.get("header") or {}
+        if isinstance(header, dict):
+            namespace = namespace or header.get("namespace")
+            method = method or header.get("method")
+        if payload is None:
+            payload = frame.get("payload")
+    if payload is None:
+        payload = {}
+    try:
+        return jsonify(get_tuning_store().simulate(
+            profile_id, namespace=namespace, method=method,
+            payload=payload, channels=body.get("channels"),
+            subdevice=body.get("subdevice")))
     except TuningError as error:
         return _error(error)
 
@@ -214,6 +264,91 @@ def restore_backup(profile_id: str, filename: str):
         return _error(error)
 
 
+@tuning_blueprint.route("/tuning/devices/<uuid>/read", methods=["POST"])
+def read_device(uuid: str):
+    body = request.get_json(silent=True) or {}
+    if not isinstance(body, dict):
+        return _error(TuningError("body must be an object"))
+    timeout = None
+    if body.get("timeout_ms") is not None:
+        try:
+            timeout = float(body["timeout_ms"]) / 1000.0
+        except (TypeError, ValueError):
+            return _error(TuningError("timeout_ms must be a number"))
+    try:
+        return jsonify(get_tuning_store().read_device(
+            uuid, namespace=body.get("namespace"),
+            payload=body.get("payload"), timeout=timeout))
+    except TuningError as error:
+        return _error(error)
+
+
+@tuning_blueprint.route("/tuning/devices/<uuid>/commands", methods=["GET"])
+def device_commands(uuid: str):
+    try:
+        return jsonify(get_tuning_store().device_commands(uuid))
+    except TuningError as error:
+        return _error(error)
+
+
+@tuning_blueprint.route(
+    "/tuning/devices/<uuid>/commands/<command_id>", methods=["POST"])
+def execute_command(uuid: str, command_id: str):
+    body = request.get_json(silent=True) or {}
+    if not isinstance(body, dict):
+        return _error(TuningError("body must be an object"))
+    try:
+        return jsonify(get_tuning_store().execute_command(
+            uuid, command_id,
+            channel=body.get("channel"),
+            value=body.get("value"),
+            confirm=body.get("confirm") is True,
+            token=body.get("token"),
+            actor=_actor()))
+    except TuningError as error:
+        return _error(error)
+
+
+@tuning_blueprint.route("/tuning/capture/status", methods=["GET"])
+def capture_status():
+    return jsonify(get_capture_manager().status() or {})
+
+
+@tuning_blueprint.route("/tuning/capture/start", methods=["POST"])
+def capture_start():
+    body = request.get_json(silent=True) or {}
+    uuid = body.get("uuid") if isinstance(body, dict) else None
+    if not uuid:
+        return _error(TuningError("missing device uuid"))
+    try:
+        status = get_capture_manager().start(
+            {"uuid": uuid, "type": body.get("type"),
+             "firmware": body.get("firmware"),
+             "abilities": body.get("abilities") or []},
+            duration_s=body.get("duration_s", 300),
+            max_bytes=body.get("max_bytes", 2_000_000))
+    except (TypeError, ValueError) as error:
+        return _error(TuningError(str(error)))
+    return jsonify(status)
+
+
+@tuning_blueprint.route("/tuning/capture/stop", methods=["POST"])
+def capture_stop():
+    return jsonify(get_capture_manager().stop() or {})
+
+
+@tuning_blueprint.route("/tuning/capture/draft", methods=["POST"])
+def capture_draft():
+    body = request.get_json(silent=True) or {}
+    device_type = body.get("type") if isinstance(body, dict) else None
+    if not device_type:
+        return _error(TuningError("missing device type"))
+    try:
+        return jsonify(get_capture_manager().build_draft(str(device_type)))
+    except ValueError as error:
+        return _error(TuningError(str(error)))
+
+
 @tuning_blueprint.route("/tuning/audit", methods=["GET"])
 def audit():
     try:
@@ -221,4 +356,5 @@ def audit():
     except ValueError:
         limit = 200
     return jsonify(get_tuning_store().audit_entries(
-        limit=limit, profile_id=request.args.get("profile_id")))
+        limit=limit, profile_id=request.args.get("profile_id"),
+        device_uuid=request.args.get("device_uuid")))

@@ -2,21 +2,41 @@
 """API tests for the tuning blueprint (no Home Assistant runtime)."""
 from __future__ import annotations
 
+import json
 import tempfile
 import unittest
 import zipfile
+from datetime import datetime
 from io import BytesIO
 from pathlib import Path
+from types import SimpleNamespace
 from unittest.mock import patch
 
 from flask import Flask
 
 import blueprints.tuning as tuning_blueprint
 from blueprints.tuning import tuning_blueprint as blueprint
+from capture import CaptureManager
+from compat import OnlineStatus
 from profiles import ProfileCatalog
 from tuning import TuningStore
 
 PROFILES = Path(__file__).with_name("device_profiles")
+DEVICE_UUID = "0123456789abcdef0123456789abcdef"
+
+
+class FakeProbe:
+    def __init__(self):
+        self.calls = []
+        self.sends = []
+
+    def read(self, uuid, user, namespace, payload, timeout):
+        self.calls.append((uuid, namespace, payload, timeout))
+        return {"ok": True, "method": "GETACK", "payload": {}}
+
+    def send(self, uuid, user, method, namespace, payload, timeout):
+        self.sends.append((uuid, method, namespace, payload, timeout))
+        return {"ok": True, "method": "SETACK", "payload": {}}
 
 
 class TuningApiTest(unittest.TestCase):
@@ -179,6 +199,203 @@ class TuningApiTest(unittest.TestCase):
         response = self.client.get(
             "/_admin_/profiles/meross.mod/backups")
         self.assertEqual(response.status_code, 200)
+
+
+    def _install_device(self, online=True, device_type="mss425",
+                        channels=(0, 1),
+                        abilities=("Appliance.Control.ToggleX",)):
+        device = SimpleNamespace(
+            uuid=DEVICE_UUID,
+            mac="AABBCCDDEEFF",
+            dev_name="Test device",
+            device_type=device_type,
+            sub_type=None,
+            online_status=(OnlineStatus.ONLINE if online
+                           else OnlineStatus.OFFLINE),
+            channels=[SimpleNamespace(channel_id=channel)
+                      for channel in channels],
+            child_subdevices=[],
+            local_ip="192.168.1.10",
+            fmware_version="1.0.0",
+            hdware_version="1.0",
+            last_seen_time=datetime(2026, 11, 22, 10, 0, 0),
+            owner_user=SimpleNamespace(user_id=7, mqtt_key="secret"),
+        )
+        self.store._devices = lambda: [device]
+        self.store._ability = lambda uuid: SimpleNamespace(
+            ability_json=json.dumps(
+                {name: {} for name in abilities}))
+        self.store._statuses = lambda uuid: []
+        self.store._configs = lambda uuid: []
+        self.store._adjusts = lambda uuid: []
+        return device
+
+    def _install_mrs100(self, online=True):
+        return self._install_device(
+            online=online, device_type="mrs100", channels=(0,),
+            abilities=("Appliance.RollerShutter.State",))
+
+    def test_device_state_endpoint(self):
+        self._install_device()
+        response = self.client.get(
+            f"/_admin_/tuning/devices/{DEVICE_UUID}")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.get_json()["profile"]["id"], "meross.mss425")
+        self.assertEqual(
+            [item["key"] for item in response.get_json()["entities"]],
+            ["outlet_0", "outlet_1"])
+
+        response = self.client.get("/_admin_/tuning/devices/missing")
+        self.assertEqual(response.status_code, 404)
+
+    def test_preview_endpoint(self):
+        response = self.client.post(
+            "/_admin_/profiles/meross.mrs100/preview",
+            json={"namespace": "Appliance.RollerShutter.Position",
+                  "method": "PUSH",
+                  "payload": {"position": [
+                      {"channel": 0, "position": 42}]}})
+        self.assertEqual(response.status_code, 200, response.get_json())
+        self.assertEqual(
+            response.get_json()["entities"]["cover"], {"position": 42})
+
+        response = self.client.post(
+            "/_admin_/profiles/meross.mrs100/preview",
+            json={"namespace": "Appliance.RollerShutter.Position",
+                  "method": "GET", "payload": {}})
+        self.assertEqual(response.status_code, 400)
+
+        response = self.client.post(
+            "/_admin_/profiles/missing/preview", json={})
+        self.assertEqual(response.status_code, 404)
+
+    def test_read_endpoint_and_rate_limit(self):
+        self._install_device()
+        probe = FakeProbe()
+        self.store._probe = probe
+
+        response = self.client.post(
+            f"/_admin_/tuning/devices/{DEVICE_UUID}/read", json={})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.get_json()["profile_id"], "meross.mss425")
+
+        response = self.client.post(
+            f"/_admin_/tuning/devices/{DEVICE_UUID}/read", json={})
+        self.assertEqual(response.status_code, 429)
+        self.assertIn("Retry-After", response.headers)
+
+        self._install_device(online=False)
+        response = self.client.post(
+            f"/_admin_/tuning/devices/{DEVICE_UUID}/read", json={})
+        self.assertEqual(response.status_code, 409)
+
+        response = self.client.post(
+            "/_admin_/tuning/devices/missing/read", json={})
+        self.assertEqual(response.status_code, 404)
+
+    def test_read_endpoint_rejects_unknown_namespace(self):
+        self._install_device()
+        self.store._probe = FakeProbe()
+        response = self.client.post(
+            f"/_admin_/tuning/devices/{DEVICE_UUID}/read",
+            json={"namespace": "Appliance.Unknown"})
+        self.assertEqual(response.status_code, 400)
+
+    def test_command_endpoints_confirm_once(self):
+        self._install_mrs100()
+        probe = FakeProbe()
+        self.store._probe = probe
+
+        response = self.client.get(
+            f"/_admin_/tuning/devices/{DEVICE_UUID}/commands")
+        self.assertEqual(response.status_code, 200)
+        ids = [row["id"] for row in response.get_json()["commands"]]
+        self.assertIn("cover.set_position", ids)
+
+        response = self.client.post(
+            f"/_admin_/tuning/devices/{DEVICE_UUID}/commands/"
+            "cover.set_position",
+            json={"channel": 0, "value": 42})
+        self.assertEqual(response.status_code, 200, response.get_json())
+        self.assertTrue(response.get_json()["requires_confirmation"])
+        token = response.get_json()["token"]
+
+        response = self.client.post(
+            f"/_admin_/tuning/devices/{DEVICE_UUID}/commands/"
+            "cover.set_position",
+            json={"confirm": True, "token": token})
+        self.assertEqual(response.status_code, 200, response.get_json())
+        self.assertTrue(response.get_json()["ok"])
+        self.assertEqual(probe.sends[0][3],
+                         {"position": {"channel": 0, "position": 42}})
+
+        response = self.client.post(
+            f"/_admin_/tuning/devices/{DEVICE_UUID}/commands/"
+            "cover.set_position",
+            json={"confirm": True, "token": token})
+        self.assertEqual(response.status_code, 409)
+
+        response = self.client.get(
+            f"/_admin_/tuning/audit?device_uuid={DEVICE_UUID}")
+        self.assertEqual(response.get_json()[0]["action"],
+                         "device.command")
+
+    def test_command_endpoint_degrades(self):
+        self._install_mrs100()
+        self.store._probe = FakeProbe()
+        self.store._clock = lambda: 100.0
+
+        response = self.client.post(
+            f"/_admin_/tuning/devices/{DEVICE_UUID}/commands/cover.open",
+            json={"channel": 0})
+        self.assertEqual(response.status_code, 200)
+        response = self.client.post(
+            f"/_admin_/tuning/devices/{DEVICE_UUID}/commands/cover.open",
+            json={"channel": 0})
+        self.assertEqual(response.status_code, 429)
+        self.assertIn("Retry-After", response.headers)
+
+        response = self.client.post(
+            f"/_admin_/tuning/devices/{DEVICE_UUID}/commands/unknown",
+            json={})
+        self.assertEqual(response.status_code, 400)
+
+        self._install_mrs100(online=False)
+        response = self.client.post(
+            f"/_admin_/tuning/devices/{DEVICE_UUID}/commands/cover.open",
+            json={"channel": 0})
+        self.assertEqual(response.status_code, 409)
+
+    def test_capture_endpoints(self):
+        manager = CaptureManager(str(Path(self.temporary.name) / "capture"))
+        patcher = patch.object(
+            tuning_blueprint, "get_capture_manager", lambda: manager)
+        patcher.start()
+        self.addCleanup(patcher.stop)
+
+        response = self.client.post(
+            "/_admin_/tuning/capture/start",
+            json={"uuid": DEVICE_UUID, "type": "mrs100"})
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.get_json()["active"])
+        self.assertEqual(
+            self.client.get("/_admin_/tuning/capture/status")
+            .get_json()["frames"], 0)
+
+        manager.record(DEVICE_UUID, "rx",
+                       f"/appliance/{DEVICE_UUID}/publish",
+                       {"header": {"namespace": "Appliance.Test",
+                                   "method": "PUSH"},
+                        "payload": {"value": 1}})
+        response = self.client.post(
+            "/_admin_/tuning/capture/draft", json={"type": "mrs100"})
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("schema_version: 2", response.get_json()["yaml"])
+
+        response = self.client.post("/_admin_/tuning/capture/stop")
+        self.assertFalse(response.get_json()["active"])
 
 
 if __name__ == "__main__":

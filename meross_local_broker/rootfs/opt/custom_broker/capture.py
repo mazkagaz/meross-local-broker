@@ -50,6 +50,11 @@ def _sanitize(value: Any) -> Any:
     return value
 
 
+def sanitize(value: Any) -> Any:
+    """Public wrapper for callers that return device data to the admin UI."""
+    return _sanitize(value)
+
+
 def _infer_field(value: Any) -> Dict[str, Any]:
     if isinstance(value, dict):
         return {
@@ -259,13 +264,14 @@ class CaptureManager:
         header = (
             "# Brouillon généré depuis une capture. Compléter les entités\n"
             "# puis déplacer le fichier dans /data/device_profiles.\n")
+        text = header + yaml.safe_dump(
+            draft, sort_keys=False, allow_unicode=True)
         with open(path, "w", encoding="utf-8") as handle:
-            handle.write(header)
-            yaml.safe_dump(draft, handle, sort_keys=False,
-                           allow_unicode=True)
+            handle.write(text)
         os.chmod(path, 0o600)
         return {
             "path": path,
+            "yaml": text,
             "namespaces": len(draft["payloads"]),
             "frames": session.frames,
         }

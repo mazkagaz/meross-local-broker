@@ -2,22 +2,51 @@
 """Unit tests for the tuning store (V1)."""
 from __future__ import annotations
 
+import json
 import stat
 import tempfile
 import unittest
+from datetime import datetime
 from pathlib import Path
+from types import SimpleNamespace
 from unittest.mock import patch
 
+from compat import OnlineStatus
 from profiles import ProfileCatalog
 from tuning import (
     MAX_YAML_BYTES,
     TuningConflict,
     TuningError,
     TuningNotFound,
+    TuningRateLimited,
     TuningStore,
+    TuningTimeout,
 )
 
 PROFILES = Path(__file__).with_name("device_profiles")
+UUID = "0123456789abcdef0123456789abcdef"
+
+
+class FakeProbe:
+    def __init__(self, result=None, error=None):
+        self.calls = []
+        self.sends = []
+        self.result = result or {
+            "ok": True, "method": "GETACK", "payload": {}}
+        self.error = error
+
+    def _invoke(self):
+        if self.error is not None:
+            raise self.error
+        return dict(self.result)
+
+    def read(self, uuid, user, namespace, payload, timeout):
+        self.calls.append((uuid, namespace, payload, timeout))
+        return self._invoke()
+
+    def send(self, uuid, user, method, namespace, payload, timeout):
+        self.sends.append((uuid, method, namespace, payload, timeout))
+        return self._invoke()
 
 
 def profile_text(profile_id: str, version: str = "test") -> str:
@@ -251,6 +280,292 @@ class TuningStoreTest(unittest.TestCase):
         with self.assertRaises(TuningError):
             self.store.save_override("test.profile", "profile: [\n")
         self.assertFalse((self.overrides / "test.profile.yaml").exists())
+
+    def _install_device(self, device_type="mss425", online=True,
+                        channels=(0, 1), abilities=(), subdevices=()):
+        device = SimpleNamespace(
+            uuid=UUID,
+            mac="AABBCCDDEEFF",
+            dev_name="Test device",
+            device_type=device_type,
+            sub_type=None,
+            online_status=(OnlineStatus.ONLINE if online
+                           else OnlineStatus.OFFLINE),
+            channels=[SimpleNamespace(channel_id=c) for c in channels],
+            child_subdevices=[
+                SimpleNamespace(sub_device_id=i, sub_device_type=t,
+                                sub_device_name=n)
+                for i, t, n in subdevices],
+            local_ip="192.168.1.10",
+            fmware_version="1.0.0",
+            hdware_version="1.0",
+            last_seen_time=datetime(2026, 11, 22, 10, 0, 0),
+            owner_user=SimpleNamespace(user_id=7, mqtt_key="secret"),
+        )
+        self.store._devices = lambda: [device]
+        self.store._ability = lambda uuid: SimpleNamespace(
+            ability_json=json.dumps(
+                {name: {} for name in abilities}))
+        self.store._statuses = lambda uuid: [SimpleNamespace(
+            channel=0, position=42, state=1,
+            updated_at=datetime(2026, 11, 22, 10, 1))]
+        self.store._configs = lambda uuid: []
+        self.store._adjusts = lambda uuid: []
+        return device
+
+    def test_device_state_reports_entities_and_cache(self):
+        self._install_device(abilities=["Appliance.Control.ToggleX"])
+        state = self.store.device_state(UUID)
+
+        self.assertEqual(state["profile"]["id"], "meross.mss425")
+        self.assertEqual(
+            {entity["key"] for entity in state["entities"]},
+            {"outlet_0", "outlet_1"})
+        self.assertEqual(state["device"]["channels"], [0, 1])
+        self.assertIn("Appliance.Control.ToggleX", state["ability"])
+        self.assertEqual(
+            state["cache"]["roller_shutter"]["status"][0]["position"], 42)
+        polling = {row["namespace"]: row for row in state["polling"]}
+        self.assertIn("GET", polling["Appliance.Control.ToggleX"]["methods"])
+
+        with self.assertRaises(TuningNotFound):
+            self.store.device_state("missing")
+
+    def test_simulate_extracts_values_for_all_payload_channels(self):
+        result = self.store.simulate(
+            "meross.mss425", "Appliance.Control.ToggleX", "PUSH",
+            {"togglex": [{"channel": 0, "onoff": 1},
+                         {"channel": 1, "onoff": 0}]})
+        self.assertTrue(result["known_namespace"])
+        self.assertEqual(result["applied"], 2)
+        self.assertEqual(result["entities"]["outlet_0"], {"onoff": 1})
+        self.assertEqual(result["entities"]["outlet_1"], {"onoff": 0})
+
+        result = self.store.simulate(
+            "meross.mrs100", "Appliance.RollerShutter.Position", "PUSH",
+            {"position": [{"channel": 0, "position": 42}]})
+        self.assertEqual(result["entities"]["cover"], {"position": 42})
+
+    def test_simulate_subdevice_template(self):
+        result = self.store.simulate(
+            "meross.msh300", "Appliance.Hub.Sensor.TempHum", "GETACK",
+            {"tempHum": [{"id": "sub1", "latestTemperature": 235}]},
+            subdevice={"id": "sub1", "type": "ms1"})
+        self.assertEqual(
+            result["subdevices"]["sub1"]["temperature"], {"value": 23.5})
+
+    def test_simulate_rejects_bad_requests(self):
+        with self.assertRaises(TuningNotFound):
+            self.store.simulate(
+                "missing.profile", "Appliance.X", "PUSH", {})
+        with self.assertRaises(TuningError):
+            self.store.simulate(
+                "meross.mrs100", "Appliance.RollerShutter.Position",
+                "GET", {})
+        with self.assertRaises(TuningError):
+            self.store.simulate(
+                "meross.msh300", "Appliance.Hub.Sensor.TempHum", "PUSH",
+                {"tempHum": []}, subdevice={"id": "s", "type": "zzz"})
+        with self.assertRaises(TuningError):
+            self.store.simulate(
+                "meross.mrs100", "Appliance.RollerShutter.Position",
+                "PUSH", ["not", "an", "object"])
+        with self.assertRaises(TuningError):
+            self.store.simulate(
+                "meross.mss425", "Appliance.Control.ToggleX", "PUSH",
+                {}, channels="0")
+
+        result = self.store.simulate(
+            "meross.mrs100", "Appliance.Unknown", "PUSH", {})
+        self.assertFalse(result["known_namespace"])
+        self.assertTrue(result["warnings"])
+
+        result = self.store.simulate(
+            "meross.mss425", "Appliance.Control.ToggleX", "PUSH",
+            {"togglex": [{"channel": 5, "onoff": 1}]}, channels=[0])
+        self.assertEqual(result["applied"], 0)
+        self.assertEqual(result["ignored"], 1)
+
+    def test_read_device_uses_profile_namespace_and_rate_limits(self):
+        self._install_device(abilities=["Appliance.Control.ToggleX"])
+        probe = FakeProbe()
+        self.store._probe = probe
+        clock = SimpleNamespace(now=100.0)
+        self.store._clock = lambda: clock.now
+
+        result = self.store.read_device(UUID, timeout=3)
+        self.assertEqual(result["profile_id"], "meross.mss425")
+        self.assertEqual(probe.calls[0][1], "Appliance.Control.ToggleX")
+        self.assertEqual(probe.calls[0][3], 3.0)
+
+        with self.assertRaises(TuningRateLimited) as caught:
+            self.store.read_device(UUID)
+        self.assertGreaterEqual(caught.exception.retry_after, 1)
+
+        clock.now += 5
+        self.store.read_device(UUID, namespace="Appliance.System.All")
+        self.assertEqual(probe.calls[1][1], "Appliance.System.All")
+
+    def _install_mrs100(self, online=True):
+        return self._install_device(
+            device_type="mrs100", channels=(0,), online=online,
+            abilities=["Appliance.RollerShutter.State"])
+
+    def test_command_catalog_exposes_typed_commands(self):
+        self._install_mrs100()
+        catalog = self.store.device_commands(UUID)
+        self.assertEqual(catalog["profile_id"], "meross.mrs100")
+        by_id = {row["id"]: row for row in catalog["commands"]}
+        position = by_id["cover.set_position"]
+        self.assertEqual(position["type"], "number")
+        self.assertEqual(position["channels"], [0])
+        self.assertEqual(position["payload_template"], {
+            "position": {"channel": "$channel", "position": "$value"}})
+        duration = by_id["open_duration.set_value"]
+        self.assertEqual(duration["min"], 10)
+        self.assertEqual(duration["max"], 120)
+        self.assertEqual(duration["value_scale"], 1000)
+        self.assertEqual(by_id["start_calibration.press"]["type"],
+                         "action")
+        self.assertIn("Appliance.RollerShutter.Position",
+                      catalog["namespaces"])
+
+    def test_command_requires_confirmation_and_executes_once(self):
+        self._install_mrs100()
+        probe = FakeProbe(result={
+            "ok": True, "method": "SETACK", "payload": {}})
+        self.store._probe = probe
+        clock = SimpleNamespace(now=100.0)
+        self.store._clock = lambda: clock.now
+
+        preview = self.store.execute_command(
+            UUID, "cover.set_position", channel=0, value=42)
+        self.assertTrue(preview["requires_confirmation"])
+        self.assertEqual(preview["command"]["payload"],
+                         {"position": {"channel": 0, "position": 42}})
+        self.assertEqual(probe.sends, [])
+
+        result = self.store.execute_command(
+            UUID, "cover.set_position", confirm=True,
+            token=preview["token"])
+        self.assertTrue(result["ok"])
+        self.assertEqual(probe.sends[0][1], "SET")
+        self.assertEqual(probe.sends[0][2],
+                         "Appliance.RollerShutter.Position")
+        entries = self.store.audit_entries()
+        self.assertEqual(entries[0]["action"], "device.command")
+        self.assertEqual(entries[0]["device_uuid"], UUID)
+        self.assertTrue(entries[0]["ok"])
+        self.assertIn("before", entries[0])
+        self.assertIn("after", entries[0])
+
+        with self.assertRaises(TuningConflict):
+            self.store.execute_command(
+                UUID, "cover.set_position", confirm=True,
+                token=preview["token"])
+
+    def test_command_tokens_expire_and_bind_the_payload(self):
+        self._install_mrs100()
+        probe = FakeProbe()
+        self.store._probe = probe
+        clock = SimpleNamespace(now=100.0)
+        self.store._clock = lambda: clock.now
+        preview = self.store.execute_command(
+            UUID, "open_duration.set_value", channel=0, value=12.5)
+        self.assertEqual(preview["command"]["payload"],
+                         {"config": {"channel": 0, "signalOpen": 12500}})
+
+        clock.now += 2
+        second = self.store.execute_command(
+            UUID, "cover.open", channel=0)
+        with self.assertRaises(TuningConflict):
+            self.store.execute_command(
+                UUID, "cover.set_position", confirm=True,
+                token=second["token"])
+
+        clock.now += 61
+        with self.assertRaises(TuningConflict):
+            self.store.execute_command(
+                UUID, "cover.open", confirm=True, token=second["token"])
+        self.assertEqual(probe.sends, [])
+
+    def test_command_validates_target_and_values(self):
+        self._install_mrs100()
+        self.store._probe = FakeProbe()
+        with self.assertRaises(TuningError):
+            self.store.execute_command(
+                UUID, "open_duration.set_value", channel=0, value=5)
+        with self.assertRaises(TuningError):
+            self.store.execute_command(
+                UUID, "cover.open", channel=3)
+        with self.assertRaises(TuningError):
+            self.store.execute_command(UUID, "missing.command")
+        with self.assertRaises(TuningError):
+            self.store.execute_command(
+                UUID, "cover.set_position", channel=0, value="42")
+
+        self._install_mrs100(online=False)
+        with self.assertRaises(TuningConflict):
+            self.store.execute_command(UUID, "cover.open", channel=0)
+        with self.assertRaises(TuningNotFound):
+            self.store.execute_command(
+                "missing", "cover.open", channel=0)
+
+    def test_command_degrades_on_timeout_and_busy(self):
+        self._install_mrs100()
+        clock = SimpleNamespace(now=100.0)
+        self.store._clock = lambda: clock.now
+        preview = self.store.execute_command(
+            UUID, "cover.open", channel=0)
+        self.store._probe = FakeProbe(error=TuningTimeout("no answer"))
+        with self.assertRaises(TuningTimeout):
+            self.store.execute_command(
+                UUID, "cover.open", confirm=True,
+                token=preview["token"])
+        entries = self.store.audit_entries()
+        self.assertFalse(entries[0]["ok"])
+        self.assertIn("no answer", entries[0]["error"])
+
+        clock.now += 5
+        self.store._probe = FakeProbe()
+        preview = self.store.execute_command(UUID, "cover.open", channel=0)
+        self.store._busy_devices.add(UUID)
+        try:
+            with self.assertRaises(TuningConflict):
+                self.store.execute_command(
+                    UUID, "cover.open", confirm=True,
+                    token=preview["token"])
+        finally:
+            self.store._busy_devices.discard(UUID)
+
+    def test_read_device_returns_typed_values(self):
+        self._install_mrs100()
+        self.store._probe = FakeProbe(result={
+            "ok": True, "namespace": "Appliance.RollerShutter.Position",
+            "method": "GETACK",
+            "payload": {"position": [{"channel": 0, "position": 42}]}})
+        result = self.store.read_device(
+            UUID, namespace="Appliance.RollerShutter.Position")
+        self.assertEqual(result["typed"]["entities"]["cover"],
+                         {"position": 42})
+
+    def test_read_device_degrades_explicitly(self):
+        self._install_device(abilities=["Appliance.Control.ToggleX"])
+        self.store._probe = FakeProbe(error=TuningTimeout("no answer"))
+        with self.assertRaises(TuningTimeout):
+            self.store.read_device(UUID)
+
+        self._install_device(online=False,
+                             abilities=["Appliance.Control.ToggleX"])
+        with self.assertRaises(TuningConflict):
+            self.store.read_device(UUID)
+
+        self._install_device(abilities=["Appliance.Control.ToggleX"])
+        with self.assertRaises(TuningError):
+            self.store.read_device(UUID, namespace="Appliance.Unknown")
+
+        with self.assertRaises(TuningNotFound):
+            self.store.read_device("missing")
 
 
 if __name__ == "__main__":
