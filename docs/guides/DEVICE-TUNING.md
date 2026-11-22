@@ -103,3 +103,8 @@ pour ce modèle.
 Le panneau principal (liste **Paired devices**, mode avancé) affiche aussi la
 version du profil appliqué et un badge **Custom** lorsque le profil vient de
 `/data/device_profiles`.
+
+## Voir aussi
+
+- [Ajouter une fonctionnalité sans coder — exemple MRS100](OVERRIDE-MRS100-MOVEMENT.md) :
+  capture, surcharge et validation d’un capteur `Movement`.

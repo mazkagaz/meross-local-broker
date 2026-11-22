@@ -170,6 +170,9 @@ stable.
 3. Tester sur l’appareil (entités, commandes, polling).
 4. Activer en surcharge locale, puis proposer une PR pour le catalogue livré.
 
+Exemple complet, de la capture à la surcharge validée :
+[Ajouter une fonctionnalité sans coder — exemple MRS100](../guides/OVERRIDE-MRS100-MOVEMENT.md).
+
 ## Références de développement
 
 Les profils et les trames dorées s'appuient sur

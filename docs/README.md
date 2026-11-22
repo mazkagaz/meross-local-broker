@@ -7,6 +7,7 @@
 - `design/` — plans de lots, archives de conception et guides d’implémentation.
 - `testing/` — stratégie, scénarios fonctionnels et matrice de traçabilité.
 - `operations/` — build, publication et procédures d’exploitation.
+- `guides/` — guides utilisateur : tuning, surcharge et exemples pas à pas.
 
 Les documents de conception peuvent évoluer ; les fichiers de `specs/` font foi
 pour les formats et les contrats.
@@ -34,6 +35,11 @@ pour les formats et les contrats.
 - [D4 — Surcharges, capture, rechargement](design/D4-GUIDE.md)
 - [Page de tuning des appareils — plan V1 → V2](design/TUNING-PAGE.md)
 - [Archive du patch MRS100](design/MRS100_PATCH.md)
+
+### Guides
+
+- [Tuning des appareils](guides/DEVICE-TUNING.md)
+- [Ajouter une fonctionnalité sans coder — exemple MRS100](guides/OVERRIDE-MRS100-MOVEMENT.md)
 
 ### Tests
 
