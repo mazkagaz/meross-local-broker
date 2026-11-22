@@ -18,6 +18,16 @@ declare const require: {
   };
 };
 
+// Karma does not load assets/env.js, so provide the runtime configuration
+// that environment.ts expects before any spec is loaded.
+(window as any).__env = {
+  production: false,
+  version: 'test',
+  defaultLanguage: 'en-US',
+  supportedLanguages: ['en-US'],
+  backend: '',
+};
+
 // First, initialize the Angular testing environment.
 getTestBed().initTestEnvironment(BrowserDynamicTestingModule, platformBrowserDynamicTesting());
 // Then we find all the tests.

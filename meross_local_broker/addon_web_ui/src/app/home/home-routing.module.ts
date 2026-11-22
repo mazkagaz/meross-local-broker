@@ -24,6 +24,10 @@ const routes: Routes = [
       component: SetupComponent,
       data: { title: marker('Pair devices'), section: 'pair-devices' },
     },
+    {
+      path: 'tuning',
+      loadChildren: () => import('../tuning/tuning.module').then((module) => module.TuningModule),
+    },
   ]),
 ];
 

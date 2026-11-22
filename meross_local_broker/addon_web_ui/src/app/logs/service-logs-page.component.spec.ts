@@ -44,7 +44,7 @@ describe('ServiceLogsPageComponent', () => {
         declarations: [ServiceLogsPageComponent],
         providers: [
           { provide: ServiceStore, useValue: store },
-          { provide: MatSnackBar, useValue: { open: () => undefined } },
+          { provide: MatSnackBar, useValue: { open: (): void => undefined } },
         ],
       }).compileComponents();
     })
