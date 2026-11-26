@@ -8,7 +8,7 @@ set -euo pipefail
 
 ROOT=$(cd "$(dirname "$0")/../.." && pwd)
 BASE_IMAGE=${BASE_IMAGE:-ghcr.io/mazkagaz/amd64-meross_local_broker:1.4.8}
-SUPERVISOR_IMAGE=${SUPERVISOR_IMAGE:-ghcr.io/home-assistant/amd64-hassio-supervisor:latest}
+SUPERVISOR_IMAGE=${SUPERVISOR_IMAGE:-ghcr.io/home-assistant/amd64-hassio-supervisor:2026.11.1}
 WORK=$(mktemp -d)
 ADDON=meross_broker_ci
 SUPERVISOR=hassio_supervisor_ci
@@ -71,16 +71,11 @@ schema:
   mqtt_integrity_mode: "list(observe|enforce)"
 YAML
 
-cat > "$WORK/data/apps/local/$ADDON/Dockerfile" <<'DOCKERFILE'
-ARG BUILD_FROM
-FROM ${BUILD_FROM}
+cat > "$WORK/data/apps/local/$ADDON/Dockerfile" <<DOCKERFILE
+ARG BUILD_FROM=${BASE_IMAGE}
+FROM \${BUILD_FROM}
 COPY rootfs/ /
 DOCKERFILE
-
-cat > "$WORK/data/apps/local/$ADDON/build.yaml" <<YAML
-build_from:
-  amd64: ${BASE_IMAGE}
-YAML
 
 docker pull "$SUPERVISOR_IMAGE" >/dev/null
 docker pull "$BASE_IMAGE" >/dev/null
