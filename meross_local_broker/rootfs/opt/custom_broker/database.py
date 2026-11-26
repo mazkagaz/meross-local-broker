@@ -3,8 +3,7 @@
 import os
 
 from sqlalchemy import create_engine, text
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import scoped_session, sessionmaker
+from sqlalchemy.orm import declarative_base, scoped_session, sessionmaker
 
 from constants import _DB_PATH
 
@@ -23,8 +22,9 @@ Base.query = db_session.query_property()
 
 
 def add_password_upgraded_column():
-    engine.execute(text('ALTER TABLE users ADD password_upgraded Boolean DEFAULT 1'))
-    engine.execute(text('UPDATE users SET password_upgraded=0'))
+    with engine.begin() as conn:
+        conn.execute(text('ALTER TABLE users ADD password_upgraded Boolean DEFAULT 1'))
+        conn.execute(text('UPDATE users SET password_upgraded=0'))
 
 
 def migrate_user_tokens():
@@ -33,9 +33,12 @@ def migrate_user_tokens():
     Sessions are now stored as SHA-256 hashes with expiry metadata; old rows
     cannot be reused and must not survive the migration.
     """
-    columns = {row[1] for row in engine.execute(text('SELECT * FROM pragma_table_info("user_tokens")'))}
-    if columns and 'token_hash' not in columns:
-        engine.execute(text('DROP TABLE IF EXISTS user_tokens'))
+    with engine.begin() as conn:
+        columns = {row[1] for row in conn.execute(text('SELECT * FROM pragma_table_info("user_tokens")'))}
+        replace_tokens = bool(columns and 'token_hash' not in columns)
+        if replace_tokens:
+            conn.execute(text('DROP TABLE IF EXISTS user_tokens'))
+    if replace_tokens:
         from model.db_models import UserToken
         UserToken.__table__.create(bind=engine, checkfirst=True)
 
@@ -50,6 +53,8 @@ def init_db():
 
     # Upgrade process.
     # Add the user.password_upgraded column
-    results = engine.execute(text('SELECT * FROM pragma_table_info("users") WHERE name = "password_upgraded"'))
-    if len(list(results))==0:
+    with engine.begin() as conn:
+        results = conn.execute(text('SELECT * FROM pragma_table_info("users") WHERE name = "password_upgraded"'))
+        has_password_upgraded = len(list(results)) > 0
+    if not has_password_upgraded:
         add_password_upgraded_column()

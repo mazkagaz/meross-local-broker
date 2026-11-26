@@ -145,17 +145,19 @@ class HttpApiCompatibilityTest(unittest.TestCase):
     def test_legacy_token_table_is_replaced_without_keeping_sessions(self):
         from sqlalchemy import text
         engine = self.database.engine
-        engine.execute(text('DROP TABLE user_tokens'))
-        engine.execute(text('CREATE TABLE user_tokens (token VARCHAR(32) PRIMARY KEY, user_id VARCHAR)'))
-        engine.execute(text("INSERT INTO user_tokens VALUES ('legacy-token', '1')"))
+        with engine.begin() as conn:
+            conn.execute(text('DROP TABLE user_tokens'))
+            conn.execute(text('CREATE TABLE user_tokens (token VARCHAR(32) PRIMARY KEY, user_id VARCHAR)'))
+            conn.execute(text("INSERT INTO user_tokens VALUES ('legacy-token', '1')"))
 
         self.database.init_db()
 
-        columns = {row[1] for row in engine.execute(
-            text('SELECT * FROM pragma_table_info("user_tokens")'))}
-        self.assertIn('token_hash', columns)
-        self.assertNotIn('token', columns)
-        self.assertEqual(engine.execute(text('SELECT COUNT(*) FROM user_tokens')).scalar(), 0)
+        with engine.begin() as conn:
+            columns = {row[1] for row in conn.execute(
+                text('SELECT * FROM pragma_table_info("user_tokens")'))}
+            self.assertIn('token_hash', columns)
+            self.assertNotIn('token', columns)
+            self.assertEqual(conn.execute(text('SELECT COUNT(*) FROM user_tokens')).scalar(), 0)
 
     def test_tokens_are_stored_hashed(self):
         from model.db_models import UserToken
