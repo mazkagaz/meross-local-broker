@@ -48,6 +48,7 @@ pour les formats et les contrats.
 - [Stratégie et exécution](testing/TESTING.md)
 - [Scénarios fonctionnels F1–F8](testing/FUNCTIONAL-TESTS.md)
 - [Matrice de traçabilité](testing/TRACEABILITY.md)
+- [Environnement de test Docker (HA Container + broker)](../tests/docker/README.md)
 
 ### Exploitation
 

@@ -94,6 +94,16 @@ Update: `docker compose pull && docker compose up -d`. Pin a precise version in
 | Device not paired                 | host IP, ports 2001/2004, `docker compose ps`         |
 | No mDNS                           | expected in bridge mode; configure manually           |
 
+## Tests
+
+- `tools/test_standalone_docker.sh`: standalone container smoke test
+  (HTTPS, admin, MQTT/TLS), run by CI.
+- `tests/docker/run.sh`: end-to-end test with a real Home Assistant Container
+  (local account, config flow, loaded entry, broker events).
+
+Required tools, variables and test accounts:
+[tests/docker/README.md](../../tests/docker/README.md).
+
 ## Security
 
 - The admin has no authentication: keep `ADMIN_BIND=127.0.0.1` or put an
