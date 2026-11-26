@@ -1,3 +1,16 @@
+# Notes de version — 1.6.0
+
+## 1.6.0 — Web UI Angular 22
+
+- Web UI migrée d'Angular 11 à **Angular 22.3** et Angular Material 22.
+- Material MDC, builder `application`, layouts CSS sans flex-layout, nouvelle
+  librairie QR.
+- Outillage dev legacy supprimé : Protractor, TSLint/codelyzer, Stylelint,
+  HTMLHint, Hads et ngx-rocket.
+- `write:env` remplacé par un script local sans dépendance.
+- Audit npm à **0 vulnérabilité**.
+- 61 specs Karma validées ; profil MSL610 et API broker inchangés.
+
 # Notes de version — 1.5.2
 
 ## 1.5.2 — support MSL610
