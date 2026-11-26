@@ -33,7 +33,7 @@ trap cleanup EXIT
     echo "missing $RUN_DIR (run: sudo mkdir -p $RUN_DIR/core)" >&2
     exit 1
 }
-mkdir -p "$WORK/data/apps/local/$ADDON"
+mkdir -p "$WORK/data/apps/local/$ADDON" "$WORK/addons/local/$ADDON"
 cp -a "$ROOT/meross_local_broker/rootfs" "$WORK/data/apps/local/$ADDON/rootfs"
 
 cat > "$WORK/data/apps/local/$ADDON/config.yaml" <<'YAML'
@@ -77,8 +77,19 @@ FROM \${BUILD_FROM}
 COPY rootfs/ /
 DOCKERFILE
 
+cp -a "$WORK/data/apps/local/$ADDON/." "$WORK/addons/local/$ADDON/"
 docker pull "$SUPERVISOR_IMAGE" >/dev/null
 docker pull "$BASE_IMAGE" >/dev/null
+
+# Supervisor builds add-ons with docker:<host version>-cli. Docker Hub does not
+# publish every patch tag; alias the major tag locally so it is not pulled.
+DOCKER_VERSION=$(docker version --format '{{.Server.Version}}' | sed 's/-.*//')
+DOCKER_CLI_TAG="docker:${DOCKER_VERSION}-cli"
+if ! docker image inspect "$DOCKER_CLI_TAG" >/dev/null 2>&1; then
+    DOCKER_MAJOR=${DOCKER_VERSION%%.*}
+    docker pull "docker:${DOCKER_MAJOR}-cli" >/dev/null
+    docker tag "docker:${DOCKER_MAJOR}-cli" "$DOCKER_CLI_TAG"
+fi
 
 docker rm -f "$SUPERVISOR" >/dev/null 2>&1 || true
 docker network rm hassio >/dev/null 2>&1 || true
@@ -90,6 +101,7 @@ docker create --name "$SUPERVISOR" \
     -v /run/dbus:/run/dbus:ro \
     -v "$RUN_DIR:/run/os:rw" \
     -v "$WORK/data:/data:rw,slave" \
+    -v "$WORK/addons:/addons:rw" \
     -v /etc/machine-id:/etc/machine-id:ro \
     -e SUPERVISOR_SHARE="$WORK/data" \
     -e SUPERVISOR_NAME="$SUPERVISOR" \
