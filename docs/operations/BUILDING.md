@@ -3,7 +3,7 @@
 ## Local image (amd64)
 
 The Angular Web UI is built by CI before the Docker image; build it locally
-first if you want the ingress panel. Use **Node 20**, as CI does:
+first if you want the ingress panel. Use **Node 22**, as CI does:
 
 ```bash
 cd meross_local_broker/addon_web_ui
