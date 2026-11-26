@@ -1,0 +1,164 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+  pull_request:
+    branches:
+      - main
+      - dev
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  MEROSS_CLOUD_REPO: ${{ github.workspace }}/cloud-src
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  tests:
+    name: Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Check out the integration profile engine (pinned)
+        uses: actions/checkout@v7
+        with:
+          repository: mazkagaz/meross-local-cloud
+          ref: 5ce5895c8282cf27ed7387529ea73fca86afdb5a
+          path: cloud-src
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: |
+            meross_local_broker/rootfs/opt/custom_broker/requirements_ci.txt
+
+      - name: Install test dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install \
+            -r meross_local_broker/rootfs/opt/custom_broker/requirements_ci.txt
+
+      - name: Check the shared profile engine
+        run: |
+          python tools/sync_profile_engine.py \
+            --source "$MEROSS_CLOUD_REPO" --check
+
+      - name: Check documentation translations
+        run: python tools/check_docs_translations.py
+
+      - name: Lint the bundled profiles
+        working-directory: meross_local_broker/rootfs/opt/custom_broker
+        run: python profile_lint.py
+
+      - name: Run the broker test suite
+        working-directory: meross_local_broker/rootfs/opt/custom_broker
+        run: |
+          python -m pytest -q \
+            --junitxml="${GITHUB_WORKSPACE}/reports/broker.xml"
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: broker-reports
+          path: reports/
+          if-no-files-found: ignore
+
+  addon_lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - name: Run Home Assistant Add-on Lint
+        uses: frenck/action-addon-linter@v2.21.2
+        with:
+          path: "./meross_local_broker"
+
+  standalone:
+    name: Standalone
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run the standalone container
+        run: bash tools/test_standalone_docker.sh
+      - name: Container logs on failure
+        if: failure()
+        run: docker logs meross-standalone-smoke 2>&1 | tail -100
+
+  e2e:
+    name: E2E Docker
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check out the integration
+        uses: actions/checkout@v4
+        with:
+          repository: mazkagaz/meross-local-cloud
+          # Pinned to the integration PR until it is merged, then switch to dev.
+          ref: feature/docker-defaults
+          path: cloud-src
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install the HA test client
+        run: python -m pip install --quiet aiohttp
+
+      - name: Run the Docker end-to-end test
+        env:
+          CLOUD_ROOT: ${{ github.workspace }}/cloud-src
+          HA_PYTHON: python
+        run: bash tests/docker/run.sh
+
+      - name: Container state on failure
+        if: failure()
+        run: docker ps -a
+
+  supervisor:
+    name: Supervisor
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run the add-on under a real Supervisor
+        run: bash tests/supervisor/run.sh
+      - name: Container state on failure
+        if: failure()
+        run: |
+          docker ps -a
+          docker logs --tail 120 hassio_supervisor_ci 2>&1 || true
+          docker logs --tail 120 addon_local_meross_broker_ci 2>&1 || true
+
+  gate:
+    name: CI
+    needs:
+      - tests
+      - addon_lint
+      - standalone
+      - e2e
+      - supervisor
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require every job to succeed
+        run: |
+          if ${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') || contains(needs.*.result, 'skipped') }}; then
+            echo "One or more CI jobs did not succeed."
+            exit 1
+          fi
