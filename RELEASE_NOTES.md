@@ -11,7 +11,7 @@
   IPv4 de l'hôte avec `TLS_SAN_AUTO` ; ports MQTT 2001 et HTTPS 2004.
 - Bundle `deploy/` : compose en réseau hôte, `.env.example`, `install.sh` qui
   prépare les données, démarre le broker et affiche les valeurs à saisir.
-- Intégration : les ports 2004/2001 sont préremplis dans le formulaire manuel.
+- Intégration **4.0.4+** : les ports 2004/2001 sont préremplis dans le formulaire manuel.
 - Tests : helpers de mode autonome et priorité des options ; **209 tests**
   (1 ignoré), lint et parité moteur inchangés.
 - Parcours add-on (HA OS/Supervised) inchangé ; l'add-on reste recommandé.

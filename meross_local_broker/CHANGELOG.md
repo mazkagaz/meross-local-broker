@@ -8,7 +8,7 @@
   (`TLS_SAN_EXTRA`, `TLS_SAN_AUTO`) ; ports MQTT/HTTPS fixes 2001/2004.
 - Bundle `deploy/` : `docker-compose.yml` (réseau hôte), `.env.example`,
   `install.sh` (volume, `.env`, attente du broker, valeurs d'intégration).
-- Intégration : ports `2004`/`2001` préremplis dans le formulaire manuel.
+- Intégration **4.0.4+** : ports `2004`/`2001` préremplis dans le formulaire manuel.
 - HEALTHCHECK sur `/ca.crt` ; tests des helpers autonomes.
 - Parcours add-on inchangé.
 
