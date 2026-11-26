@@ -98,11 +98,21 @@ jobs:
 
   standalone:
     name: Standalone
+    needs: image
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v7
+      - name: Download the current image
+        uses: actions/download-artifact@v7
+        with:
+          name: broker-image
+          path: ${{ runner.temp }}
+      - name: Load the current image
+        run: gunzip -c "$RUNNER_TEMP/broker-image.tar.gz" | docker load
       - name: Run the standalone container
+        env:
+          IMAGE: meross-local-broker:ci
         run: bash tools/test_standalone_docker.sh
       - name: Container logs on failure
         if: failure()
@@ -110,10 +120,18 @@ jobs:
 
   e2e:
     name: E2E Docker
+    needs: image
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@v7
+      - name: Download the current image
+        uses: actions/download-artifact@v7
+        with:
+          name: broker-image
+          path: ${{ runner.temp }}
+      - name: Load the current image
+        run: gunzip -c "$RUNNER_TEMP/broker-image.tar.gz" | docker load
 
       - name: Check out the integration
         uses: actions/checkout@v7
@@ -133,6 +151,7 @@ jobs:
         env:
           CLOUD_ROOT: ${{ github.workspace }}/cloud-src
           HA_PYTHON: python
+          BROKER_IMAGE: meross-local-broker:ci
         run: bash tests/docker/run.sh
 
       - name: Container state on failure
@@ -141,13 +160,23 @@ jobs:
 
   supervisor:
     name: Supervisor
+    needs: image
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v7
+      - name: Download the current image
+        uses: actions/download-artifact@v7
+        with:
+          name: broker-image
+          path: ${{ runner.temp }}
+      - name: Load the current image
+        run: gunzip -c "$RUNNER_TEMP/broker-image.tar.gz" | docker load
       - name: Prepare the Supervisor run directory
         run: sudo mkdir -p /run/supervisor/core
       - name: Run the add-on under a real Supervisor
+        env:
+          BASE_IMAGE: meross-local-broker:ci
         run: bash tests/supervisor/run.sh
       - name: Container state on failure
         if: failure()
@@ -181,6 +210,47 @@ jobs:
         run: npm run build
         env:
           NODE_OPTIONS: --openssl-legacy-provider
+      - name: Verify Web UI output layout
+        run: |
+          test -f ../rootfs/var/www/index.html
+          test -f ../rootfs/var/www/assets/env.js
+          test ! -d ../rootfs/var/www/browser
+      - name: Upload Web UI build
+        uses: actions/upload-artifact@v7
+        with:
+          name: webui-dist
+          path: meross_local_broker/rootfs/var/www
+          if-no-files-found: error
+
+  image:
+    name: Image
+    needs: webui
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - name: Download Web UI build
+        uses: actions/download-artifact@v7
+        with:
+          name: webui-dist
+          path: meross_local_broker/rootfs/var/www
+      - name: Build the current image
+        run: |
+          docker build \
+            --build-arg BUILD_FROM=ghcr.io/home-assistant/amd64-base-debian:bookworm \
+            --build-arg BUILD_ARCH=amd64 \
+            -t meross-local-broker:ci \
+            meross_local_broker
+      - name: Smoke-test the current image
+        run: IMAGE=meross-local-broker:ci bash tools/test_image_startup.sh
+      - name: Save the image for downstream jobs
+        run: docker save meross-local-broker:ci | gzip -1 > "$RUNNER_TEMP/broker-image.tar.gz"
+      - name: Upload the image artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: broker-image
+          path: ${{ runner.temp }}/broker-image.tar.gz
+          if-no-files-found: error
 
   gate:
     name: CI
@@ -191,6 +261,7 @@ jobs:
       - e2e
       - supervisor
       - webui
+      - image
     if: always()
     runs-on: ubuntu-latest
     steps:

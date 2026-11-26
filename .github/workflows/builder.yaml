@@ -75,6 +75,13 @@ jobs:
           npm i
           npm run-script build
 
+      - name: Verify Web UI output layout
+        working-directory: meross_local_broker/addon_web_ui
+        run: |
+          test -f ../rootfs/var/www/index.html
+          test -f ../rootfs/var/www/assets/env.js
+          test ! -d ../rootfs/var/www/browser
+
       - name: Build ${{ matrix.arch }} image
         uses: home-assistant/builder/actions/build-image@2026.09.0
         with:

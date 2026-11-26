@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "ng": "ng",
-    "build": "npm run write:env -s && ng build --configuration production --base-href ./ --output-path=../rootfs/var/www",
+    "build": "npm run write:env -s && ng build --configuration production --base-href ./",
     "start": "npm run write:env -s && ng serve",
     "test": "npm run write:env -s && ng test",
     "test:ci": "npm run write:env -s && ng test --configuration=ci",
