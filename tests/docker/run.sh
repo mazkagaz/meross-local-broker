@@ -43,7 +43,7 @@ docker image inspect "$HA_IMAGE" >/dev/null 2>&1 || docker pull "$HA_IMAGE"
 mkdir -p "$HA_CONFIG/custom_components" "$BROKER_DATA"
 cp -a "$CLOUD_ROOT/custom_components/meross_local_cloud" \
     "$HA_CONFIG/custom_components/"
-printf 'default_config:\nhomeassistant:\n  name: Test\n' \
+printf 'default_config:\nhomeassistant:\n  name: Test\nlogger:\n  default: warning\n  logs:\n    custom_components.meross_local_cloud: debug\n' \
     > "$HA_CONFIG/configuration.yaml"
 
 docker network create "$NET" >/dev/null 2>&1 || true
@@ -61,7 +61,7 @@ docker run -d --name "$BROKER" --network "$NET" \
     -e advertise=false \
     -e ADMIN_BIND=0.0.0.0 \
     -e ADMIN_PORT=2003 \
-    -e ADMIN_ALLOW_CIDR=172.16.0.0/12 \
+    -e ADMIN_ALLOW_CIDR=0.0.0.0/0 \
     -e TLS_SAN_EXTRA=127.0.0.1 \
     -e TLS_SAN_AUTO=0 \
     "$BROKER_IMAGE" >/dev/null

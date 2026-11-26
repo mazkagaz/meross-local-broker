@@ -131,7 +131,49 @@ async def main() -> int:
             if entry and entry.get("state") in ("loaded", "setup_error"):
                 break
 
-        return 0 if entry and entry.get("state") == "loaded" else 1
+        if not entry or entry.get("state") != "loaded":
+            return 1
+
+        if os.environ.get("EXPECT_DEVICE") != "1":
+            return 0
+
+        cover_id = None
+        for _ in range(30):
+            async with session.get(BASE + "/api/states", headers=headers) as resp:
+                states = await resp.json()
+            covers = [s for s in states if s["entity_id"].startswith("cover.")]
+            if covers:
+                cover_id = covers[0]["entity_id"]
+                break
+            await asyncio.sleep(2)
+
+        if cover_id is None:
+            print("no cover entity created; states:",
+                  [s["entity_id"] for s in states][:40])
+            return 1
+        print("cover entity:", cover_id)
+
+        async with session.post(
+            BASE + "/api/services/cover/set_cover_position",
+            json={"entity_id": cover_id, "position": 50},
+            headers=headers,
+        ) as resp:
+            print("service call:", resp.status)
+
+        position = None
+        for _ in range(30):
+            async with session.get(BASE + "/api/states", headers=headers) as resp:
+                states = await resp.json()
+            cover = next(
+                (s for s in states if s["entity_id"] == cover_id), None)
+            if cover:
+                position = cover.get("attributes", {}).get("current_position")
+                print("cover position:", position, "| state:", cover.get("state"))
+                if position == 50:
+                    break
+            await asyncio.sleep(2)
+
+        return 0 if position == 50 else 1
 
 
 if __name__ == "__main__":
