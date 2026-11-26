@@ -49,7 +49,9 @@ on push and pull request.
 Container, creates the local account, adds the integration through its config
 flow and checks that the entry loads and that the broker records the login.
 See `tests/docker/README.md` for the required tools, environment variables,
-test accounts, credentials and troubleshooting.
+test accounts, credentials and troubleshooting. The CI workflow
+`.github/workflows/e2e.yaml` runs it on push and pull requests against `main`
+and `dev`.
 
 ## Hardware test checklist
 

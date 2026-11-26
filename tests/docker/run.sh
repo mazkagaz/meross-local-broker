@@ -86,8 +86,14 @@ for _ in $(seq 1 90); do
 done
 curl -fsS "$HA_URL/manifest.json" >/dev/null
 
-HA_URL="$HA_URL" BROKER_HOST=127.0.0.1 "$HA_PYTHON" \
-    "$ROOT/tests/docker/ha_test.py"
+if ! HA_URL="$HA_URL" BROKER_HOST=127.0.0.1 "$HA_PYTHON" \
+    "$ROOT/tests/docker/ha_test.py"; then
+    echo "E2E test failed; Home Assistant logs:" >&2
+    docker logs "$HA" 2>&1 | tail -100 >&2
+    echo "Broker logs:" >&2
+    docker logs "$BROKER" 2>&1 | tail -60 >&2
+    exit 1
+fi
 
 if docker logs "$HA" 2>&1 | grep -q "Detected blocking call.*meross_local_cloud"; then
     echo "HA detected a blocking call in the integration:" >&2

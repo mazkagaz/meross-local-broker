@@ -71,6 +71,13 @@ donc `127.0.0.1:2004` et le test ne dépend pas du forwarding bridge de l'hôte.
 
 Ces identifiants sont réservés aux tests et ne doivent pas être réutilisés.
 
+## CI
+
+`.github/workflows/e2e.yaml` exécute ce harness sur les push/PR vers `main` et
+`dev`. Il récupère `mazkagaz/meross-local-cloud` à la référence indiquée dans le
+workflow (`feature/docker-defaults` tant que la PR d'intégration n'est pas
+fusionnée, puis `dev`).
+
 ## Limites
 
 - Aucun appareil Meross : le test valide le login, le catalogue, le démarrage
