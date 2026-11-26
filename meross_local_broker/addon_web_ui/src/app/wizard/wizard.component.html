@@ -52,15 +52,20 @@ Upstream: https://github.com/albertogeniola/ha-meross-local-broker (Apache-2.0).
             matStepperNext
           >
             <mat-icon>
-              <mat-spinner *ngIf="!loginVerified" diameter="20"></mat-spinner>
+              @if (!loginVerified) {
+              <mat-spinner diameter="20"></mat-spinner>
+              }
               {{ loginVerified ? 'done' : '' }}
             </mat-icon>
-            <span *ngIf="!loginVerified">Waiting for login...</span>
-            <span *ngIf="loginVerified">Login verified &#8594;</span>
+            @if (!loginVerified) {
+            <span>Waiting for login...</span>
+            } @if (loginVerified) {
+            <span>Login verified &#8594;</span>
+            }
           </button>
-          <button *ngIf="!loginVerified" mat-button color="accent" matStepperNext>
-            or skip login verification &#8594;
-          </button>
+          @if (!loginVerified) {
+          <button mat-button color="accent" matStepperNext>or skip login verification &#8594;</button>
+          }
         </div>
       </div>
     </mat-step>

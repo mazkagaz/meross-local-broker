@@ -2,7 +2,7 @@
 Modified or added for the MRS100 fork of ha-meross-local-broker (2026-11).
 Upstream: https://github.com/albertogeniola/ha-meross-local-broker (Apache-2.0).
 */
-@import "src/theme/theme-variables";
+@use "src/theme/theme-variables" as *;
 
 .navbar {
   position: fixed;
@@ -10,6 +10,10 @@ Upstream: https://github.com/albertogeniola/ha-meross-local-broker (Apache-2.0).
   left: 0;
   right: 0;
   z-index: 1;
+}
+
+.toolbar-spacer {
+  flex: 1 1 auto;
 }
 
 .brand {

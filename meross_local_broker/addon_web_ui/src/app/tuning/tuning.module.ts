@@ -2,7 +2,6 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { FlexLayoutModule } from '@angular/flex-layout';
 
 import { MaterialModule } from '@app/material.module';
 import { ConfirmDialogComponent } from './confirm-dialog.component';
@@ -12,6 +11,6 @@ import { YamlEditorComponent } from './yaml-editor.component';
 
 @NgModule({
   declarations: [TuningComponent, YamlEditorComponent, ConfirmDialogComponent],
-  imports: [CommonModule, FormsModule, FlexLayoutModule, MaterialModule, TuningRoutingModule],
+  imports: [CommonModule, FormsModule, MaterialModule, TuningRoutingModule],
 })
 export class TuningModule {}

@@ -1,18 +1,22 @@
 // Modified or added for the MRS100 fork of ha-meross-local-broker (2026-11).
 // Upstream: https://github.com/albertogeniola/ha-meross-local-broker (Apache-2.0).
-import { Component, AfterViewInit, ViewChild, OnInit, OnDestroy, Inject } from '@angular/core';
-import { MatTableDataSource } from '@angular/material/table';
+import { Component, AfterViewInit, ViewChild, OnInit, OnDestroy, Inject, ChangeDetectionStrategy } from '@angular/core';
+import { MatTableDataSource as MatTableDataSource } from '@angular/material/table';
 import { Subscription } from 'rxjs';
 import { MatSort } from '@angular/material/sort';
-import { MatPaginator } from '@angular/material/paginator';
+import { MatPaginator as MatPaginator } from '@angular/material/paginator';
 import { Device } from '@app/model/device';
 import { DeviceStore } from '@app/providers/device';
 import { Subdevice } from '@app/model/subdevice';
 import { SubdeviceStore } from '@app/providers/subdevice';
 import { AdminService } from '@app/services/admin';
-import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import {
+  MatDialog as MatDialog,
+  MatDialogRef as MatDialogRef,
+  MAT_DIALOG_DATA as MAT_DIALOG_DATA,
+} from '@angular/material/dialog';
 import { Configuration } from '@app/model/configuration';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatSnackBar as MatSnackBar } from '@angular/material/snack-bar';
 import { ServiceStatus } from '@app/model/service';
 import { ServiceStore } from '@app/providers/service';
 
@@ -24,6 +28,8 @@ export interface SetNameDialogData {
   selector: 'app-home',
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class HomeComponent implements AfterViewInit, OnInit, OnDestroy {
   devicesColumns: string[] = [];
@@ -185,6 +191,8 @@ export class HomeComponent implements AfterViewInit, OnInit, OnDestroy {
 @Component({
   selector: 'set-device-name-dialog',
   templateUrl: 'set-device-name-dialog.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class SetDeviceNameDialog {
   newDeviceName: string;

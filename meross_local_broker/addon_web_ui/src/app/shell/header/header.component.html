@@ -3,11 +3,13 @@ Modified or added for the MRS100 fork of ha-meross-local-broker (2026-11).
 Upstream: https://github.com/albertogeniola/ha-meross-local-broker (Apache-2.0).
 -->
 <mat-toolbar class="mat-elevation-z6 navbar" color="primary">
-  <button *ngIf="showBackButton" mat-icon-button (click)="backToDevices()" aria-label="Back to devices">
+  @if (showBackButton) {
+  <button mat-icon-button (click)="backToDevices()" aria-label="Back to devices">
     <mat-icon>arrow_back</mat-icon>
   </button>
+  }
   <a class="brand" routerLink="/home" routerLinkActive="active" translate>APP_NAME</a>
-  <span fxFlex></span>
+  <span class="toolbar-spacer"></span>
   <a
     mat-icon-button
     class="nav-icon"

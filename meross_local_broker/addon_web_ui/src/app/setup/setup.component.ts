@@ -1,6 +1,6 @@
 // Modified or added for the MRS100 fork of ha-meross-local-broker (2026-11).
 // Upstream: https://github.com/albertogeniola/ha-meross-local-broker (Apache-2.0).
-import { Component, OnDestroy } from '@angular/core';
+import { Component, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
 
@@ -10,6 +10,8 @@ type SetupSection = 'setup' | 'pair-devices';
   selector: 'app-setup',
   templateUrl: './setup.component.html',
   styleUrls: ['./setup.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class SetupComponent implements OnDestroy {
   section: SetupSection;

@@ -1,8 +1,8 @@
 // Modified or added for the MRS100 fork of ha-meross-local-broker (2026-11).
-import { Component, NgZone, OnDestroy, OnInit } from '@angular/core';
+import { Component, NgZone, OnDestroy, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { Clipboard } from '@angular/cdk/clipboard';
-import { MatDialog } from '@angular/material/dialog';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatDialog as MatDialog } from '@angular/material/dialog';
+import { MatSnackBar as MatSnackBar } from '@angular/material/snack-bar';
 import { of, Subject, Subscription } from 'rxjs';
 import { catchError, debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
 
@@ -34,6 +34,8 @@ interface ValidationInput {
   selector: 'app-tuning',
   templateUrl: './tuning.component.html',
   styleUrls: ['./tuning.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class TuningComponent implements OnInit, OnDestroy {
   tabIndex = 0;

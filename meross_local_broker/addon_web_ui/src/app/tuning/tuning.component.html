@@ -26,7 +26,7 @@ Modified or added for the MRS100 fork of ha-meross-local-broker (2026-11).
 
   <mat-tab-group [(selectedIndex)]="tabIndex">
     <mat-tab label="Profiles">
-      <div class="tab-body" fxLayout="row" fxLayoutGap="16px" fxLayout.lt-md="column">
+      <div class="tab-body">
         <mat-card class="list-card">
           <mat-card-title>Profiles</mat-card-title>
           <mat-card-subtitle class="revision-row">
@@ -44,19 +44,18 @@ Modified or added for the MRS100 fork of ha-meross-local-broker (2026-11).
             </mat-slide-toggle>
           </div>
           <mat-nav-list>
-            <a
-              mat-list-item
-              *ngFor="let item of filteredProfiles"
-              (click)="selectProfile(item.id)"
-              [class.selected]="item.id === selectedProfileId"
-            >
+            @for (item of filteredProfiles; track item) {
+            <a mat-list-item (click)="selectProfile(item.id)" [class.selected]="item.id === selectedProfileId">
               <span mat-line>{{ item.id }}</span>
               <span mat-line class="meta">
                 {{ item.version || '?' }} · {{ item.source }} · {{ item.devices_affected }} device(s)
               </span>
             </a>
+            }
           </mat-nav-list>
-          <p class="meta empty-filter" *ngIf="!filteredProfiles.length">No profile matches this filter.</p>
+          @if (!filteredProfiles.length) {
+          <p class="meta empty-filter">No profile matches this filter.</p>
+          }
           <mat-divider></mat-divider>
           <div class="stack">
             <button mat-stroked-button type="button" (click)="exportProfiles('zip', 'overrides')">
@@ -67,16 +66,22 @@ Modified or added for the MRS100 fork of ha-meross-local-broker (2026-11).
             </button>
             <input #importInput type="file" accept=".yaml,.yml,.zip" hidden (change)="onImportFile($event)" />
             <button mat-stroked-button type="button" (click)="importInput.click()">Choose import file…</button>
-            <div *ngIf="importPreview" class="import-preview">
+            @if (importPreview) {
+            <div class="import-preview">
               <div>Dry run: {{ importPreview.profiles.length }} profile(s)</div>
-              <div *ngFor="let item of importPreview.profiles" class="meta">{{ item.id }} ({{ item.filename }})</div>
+              @for (item of importPreview.profiles; track item) {
+              <div class="meta">{{ item.id }} ({{ item.filename }})</div>
+              }
               <button mat-raised-button color="primary" type="button" (click)="applyImport()">Apply import</button>
             </div>
+            }
           </div>
         </mat-card>
 
-        <div fxFlex class="editor-column" *ngIf="selectedProfileId || draftMode">
-          <mat-card *ngIf="profile" class="summary-card">
+        @if (selectedProfileId || draftMode) {
+        <div class="editor-column">
+          @if (profile) {
+          <mat-card class="summary-card">
             <mat-card-title>{{ profile.id }}</mat-card-title>
             <mat-card-subtitle>
               {{ profile.version || '?' }} · {{ profile.source }} · {{ profile.devices_affected }} device(s)
@@ -96,7 +101,8 @@ Modified or added for the MRS100 fork of ha-meross-local-broker (2026-11).
                   <mat-icon>content_copy</mat-icon>
                 </button>
               </div>
-              <div class="hash-line" *ngIf="profile.override_hash">
+              @if (profile.override_hash) {
+              <div class="hash-line">
                 <span>override</span>
                 <code class="token" [matTooltip]="profile.override_hash">{{ profile.override_hash }}</code>
                 <button
@@ -110,6 +116,7 @@ Modified or added for the MRS100 fork of ha-meross-local-broker (2026-11).
                   <mat-icon>content_copy</mat-icon>
                 </button>
               </div>
+              }
               <div class="hash-line">
                 <span>revision</span>
                 <code class="token" [matTooltip]="profile.revision">{{ profile.revision }}</code>
@@ -143,19 +150,15 @@ Modified or added for the MRS100 fork of ha-meross-local-broker (2026-11).
               >
                 Export YAML
               </button>
-              <button
-                mat-stroked-button
-                color="warn"
-                type="button"
-                *ngIf="profile.override_hash"
-                (click)="revertToBundled()"
-              >
+              @if (profile.override_hash) {
+              <button mat-stroked-button color="warn" type="button" (click)="revertToBundled()">
                 Revert to bundled
               </button>
+              }
             </div>
           </mat-card>
-
-          <mat-card *ngIf="draftMode" class="summary-card">
+          } @if (draftMode) {
+          <mat-card class="summary-card">
             <mat-card-title>Captured draft</mat-card-title>
             <mat-card-subtitle>Validate, then apply as a new profile.</mat-card-subtitle>
             <div class="actions">
@@ -171,66 +174,78 @@ Modified or added for the MRS100 fork of ha-meross-local-broker (2026-11).
               <button mat-stroked-button type="button" (click)="validateNow()">Validate</button>
             </div>
           </mat-card>
-
+          }
           <app-yaml-editor [ngModel]="yamlText" (ngModelChange)="onYamlChange($event)"></app-yaml-editor>
-
-          <mat-card *ngIf="validation" class="result-card">
+          @if (validation) {
+          <mat-card class="result-card">
             <mat-card-title>Validation</mat-card-title>
-            <p *ngIf="validation.valid" class="ok">Valid.</p>
-            <ul class="errors" *ngIf="validation.errors.length">
-              <li *ngFor="let error of validation.errors">{{ error }}</li>
+            @if (validation.valid) {
+            <p class="ok">Valid.</p>
+            } @if (validation.errors.length) {
+            <ul class="errors">
+              @for (error of validation.errors; track error) {
+              <li>{{ error }}</li>
+              }
             </ul>
-            <ul class="warnings" *ngIf="validation.warnings.length">
-              <li *ngFor="let warning of validation.warnings">{{ warning }}</li>
+            } @if (validation.warnings.length) {
+            <ul class="warnings">
+              @for (warning of validation.warnings; track warning) {
+              <li>{{ warning }}</li>
+              }
             </ul>
-            <div class="meta" *ngIf="validation.diff_base">Diff against {{ validation.diff_base }}</div>
+            } @if (validation.diff_base) {
+            <div class="meta">Diff against {{ validation.diff_base }}</div>
+            }
             <div class="diff">
-              <div *ngFor="let line of diffLines(validation.diff)" class="diff-line" [ngClass]="line.cls">
+              @for (line of diffLines(validation.diff); track line) {
+              <div class="diff-line" [ngClass]="line.cls">
                 {{ line.text || ' ' }}
               </div>
+              }
             </div>
           </mat-card>
-          <p class="error-text" *ngIf="validationError">{{ validationError }}</p>
-
-          <mat-card *ngIf="profile && profile.backups.length">
+          } @if (validationError) {
+          <p class="error-text">{{ validationError }}</p>
+          } @if (profile && profile.backups.length) {
+          <mat-card>
             <mat-card-title>Backups</mat-card-title>
             <mat-nav-list>
-              <a mat-list-item *ngFor="let backup of profile.backups">
+              @for (backup of profile.backups; track backup) {
+              <a mat-list-item>
                 <span mat-line>{{ backup.file }}</span>
                 <span mat-line class="meta">{{ backup.created_at }} · {{ backup.hash }}</span>
                 <button mat-icon-button type="button" (click)="restoreBackup(backup.file)" aria-label="Restore backup">
                   <mat-icon>restore</mat-icon>
                 </button>
               </a>
+              }
             </mat-nav-list>
           </mat-card>
+          }
         </div>
-
-        <div fxFlex *ngIf="!selectedProfileId && !draftMode" class="empty">
-          Select a profile to edit its YAML, validate it and apply an override.
-        </div>
+        } @if (!selectedProfileId && !draftMode) {
+        <div class="empty">Select a profile to edit its YAML, validate it and apply an override.</div>
+        }
       </div>
     </mat-tab>
 
     <mat-tab label="Devices">
-      <div class="tab-body" fxLayout="row" fxLayoutGap="16px" fxLayout.lt-md="column">
+      <div class="tab-body">
         <mat-card class="list-card">
           <mat-card-title>Devices</mat-card-title>
           <mat-nav-list>
-            <a
-              mat-list-item
-              *ngFor="let device of devices"
-              (click)="selectDevice(device.uuid)"
-              [class.selected]="device.uuid === selectedDeviceUuid"
-            >
+            @for (device of devices; track device) {
+            <a mat-list-item (click)="selectDevice(device.uuid)" [class.selected]="device.uuid === selectedDeviceUuid">
               <span mat-line>{{ device.name || device.uuid }}</span>
               <span mat-line class="meta">
                 {{ device.type }} · {{ device.online || 'unknown' }} · {{ device.profile || 'no profile' }}
               </span>
             </a>
+            }
           </mat-nav-list>
           <mat-divider></mat-divider>
-          <div class="stack" *ngIf="selectedDeviceUuid">
+          @if (selectedDeviceUuid) {
+          <div class="stack">
             <div class="meta">Capture: {{ captureState() }}</div>
             <div class="actions">
               <button mat-stroked-button type="button" (click)="startCapture()">Start capture</button>
@@ -248,9 +263,11 @@ Modified or added for the MRS100 fork of ha-meross-local-broker (2026-11).
               </button>
             </div>
           </div>
+          }
         </mat-card>
 
-        <div fxFlex *ngIf="deviceState" class="device-column">
+        @if (deviceState) {
+        <div class="device-column">
           <mat-card class="summary-card">
             <mat-card-title>{{ deviceState.device.name || deviceState.device.uuid }}</mat-card-title>
             <mat-card-subtitle>
@@ -261,21 +278,28 @@ Modified or added for the MRS100 fork of ha-meross-local-broker (2026-11).
             <div class="meta">
               firmware {{ deviceState.device.firmware || '?' }} · hardware {{ deviceState.device.hardware || '?' }}
             </div>
-            <div class="meta" *ngIf="deviceState.profile">
+            @if (deviceState.profile) {
+            <div class="meta">
               profile {{ deviceState.profile.id }} · {{ deviceState.profile.source }} · {{ deviceState.profile.hash }}
             </div>
+            }
             <div class="meta">channels {{ deviceState.device.channels.join(', ') || 'none' }}</div>
-            <div class="meta" *ngIf="deviceState.device.subdevices.length">
-              subdevices: {{ deviceState.device.subdevices.length }}
-            </div>
-            <ul class="errors" *ngIf="deviceState.errors.length">
-              <li *ngFor="let error of deviceState.errors">{{ error }}</li>
+            @if (deviceState.device.subdevices.length) {
+            <div class="meta">subdevices: {{ deviceState.device.subdevices.length }}</div>
+            } @if (deviceState.errors.length) {
+            <ul class="errors">
+              @for (error of deviceState.errors; track error) {
+              <li>{{ error }}</li>
+              }
             </ul>
-            <ul class="warnings" *ngIf="deviceState.warnings.length">
-              <li *ngFor="let warning of deviceState.warnings">{{ warning }}</li>
+            } @if (deviceState.warnings.length) {
+            <ul class="warnings">
+              @for (warning of deviceState.warnings; track warning) {
+              <li>{{ warning }}</li>
+              }
             </ul>
+            }
           </mat-card>
-
           <mat-card>
             <mat-card-title>Entities ({{ deviceState.entities.length }})</mat-card-title>
             <table mat-table [dataSource]="deviceState.entities" class="full-width">
@@ -302,15 +326,16 @@ Modified or added for the MRS100 fork of ha-meross-local-broker (2026-11).
               <tr mat-header-row *matHeaderRowDef="entityColumns"></tr>
               <tr mat-row *matRowDef="let row; columns: entityColumns"></tr>
             </table>
-
             <mat-expansion-panel>
               <mat-expansion-panel-header>
                 <mat-panel-title>Polling plan ({{ deviceState.polling.length }})</mat-panel-title>
               </mat-expansion-panel-header>
-              <div *ngFor="let row of deviceState.polling" class="meta">
+              @for (row of deviceState.polling; track row) {
+              <div class="meta">
                 {{ row.namespace }} · {{ row.scope }} · {{ row.methods.join(', ') }} · {{ row.strategy }} ·
                 {{ row.period_s }}s
               </div>
+              }
             </mat-expansion-panel>
             <mat-expansion-panel>
               <mat-expansion-panel-header>
@@ -325,34 +350,33 @@ Modified or added for the MRS100 fork of ha-meross-local-broker (2026-11).
               <pre class="json">{{ deviceState.ability | json }}</pre>
             </mat-expansion-panel>
           </mat-card>
-
           <mat-card>
             <mat-card-title>Commands ({{ commands.length }})</mat-card-title>
-            <p class="meta" *ngIf="commandCatalog">
-              {{ commandCatalog.profile_id }} · {{ commandCatalog.namespaces.join(', ') }}
-            </p>
-            <div class="command-row" *ngFor="let command of commands">
+            @if (commandCatalog) {
+            <p class="meta">{{ commandCatalog.profile_id }} · {{ commandCatalog.namespaces.join(', ') }}</p>
+            } @for (command of commands; track command) {
+            <div class="command-row">
               <div class="command-label">
                 <strong>{{ command.id }}</strong>
                 <span class="meta">
-                  {{ command.namespace }} · {{ command.type }}
-                  <ng-container *ngIf="command.unit"> · {{ command.unit }}</ng-container>
-                  <ng-container *ngIf="command.min !== null"> · {{ command.min }}–{{ command.max }}</ng-container>
+                  {{ command.namespace }} · {{ command.type }} @if (command.unit) { · {{ command.unit }} } @if
+                  (command.min !== null) { · {{ command.min }}–{{ command.max }}
+                  }
                 </span>
               </div>
-              <mat-form-field
-                *ngIf="command.accepts_channel && (command.channels.length > 1 || command.channel === null)"
-                appearance="outline"
-                class="small"
-              >
+              @if (command.accepts_channel && (command.channels.length > 1 || command.channel === null)) {
+              <mat-form-field appearance="outline" class="small">
                 <mat-label>Channel</mat-label>
                 <mat-select [(ngModel)]="commandChannel[command.id]">
-                  <mat-option *ngFor="let channel of command.channels" [value]="channel">
+                  @for (channel of command.channels; track channel) {
+                  <mat-option [value]="channel">
                     {{ channel }}
                   </mat-option>
+                  }
                 </mat-select>
               </mat-form-field>
-              <mat-form-field *ngIf="command.accepts_value" appearance="outline" class="small">
+              } @if (command.accepts_value) {
+              <mat-form-field appearance="outline" class="small">
                 <mat-label>Value</mat-label>
                 <input
                   matInput
@@ -363,6 +387,7 @@ Modified or added for the MRS100 fork of ha-meross-local-broker (2026-11).
                   [step]="command.step"
                 />
               </mat-form-field>
+              }
               <button
                 mat-stroked-button
                 color="primary"
@@ -373,22 +398,19 @@ Modified or added for the MRS100 fork of ha-meross-local-broker (2026-11).
                 Send
               </button>
             </div>
-            <div *ngIf="!commands.length" class="commands-empty">
+            } @if (!commands.length) {
+            <div class="commands-empty">
               <p class="meta">
                 {{ commandsNote || 'No declared command for this profile.' }}
               </p>
-              <button
-                *ngIf="commandsNote"
-                mat-stroked-button
-                type="button"
-                [disabled]="abilityBusy"
-                (click)="refreshAbility()"
-              >
+              @if (commandsNote) {
+              <button mat-stroked-button type="button" [disabled]="abilityBusy" (click)="refreshAbility()">
                 Refresh ability
               </button>
+              }
             </div>
+            }
           </mat-card>
-
           <mat-card>
             <mat-card-title>Simulate a frame</mat-card-title>
             <div class="form-grid">
@@ -422,10 +444,12 @@ Modified or added for the MRS100 fork of ha-meross-local-broker (2026-11).
               </mat-form-field>
             </div>
             <button mat-raised-button color="primary" type="button" (click)="preview()">Preview</button>
-            <p class="error-text" *ngIf="previewError">{{ previewError }}</p>
-            <pre class="json" *ngIf="previewResult">{{ previewResult | json }}</pre>
+            @if (previewError) {
+            <p class="error-text">{{ previewError }}</p>
+            } @if (previewResult) {
+            <pre class="json">{{ previewResult | json }}</pre>
+            }
           </mat-card>
-
           <mat-card>
             <mat-card-title>Live read (read-only)</mat-card-title>
             <div class="form-grid">
@@ -439,14 +463,16 @@ Modified or added for the MRS100 fork of ha-meross-local-broker (2026-11).
               </mat-form-field>
             </div>
             <button mat-raised-button color="primary" type="button" (click)="readNow()">Send GET</button>
-            <p class="error-text" *ngIf="readError">{{ readError }}</p>
-            <pre class="json" *ngIf="readResult">{{ readResult | json }}</pre>
+            @if (readError) {
+            <p class="error-text">{{ readError }}</p>
+            } @if (readResult) {
+            <pre class="json">{{ readResult | json }}</pre>
+            }
           </mat-card>
         </div>
-
-        <div fxFlex *ngIf="!deviceState" class="empty">
-          Select a device to inspect its profile, cached values, frames and live reads.
-        </div>
+        } @if (!deviceState) {
+        <div class="empty">Select a device to inspect its profile, cached values, frames and live reads.</div>
+        }
       </div>
     </mat-tab>
 
@@ -480,7 +506,9 @@ Modified or added for the MRS100 fork of ha-meross-local-broker (2026-11).
           <tr mat-header-row *matHeaderRowDef="['at', 'action', 'profile', 'actor', 'revision']"></tr>
           <tr mat-row *matRowDef="let row; columns: ['at', 'action', 'profile', 'actor', 'revision']"></tr>
         </table>
-        <p class="meta" *ngIf="!auditEntries.length">No audit entries.</p>
+        @if (!auditEntries.length) {
+        <p class="meta">No audit entries.</p>
+        }
       </mat-card>
     </mat-tab>
   </mat-tab-group>

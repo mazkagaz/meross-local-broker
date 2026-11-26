@@ -4,22 +4,15 @@
   "compilerOptions": {
     "outDir": "./dist/out-tsc",
     "sourceMap": true,
+    "esModuleInterop": true,
     "declaration": false,
     "module": "es2020",
-    "moduleResolution": "node",
-    "emitDecoratorMetadata": true,
+    "moduleResolution": "bundler",
     "experimentalDecorators": true,
     "importHelpers": true,
     "noImplicitAny": true,
-    "suppressImplicitAnyIndexErrors": true,
-    "target": "es2015",
-    "typeRoots": [
-      "node_modules/@types"
-    ],
-    "lib": [
-      "es2018",
-      "dom"
-    ],
+    "target": "ES2022",
+    "typeRoots": ["node_modules/@types"],
     "baseUrl": "./",
     "paths": {
       "@app/*": ["src/app/*"],
@@ -28,7 +21,10 @@
       "@shared": ["src/app/@shared"],
       "@shared/*": ["src/app/@shared/*"],
       "@env/*": ["src/environments/*"]
-    }
+    },
+    "useDefineForClassFields": false,
+    "strictNullChecks": false,
+    "ignoreDeprecations": "6.0"
   },
   "angularCompilerOptions": {
     "fullTemplateTypeCheck": true,

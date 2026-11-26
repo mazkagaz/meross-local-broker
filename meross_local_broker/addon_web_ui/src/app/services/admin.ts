@@ -12,7 +12,7 @@ import { Subdevice } from '@app/model/subdevice';
 import { environment } from '@env/environment';
 import { Observable, of } from 'rxjs';
 import { catchError, tap, map } from 'rxjs/operators';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatSnackBar as MatSnackBar } from '@angular/material/snack-bar';
 
 /**
  * Interface for ADMIN apis

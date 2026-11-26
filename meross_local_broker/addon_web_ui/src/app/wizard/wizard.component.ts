@@ -1,5 +1,5 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { Component, OnInit, ViewChild, ChangeDetectionStrategy } from '@angular/core';
+import { MatSnackBar as MatSnackBar } from '@angular/material/snack-bar';
 import { MatStepper } from '@angular/material/stepper';
 import { Configuration } from '@app/model/configuration';
 import { AdminService } from '@app/services/admin';
@@ -8,6 +8,8 @@ import { AdminService } from '@app/services/admin';
   selector: 'app-wizard',
   templateUrl: './wizard.component.html',
   styleUrls: ['./wizard.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class WizardComponent implements OnInit {
   @ViewChild('stepper') stepper!: MatStepper;

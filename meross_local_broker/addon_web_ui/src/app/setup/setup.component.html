@@ -3,83 +3,78 @@ Modified or added for the MRS100 fork of ha-meross-local-broker (2026-11).
 Upstream: https://github.com/albertogeniola/ha-meross-local-broker (Apache-2.0).
 -->
 <div class="container">
-  <ng-container *ngIf="section === 'setup'">
-    <mat-card>
-      <mat-card-title>Broker access</mat-card-title>
-      <mat-card-content>
-        <p>
-          Create the local login used by Meross Local Pairer and the Home Assistant integration. This account is
-          independent from Meross: the add-on never contacts the Meross cloud.
-        </p>
-      </mat-card-content>
-    </mat-card>
-    <configuration-account></configuration-account>
-
-    <mat-card>
-      <mat-card-title>Home Assistant</mat-card-title>
-      <mat-card-content>
-        <p>
-          Install the
-          <a href="https://github.com/mazkagaz/meross-local-cloud#installation-avec-hacs" target="_blank" rel="noopener"
-            >Meross Local Cloud</a
-          >
-          integration with HACS and configure it with the local login created above. It only works with this local
-          broker; no cloud mode is offered.
-        </p>
-        <p class="small">The broker is advertised over mDNS, so the integration can find it automatically.</p>
-      </mat-card-content>
-    </mat-card>
-  </ng-container>
-
-  <ng-container *ngIf="section === 'pair-devices'">
-    <mat-card>
-      <mat-card-title>Pair devices</mat-card-title>
-      <mat-card-content>
-        <p>
-          Install the Android app that pairs your devices with this broker. It is distributed on GitHub, not on the Play
-          Store.
-        </p>
-        <a
-          mat-raised-button
-          color="accent"
-          href="https://github.com/mazkagaz/meross-local-pairer/releases/latest"
-          target="_blank"
-          rel="noopener"
+  @if (section === 'setup') {
+  <mat-card>
+    <mat-card-title>Broker access</mat-card-title>
+    <mat-card-content>
+      <p>
+        Create the local login used by Meross Local Pairer and the Home Assistant integration. This account is
+        independent from Meross: the add-on never contacts the Meross cloud.
+      </p>
+    </mat-card-content>
+  </mat-card>
+  <configuration-account></configuration-account>
+  <mat-card>
+    <mat-card-title>Home Assistant</mat-card-title>
+    <mat-card-content>
+      <p>
+        Install the
+        <a href="https://github.com/mazkagaz/meross-local-cloud#installation-avec-hacs" target="_blank" rel="noopener"
+          >Meross Local Cloud</a
         >
-          Download Meross Local Pairer
-        </a>
-      </mat-card-content>
-    </mat-card>
-
-    <mat-card>
-      <mat-card-title>Pairing procedure</mat-card-title>
-      <mat-card-content>
-        <ol>
-          <li>Connect the phone to the same Wi-Fi network as Home Assistant.</li>
-          <li>Open the pairer. It discovers this broker and fills in its address automatically.</li>
-          <li>Log in with the local account created in the Setup page.</li>
-          <li>Reset the Meross device, then follow the guided pairing and give it a unique name.</li>
-        </ol>
-        <p class="small">
-          The app offers to trust the current Wi-Fi network. Device access points are always allowed. If discovery
-          fails, type the Home Assistant host or IP only (for example <code>homeassistant.local</code>); the API port is
-          selected automatically.
-        </p>
-        <a
-          mat-stroked-button
-          href="https://github.com/mazkagaz/meross-local-pairer/blob/main/README.md#appairage-pas-%C3%A0-pas"
-          target="_blank"
-          rel="noopener"
-        >
-          Pairer user guide
-        </a>
-      </mat-card-content>
-    </mat-card>
-
-    <mat-card>
-      <mat-card-content>
-        <p class="small">The legacy "Custom Pairer" application from the Play Store is not used by this add-on.</p>
-      </mat-card-content>
-    </mat-card>
-  </ng-container>
+        integration with HACS and configure it with the local login created above. It only works with this local broker;
+        no cloud mode is offered.
+      </p>
+      <p class="small">The broker is advertised over mDNS, so the integration can find it automatically.</p>
+    </mat-card-content>
+  </mat-card>
+  } @if (section === 'pair-devices') {
+  <mat-card>
+    <mat-card-title>Pair devices</mat-card-title>
+    <mat-card-content>
+      <p>
+        Install the Android app that pairs your devices with this broker. It is distributed on GitHub, not on the Play
+        Store.
+      </p>
+      <a
+        mat-raised-button
+        color="accent"
+        href="https://github.com/mazkagaz/meross-local-pairer/releases/latest"
+        target="_blank"
+        rel="noopener"
+      >
+        Download Meross Local Pairer
+      </a>
+    </mat-card-content>
+  </mat-card>
+  <mat-card>
+    <mat-card-title>Pairing procedure</mat-card-title>
+    <mat-card-content>
+      <ol>
+        <li>Connect the phone to the same Wi-Fi network as Home Assistant.</li>
+        <li>Open the pairer. It discovers this broker and fills in its address automatically.</li>
+        <li>Log in with the local account created in the Setup page.</li>
+        <li>Reset the Meross device, then follow the guided pairing and give it a unique name.</li>
+      </ol>
+      <p class="small">
+        The app offers to trust the current Wi-Fi network. Device access points are always allowed. If discovery fails,
+        type the Home Assistant host or IP only (for example <code>homeassistant.local</code>); the API port is selected
+        automatically.
+      </p>
+      <a
+        mat-stroked-button
+        href="https://github.com/mazkagaz/meross-local-pairer/blob/main/README.md#appairage-pas-%C3%A0-pas"
+        target="_blank"
+        rel="noopener"
+      >
+        Pairer user guide
+      </a>
+    </mat-card-content>
+  </mat-card>
+  <mat-card>
+    <mat-card-content>
+      <p class="small">The legacy "Custom Pairer" application from the Play Store is not used by this add-on.</p>
+    </mat-card-content>
+  </mat-card>
+  }
 </div>

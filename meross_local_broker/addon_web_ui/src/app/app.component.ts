@@ -1,6 +1,6 @@
 // Modified or added for the MRS100 fork of ha-meross-local-broker (2026-11).
 // Upstream: https://github.com/albertogeniola/ha-meross-local-broker (Apache-2.0).
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
 import { Router, NavigationEnd, ActivatedRoute } from '@angular/router';
 import { Title } from '@angular/platform-browser';
 import { TranslateService } from '@ngx-translate/core';
@@ -19,6 +19,8 @@ const log = new Logger('App');
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class AppComponent implements OnInit, OnDestroy {
   constructor(
