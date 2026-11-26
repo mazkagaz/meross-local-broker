@@ -12,6 +12,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
+import profile_engine
 import profiles as profiles_module
 from profiles import ProfileCatalog, diff_profiles
 
@@ -46,7 +47,7 @@ class ProfileCatalogTest(unittest.TestCase):
         second = ProfileCatalog(str(PROFILES))
 
         self.assertEqual(first.errors, [])
-        self.assertEqual(len(first.profiles), 19)
+        self.assertEqual(len(first.profiles), 20)
         self.assertEqual(first.revision, second.revision)
         self.assertEqual(len(first.revision), 64)
         self.assertIn("meross.mrs100", first.profiles)
@@ -56,7 +57,7 @@ class ProfileCatalogTest(unittest.TestCase):
 
         revision = catalog.revision_payload()
         self.assertEqual(revision["schema_version"], 2)
-        self.assertEqual(revision["count"], 19)
+        self.assertEqual(revision["count"], 20)
         self.assertEqual(revision["errors"], 0)
 
         payload = catalog.payload()
@@ -65,12 +66,53 @@ class ProfileCatalogTest(unittest.TestCase):
         self.assertEqual(ids, [
             "meross.em", "meross.garage", "meross.hp110", "meross.map100",
             "meross.mfc", "meross.mod", "meross.mrs", "meross.mrs100",
-            "meross.ms600", "meross.msh300", "meross.msl", "meross.msl120", "meross.mss",
+            "meross.ms600", "meross.msh300", "meross.msl", "meross.msl120", "meross.msl610", "meross.mss",
             "meross.mss310", "meross.mss425", "meross.mss5", "meross.msxh0", "meross.mts200", "meross.mts300"])
         for item in payload["profiles"]:
             self.assertEqual(item["source"], "bundled")
             self.assertEqual(len(item["hash"]), 64)
             self.assertIn("profile", item)
+
+
+    def test_msl610_profile_matches_light_and_togglex(self):
+        catalog = ProfileCatalog(str(PROFILES))
+        data = catalog.profiles["meross.msl610"]
+        meta = profile_engine.ProfileMeta(
+            id="meross.msl610",
+            version=data["profile"]["version"],
+            source="test",
+            digest=None,
+            requires_engine=None,
+            data=data,
+        )
+        result = profile_engine.match_candidates(
+            [meta],
+            profile_engine.MatchContext(
+                type="msl610",
+                abilities=frozenset({
+                    "Appliance.Control.Light",
+                    "Appliance.Control.ToggleX",
+                }),
+            ),
+        )
+        self.assertEqual(result.profile.id, "meross.msl610")
+        compiled = profile_engine.compile_profile(meta)
+        self.assertEqual(compiled.errors, [])
+        runtime = profile_engine.DeviceRuntime("msl610-test", compiled)
+        self.assertEqual(runtime.dispatch(
+            "Appliance.Control.ToggleX", "PUSH",
+            {"togglex": [{"channel": 0, "onoff": 1, "lmTime": 1}]}), 1)
+        self.assertEqual(runtime.dispatch(
+            "Appliance.Control.Light", "PUSH",
+            {"light": {"capacity": 6, "channel": 0,
+                       "temperature": 50, "luminance": 20}}), 2)
+        values = runtime.entities["light"].values
+        self.assertEqual(values["onoff"], 1)
+        self.assertEqual(values["brightness"], 20)
+        self.assertEqual(values["color_temp"], 50)
+        command = compiled.entities["light"].commands["set_color_temp"]
+        self.assertEqual(command.namespace, "Appliance.Control.Light")
+        self.assertEqual(command.payload["light"]["temperature"], "$value")
 
     def test_invalid_profile_is_excluded_without_breaking_catalog(self):
         with tempfile.TemporaryDirectory() as temporary:

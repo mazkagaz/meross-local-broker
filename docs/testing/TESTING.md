@@ -29,7 +29,7 @@ cd meross_local_broker/rootfs/opt/custom_broker
 ../../../../.venv/bin/python -m pytest -q
 ```
 
-Expected: **221 passed, 1 skipped, 26 subtests passed**. Coverage includes the
+Expected: **224 passed, 1 skipped, 27 subtests passed**. Coverage includes the
 HTTP API, MQTT integrity, profiles, capture, tuning, standalone mode detection
 (`test_standalone`), timezone sync and the MRS100 paths.
 

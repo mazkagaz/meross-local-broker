@@ -351,7 +351,7 @@ class HttpApiCompatibilityTest(unittest.TestCase):
         result = response.get_json()['data']
         self.assertEqual(response.get_json()['apiStatus'], 0)
         self.assertEqual(result['schema_version'], 2)
-        self.assertEqual(result['count'], 19)
+        self.assertEqual(result['count'], 20)
         self.assertEqual(len(result['revision']), 64)
         assert_contract('profiles_rev.json', result)
 
@@ -366,7 +366,7 @@ class HttpApiCompatibilityTest(unittest.TestCase):
         self.assertEqual(ids, [
             'meross.em', 'meross.garage', 'meross.hp110', 'meross.map100',
             'meross.mfc', 'meross.mod', 'meross.mrs', 'meross.mrs100',
-            'meross.ms600', 'meross.msh300', 'meross.msl', 'meross.msl120', 'meross.mss',
+            'meross.ms600', 'meross.msh300', 'meross.msl', 'meross.msl120', 'meross.msl610', 'meross.mss',
             'meross.mss310', 'meross.mss425', 'meross.mss5', 'meross.msxh0', 'meross.mts200', 'meross.mts300'])
         for item in result['profiles']:
             self.assertEqual(item['source'], 'bundled')
