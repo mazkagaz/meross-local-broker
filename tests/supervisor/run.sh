@@ -190,8 +190,16 @@ for _ in $(seq 1 90); do
 done
 [[ "$ready" == "1" ]] || fail "broker HTTPS endpoint did not become ready"
 
-timeout 5 openssl s_client -connect 127.0.0.1:2001 -brief </dev/null >/dev/null 2>&1 \
-    || fail "MQTT TLS listener did not become ready"
+mqtt=0
+for _ in $(seq 1 30); do
+    if timeout 5 openssl s_client -connect 127.0.0.1:2001 -brief \
+        </dev/null >/dev/null 2>&1; then
+        mqtt=1
+        break
+    fi
+    sleep 2
+done
+[[ "$mqtt" == "1" ]] || fail "MQTT TLS listener did not become ready"
 
 docker logs "$ADDON_CONTAINER" >/tmp/addon.log 2>&1 || true
 grep -q "Substituting ingress_entry" /tmp/addon.log \
