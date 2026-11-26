@@ -14,7 +14,7 @@ if dbpath is None:
 
 dbpath = f'sqlite:///{dbpath}'
 
-engine = create_engine(dbpath, convert_unicode=True)
+engine = create_engine(dbpath)
 db_session = scoped_session(sessionmaker(autocommit=False,
                                          autoflush=False,
                                          bind=engine))

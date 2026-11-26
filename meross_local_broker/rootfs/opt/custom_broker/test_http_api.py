@@ -104,6 +104,15 @@ class HttpApiCompatibilityTest(unittest.TestCase):
         response = self.client.post('/v1/Auth/signIn', json=[])
         self.assertEqual(response.status_code, 400)
 
+    def test_client_version_parser_handles_meross_iot_user_agent(self):
+        from blueprints.auth import ClientType, _parse_client_version
+        self.assertEqual(
+            _parse_client_version("MerossIOT/1.2.3"),
+            (ClientType.HA_LIBRARY, "1.2.3"))
+        self.assertEqual(
+            _parse_client_version(None),
+            (ClientType.UNKNOWN, None))
+
     def test_numeric_timestamp_signature_is_accepted(self):
         from constants import _SECRET
         payload = {'email': 'test@example.com', 'password': 'test-password'}
