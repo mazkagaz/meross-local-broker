@@ -6,7 +6,7 @@ import json
 import stat
 import tempfile
 import unittest
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import patch
@@ -299,7 +299,7 @@ class TuningStoreTest(unittest.TestCase):
             local_ip="192.168.1.10",
             fmware_version="1.0.0",
             hdware_version="1.0",
-            last_seen_time=datetime(2026, 11, 22, 10, 0, 0),
+            last_seen_time=datetime(2026, 11, 22, 10, 0, 0, tzinfo=timezone.utc),
             owner_user=SimpleNamespace(user_id=7, mqtt_key="secret"),
         )
         self.store._devices = lambda: [device]
@@ -308,7 +308,7 @@ class TuningStoreTest(unittest.TestCase):
                 {name: {} for name in abilities}))
         self.store._statuses = lambda uuid: [SimpleNamespace(
             channel=0, position=42, state=1,
-            updated_at=datetime(2026, 11, 22, 10, 1))]
+            updated_at=datetime(2026, 11, 22, 10, 1, tzinfo=timezone.utc))]
         self.store._configs = lambda uuid: []
         self.store._adjusts = lambda uuid: []
         return device

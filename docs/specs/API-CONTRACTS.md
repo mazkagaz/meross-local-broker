@@ -25,6 +25,17 @@ identique et la CI compare les deux dépôts.
 - Les fixtures `contracts/fixtures/*.json` doivent rester identiques dans les
   deux dépôts.
 
+## Datations
+
+- Les instants sont stockés en **UTC naïf** dans SQLite et manipulés en
+  **UTC aware** par l’application. Le type `UTCDateTime` fait la conversion.
+- Les endpoints tuning et admin sérialisent les dates en ISO 8601 UTC avec le
+  suffixe `Z`.
+- Les endpoints Meross (`devList`, `_admin_/events`) conservent leur format de
+  date HTTP GMT ; les filtres `fromTimestamp`/`toTimestamp` restent des epochs
+  UTC.
+- Aucune date naïve ou heure locale ne doit être exposée par l’API.
+
 ## Emplacements
 
 - Schémas : `meross_local_broker/rootfs/opt/custom_broker/contracts/`
