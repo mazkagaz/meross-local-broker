@@ -154,3 +154,7 @@ RUN cd /opt/custom_broker && python3 -m unittest test_http_api
 RUN mkdir -p /var/run/mdns/meross-mqtt && mkdir -p /var/run/mdns/meross-http-api
 
 RUN chmod +x /usr/local/bin/*.sh
+
+# Works in both modes: the HTTPS listener is local to the container.
+HEALTHCHECK --interval=30s --timeout=5s --start-period=90s --retries=3 \
+    CMD curl -kfsS https://127.0.0.1:2004/ca.crt >/dev/null || exit 1

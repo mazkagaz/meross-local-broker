@@ -6,10 +6,14 @@ if [[ $ADVERTISE == "true" ]]; then
     # Advertise the HTTPS listener: HTTP on the ingress port is restricted to
     # the Supervisor and cannot be reached by phones on the LAN.
     bashio::log.info "Advertising the Meross API service"
-    https_port=$(bashio::app.port 2004)
+    if is_standalone; then
+        https_port="${HTTPS_PORT:-2004}"
+    else
+        https_port=$(bashio::app.port 2004)
+    fi
     https_port=${https_port:-"2004"}
     host_err=$(mktemp)
-    host_ips=$(python3 /opt/custom_broker/supervisor_network.py 2>"$host_err" || true)
+    host_ips=$(lan_ipv4_addresses 2>"$host_err" || true)
 
     txt_args=("https_port=$https_port")
     if [[ -n $host_ips ]]; then

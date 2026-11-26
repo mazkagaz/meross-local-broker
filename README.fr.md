@@ -41,7 +41,7 @@ d'intégration spécifiques sont bienvenues.
 
 | Brique                         | Version minimale | Remarques                                                    |
 | ------------------------------ | ---------------- | ------------------------------------------------------------ |
-| Broker                         | 1.4.8            | profil MRS100 2026.11.4 ; 3.2.2 pour la présentation number  |
+| Broker                         | 1.4.8            | profil MRS100 2026.11.4 ; **1.5.0** pour HA Container        |
 | Intégration Meross Local Cloud | 3.2.2            | moteur profils 2.5.1 ; Position et durées en champ de saisie |
 | Meross Local Pairer            | 2.0.9            | découverte et appairage HTTPS uniquement                     |
 
@@ -70,6 +70,13 @@ l'identité de l'utilisateur HA. Aucun port de débogage n'est publié : le mode
 - Un téléphone Android pour Meross Local Pairer.
 - Installations **amd64** ou **aarch64** uniquement (les architectures 32 bits
   ne sont plus construites).
+
+## Home Assistant Container (Docker)
+
+L'add-on a besoin du Supervisor. Sous **Home Assistant Container**, faire
+tourner le broker comme conteneur Docker autonome : voir
+[docs/guides/DOCKER.fr.md](docs/guides/DOCKER.fr.md). L'intégration et le
+pairer ne changent pas ; seul le déploiement du broker diffère.
 
 ## Installation complète
 

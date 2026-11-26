@@ -6,13 +6,23 @@ source /opt/utils/bashutils.sh
 # ==============================================================================
 # Configure NGINX for use with Meross Local Broker
 # ==============================================================================
-ingress_entry=$(bashio::app.ingress_entry)
-ingress_port=$(bashio::app.ingress_port)
-ingress_interface=$(bashio::app.ip_address)
+if is_standalone; then
+    # No Supervisor: the admin UI is bound to the host loopback by default.
+    ingress_entry="${INGRESS_ENTRY:-/}"
+    ingress_port="${ADMIN_PORT:-2003}"
+    ingress_interface="${ADMIN_BIND:-127.0.0.1}"
+    admin_cidr="${ADMIN_ALLOW_CIDR:-127.0.0.1}"
+    bashio::log.info "Standalone mode: admin UI on ${ingress_interface}:${ingress_port} (allow ${admin_cidr})."
+else
+    ingress_entry=$(bashio::app.ingress_entry)
+    ingress_port=$(bashio::app.ingress_port)
+    ingress_interface=$(bashio::app.ip_address)
+    admin_cidr="172.30.32.2"
+fi
 
 # Safe defaults
 if [[ $ingress_interface = "" ]]; then
-    ingress_interface="0.0.0.0"
+    ingress_interface="127.0.0.1"
 fi
 
 if [[ $ingress_port = "" ]]; then
@@ -21,6 +31,10 @@ fi
 
 if [[ $ingress_entry = "" ]]; then
     ingress_entry="/"
+fi
+
+if [[ $admin_cidr = "" ]]; then
+    admin_cidr="127.0.0.1"
 fi
 
 bashio::log.info "Substituting ingress_entry with ${ingress_entry}"
@@ -32,8 +46,8 @@ sed -i "s/%%ingress_interface%%/${ingress_interface}/g" /etc/nginx/ingress.conf
 bashio::log.info "Substituting port with ${ingress_port}"
 sed -i "s/%%ingress_port%%/${ingress_port}/g" /etc/nginx/ingress.conf
 
-# Admin API access stays on the Home Assistant Supervisor ingress only.
-sed -i "s#%%whitelisted_inbound_cidr%%#172.30.32.2#g" /etc/nginx/ingress.conf
+# Admin API access: Supervisor ingress, or the configured standalone CIDR.
+sed -i "s#%%whitelisted_inbound_cidr%%#${admin_cidr}#g" /etc/nginx/ingress.conf
 bashio::log.info "HTTPS listener enabled on port 2004."
 
 # Prepare log dir

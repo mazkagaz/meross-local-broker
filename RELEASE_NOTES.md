@@ -1,3 +1,21 @@
+# Notes de version — 1.5.0
+
+## 1.5.0 — broker autonome pour Home Assistant Container
+
+- Nouveau mode **autonome** (Docker sans Supervisor), détecté par l'absence de
+  `SUPERVISOR_TOKEN` ou forcé avec `MEROSS_STANDALONE=1`.
+- Admin liée par défaut à `127.0.0.1:2003` (`ADMIN_BIND`, `ADMIN_PORT`,
+  `ADMIN_ALLOW_CIDR`), sans authentification propre : tunnel SSH ou reverse
+  proxy recommandé.
+- Certificat TLS : SAN supplémentaires via `TLS_SAN_EXTRA` et détection des
+  IPv4 de l'hôte avec `TLS_SAN_AUTO` ; ports MQTT 2001 et HTTPS 2004.
+- Bundle `deploy/` : compose en réseau hôte, `.env.example`, `install.sh` qui
+  prépare les données, démarre le broker et affiche les valeurs à saisir.
+- Intégration : les ports 2004/2001 sont préremplis dans le formulaire manuel.
+- Tests : helpers de mode autonome et priorité des options ; **209 tests**
+  (1 ignoré), lint et parité moteur inchangés.
+- Parcours add-on (HA OS/Supervised) inchangé ; l'add-on reste recommandé.
+
 # Notes de version — 1.4.8
 
 ## 1.4.8 — présence et réglages du volet

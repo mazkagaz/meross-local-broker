@@ -34,12 +34,14 @@ pour les formats et les contrats.
 - [D2b — Parité du catalogue](design/D2b-PARITY.md)
 - [D4 — Surcharges, capture, rechargement](design/D4-GUIDE.md)
 - [Page de tuning des appareils — plan V1 → V2](design/TUNING-PAGE.md)
+- [Broker autonome pour HA Container — plan](design/DOCKER-STANDALONE.md)
 - [Archive du patch MRS100](design/MRS100_PATCH.md)
 
 ### Guides
 
 - [Tuning des appareils](guides/DEVICE-TUNING.fr.md)
 - [Ajouter une fonctionnalité sans coder — exemple MRS100](guides/OVERRIDE-MRS100-MOVEMENT.fr.md)
+- [Broker sous Home Assistant Container (Docker)](guides/DOCKER.fr.md)
 
 ### Tests
 

@@ -1,0 +1,23 @@
+# Standalone Meross Local Broker for Home Assistant Container (Docker).
+# Run ./install.sh, or copy .env.example to .env and adjust it first.
+services:
+  meross-broker:
+    image: ${BROKER_IMAGE:-ghcr.io/mazkagaz/amd64-meross_local_broker:latest}
+    container_name: meross-local-broker
+    restart: unless-stopped
+    # Host networking gives the broker the host LAN address, lets devices and
+    # the pairer reach it, and keeps the admin UI on host loopback.
+    network_mode: host
+    volumes:
+      - ./data:/data
+    environment:
+      MEROSS_STANDALONE: "1"
+      advertise: "${ADVERTISE:-false}"
+      debug_mode: "${DEBUG_MODE:-false}"
+      device_timezone: "${DEVICE_TIMEZONE:-}"
+      mqtt_integrity_mode: "${MQTT_INTEGRITY_MODE:-observe}"
+      ADMIN_BIND: "${ADMIN_BIND:-127.0.0.1}"
+      ADMIN_PORT: "${ADMIN_PORT:-2003}"
+      ADMIN_ALLOW_CIDR: "${ADMIN_ALLOW_CIDR:-127.0.0.1}"
+      TLS_SAN_AUTO: "${TLS_SAN_AUTO:-1}"
+      TLS_SAN_EXTRA: "${TLS_SAN_EXTRA:-}"

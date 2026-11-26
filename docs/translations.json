@@ -4,14 +4,14 @@
     {
       "source": "README.fr.md",
       "translation": "README.md",
-      "source_sha256": "3fa3a437e1f7408b0f3c4db2c212a0f2655a705cd51e6831709ebda7f72c1ea1",
-      "translation_sha256": "c091f045a7a88dc9e333ac1b66bfe428bf0645db67bacb792c347f5cd07d4147"
+      "source_sha256": "7172b727fe8de79f3cdb780cbb9df9981d07e41fc35396b8b0c5f9c1cf836bb2",
+      "translation_sha256": "543b877a54710cca7c36b0aefc551d261f8636b9c42b2b011d6b32cd75679fe2"
     },
     {
       "source": "meross_local_broker/DOCS.fr.md",
       "translation": "meross_local_broker/DOCS.md",
-      "source_sha256": "6ccdf37816e34471ccb24579ba06c0b5b39da555ee0a3d22463ed89fa49544b2",
-      "translation_sha256": "b0d0717f41147559b537618bf3f79505917b35407f4c86eb1831a65d08cb1159"
+      "source_sha256": "62b0eff0c6987cff3978bea3258e36afd503f2b8d988c3e0aae6b0a8cb076b4a",
+      "translation_sha256": "bced21211bf32f18c8fbac0dbef16fb66149c4986f264dba5ca80e655aee3b17"
     },
     {
       "source": "docs/guides/DEVICE-TUNING.fr.md",
@@ -24,6 +24,12 @@
       "translation": "docs/guides/OVERRIDE-MRS100-MOVEMENT.md",
       "source_sha256": "3c2f96c222b82fdb36d48589a4c84b1a4bf8d09066f6289bf264768f2243bd92",
       "translation_sha256": "1cea480cf615eb9f00c753c16c90f36bcdd077ec139163088d1885c8c0b3131c"
+    },
+    {
+      "source": "docs/guides/DOCKER.fr.md",
+      "translation": "docs/guides/DOCKER.md",
+      "source_sha256": "0f41e9b8a42f839ac1660d21e9eab168536fed86d0b35fabe52d9550c8c06c9a",
+      "translation_sha256": "d21d45fe130865746d41a77e5d4f933c242d6190a440db9259ed5c00f032f37f"
     }
   ]
 }

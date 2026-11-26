@@ -26,6 +26,10 @@ Requests for specific device families are welcome.
 5. Add the Home Assistant integration and configure it with the local account.
    It only works with this local broker; no cloud mode is offered.
 
+> Not using the add-on? On **Home Assistant Container**, run the broker as a
+> standalone Docker container: see the
+> [Docker guide](../docs/guides/DOCKER.md).
+
 The add-on exposes:
 
 - **2001/tcp**: MQTT broker (TLS, always enabled);

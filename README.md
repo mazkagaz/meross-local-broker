@@ -38,11 +38,11 @@ families are welcome.
 
 ## Version compatibility
 
-| Component                      | Minimum version | Notes                                                   |
-| ------------------------------ | --------------- | ------------------------------------------------------- |
-| Broker                         | 1.4.8           | MRS100 profile 2026.11.4; 3.2.2 for number presentation |
-| Meross Local Cloud integration | 3.2.2           | profile engine 2.5.1; Position and typed durations      |
-| Meross Local Pairer            | 2.0.9           | HTTPS discovery and pairing only                        |
+| Component                      | Minimum version | Notes                                                |
+| ------------------------------ | --------------- | ---------------------------------------------------- |
+| Broker                         | 1.4.8           | MRS100 profile 2026.11.4; **1.5.0** for HA Container |
+| Meross Local Cloud integration | 3.2.2           | profile engine 2.5.1; Position and typed durations   |
+| Meross Local Pairer            | 2.0.9           | HTTPS discovery and pairing only                     |
 
 ## Ports
 
@@ -68,6 +68,13 @@ identity. No debug port is published: `debug_mode` only enables detailed logs.
 - An Android phone for Meross Local Pairer.
 - **amd64** or **aarch64** installations only (32-bit architectures are no
   longer built).
+
+## Home Assistant Container (Docker)
+
+The add-on needs the Supervisor. On **Home Assistant Container**, run the
+broker as a standalone Docker container instead: see
+[docs/guides/DOCKER.md](docs/guides/DOCKER.md). The integration and pairer are
+unchanged; only the broker deployment differs.
 
 ## Full installation
 
