@@ -1,10 +1,10 @@
 // Modified or added for the MRS100 fork of ha-meross-local-broker (2026-11).
 // Upstream: https://github.com/albertogeniola/ha-meross-local-broker (Apache-2.0).
-import { Component, OnInit } from '@angular/core';
-import { NgxQrcodeElementTypes, NgxQrcodeErrorCorrectionLevels } from '@techiediaries/ngx-qrcode';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { QRCodeElementType, QRCodeErrorCorrectionLevel } from 'angularx-qrcode';
 import { AdminService } from '@app/services/admin';
 import { User } from '@app/model/user';
-import { FormBuilder } from '@angular/forms';
+import { UntypedFormBuilder } from '@angular/forms';
 import { Validators } from '@angular/forms';
 import { Output, EventEmitter } from '@angular/core';
 import { Configuration } from '@app/model/configuration';
@@ -13,6 +13,8 @@ import { Configuration } from '@app/model/configuration';
   selector: 'configuration-account',
   templateUrl: './account.component.html',
   styleUrls: ['./account.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class AccountComponent implements OnInit {
   accountForm = this.fb.group({
@@ -25,14 +27,14 @@ export class AccountComponent implements OnInit {
   public hidePassword: boolean = true;
   public processing: boolean = false;
 
-  public elementType = NgxQrcodeElementTypes.IMG;
-  public correctionLevel = NgxQrcodeErrorCorrectionLevels.MEDIUM;
+  public elementType: QRCodeElementType = 'img';
+  public correctionLevel: QRCodeErrorCorrectionLevel = 'M';
   public encodedAccountLoginData: string = null;
   public reconfigure: boolean = false;
 
   public configuration: Configuration = null;
 
-  constructor(private fb: FormBuilder, private adminService: AdminService) {}
+  constructor(private fb: UntypedFormBuilder, private adminService: AdminService) {}
 
   private loadConfiguration(conf: Configuration | null) {
     if (!conf) {

@@ -2,31 +2,30 @@
 // https://karma-runner.github.io/1.0/config/configuration-file.html
 const path = require('path');
 
-module.exports = function(config) {
+module.exports = function (config) {
   config.set({
     basePath: '.',
-    frameworks: ['jasmine', '@angular-devkit/build-angular'],
+    frameworks: ['jasmine'],
     plugins: [
       require('karma-jasmine'),
       require('karma-chrome-launcher'),
       require('karma-junit-reporter'),
       require('karma-coverage-istanbul-reporter'),
-      require('@angular-devkit/build-angular/plugins/karma')
     ],
     client: {
       clearContext: false, // leave Jasmine Spec Runner output visible in browser
-      captureConsole: Boolean(process.env.KARMA_ENABLE_CONSOLE)
+      captureConsole: Boolean(process.env.KARMA_ENABLE_CONSOLE),
     },
     junitReporter: {
       outputDir: path.join(__dirname, './reports/junit/'),
       outputFile: 'TESTS-xunit.xml',
       useBrowserName: false,
-      suite: '' // Will become the package name attribute in xml testsuite element
+      suite: '', // Will become the package name attribute in xml testsuite element
     },
     coverageIstanbulReporter: {
       reports: ['html', 'lcovonly', 'text-summary'],
       dir: path.join(__dirname, './reports/coverage'),
-      fixWebpackSourcePaths: true
+      fixWebpackSourcePaths: true,
     },
     reporters: ['progress', 'junit'],
     port: 9876,
@@ -36,6 +35,6 @@ module.exports = function(config) {
     autoWatch: true,
     browsers: ['ChromeHeadless'],
     singleRun: false,
-    restartOnFileChange: true
+    restartOnFileChange: true,
   });
 };

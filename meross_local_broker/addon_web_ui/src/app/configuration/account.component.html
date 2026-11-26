@@ -7,11 +7,13 @@ Upstream: https://github.com/albertogeniola/ha-meross-local-broker (Apache-2.0).
     <mat-card class="account-card">
       <mat-card-title>Local account</mat-card-title>
       <mat-card-content>
-        <div *ngIf="!reconfigure">
+        @if (!reconfigure) {
+        <div>
           <p>An account is already configured. If you want to change it, click on the following button.</p>
           <button mat-raised-button color="primary" (click)="editConfiguration(true)">Edit configuration</button>
         </div>
-        <form [formGroup]="accountForm" (ngSubmit)="onSubmit()" *ngIf="reconfigure">
+        } @if (reconfigure) {
+        <form [formGroup]="accountForm" (ngSubmit)="onSubmit()">
           <p>
             Create a <b>local login</b> for this broker. It is used by Meross Local Pairer and by the Home Assistant
             integration. This account is independent from Meross: the add-on never contacts the Meross cloud and never
@@ -65,18 +67,22 @@ Upstream: https://github.com/albertogeniola/ha-meross-local-broker (Apache-2.0).
             </button>
           </div>
         </form>
+        }
       </mat-card-content>
       <mat-divider inset></mat-divider>
-      <ngx-qrcode
-        *ngIf="encodedAccountLoginData"
+      @if (encodedAccountLoginData) {
+      <qrcode
         [elementType]="elementType"
-        [value]="encodedAccountLoginData"
+        [qrdata]="encodedAccountLoginData"
         cssClass="qrcode"
         [errorCorrectionLevel]="correctionLevel"
       >
-      </ngx-qrcode>
+      </qrcode>
+      }
       <mat-card-footer>
-        <mat-progress-bar mode="indeterminate" *ngIf="processing"></mat-progress-bar>
+        @if (processing) {
+        <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+        }
       </mat-card-footer>
     </mat-card>
   </div>

@@ -1,7 +1,17 @@
 // Modified or added for the MRS100 fork of ha-meross-local-broker (2026-11).
 // Upstream: https://github.com/albertogeniola/ha-meross-local-broker (Apache-2.0).
-import { Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import {
+  Component,
+  ElementRef,
+  EventEmitter,
+  Input,
+  OnDestroy,
+  OnInit,
+  Output,
+  ViewChild,
+  ChangeDetectionStrategy,
+} from '@angular/core';
+import { MatSnackBar as MatSnackBar } from '@angular/material/snack-bar';
 import { Subscription } from 'rxjs';
 import { ServiceStatus } from '@app/model/service';
 import { ServiceStore } from '@app/providers/service';
@@ -34,14 +44,11 @@ interface LogLine {
       </div>
 
       <nav mat-tab-nav-bar class="tabs">
-        <a
-          mat-tab-link
-          *ngFor="let service of services; let i = index"
-          [active]="i === selectedIndex"
-          (click)="selectTab(i)"
-        >
+        @for (service of services; track service; let i = $index) {
+        <a mat-tab-link [active]="i === selectedIndex" (click)="selectTab(i)">
           {{ serviceShortName(service) }}
         </a>
+        }
       </nav>
 
       <div class="toolbar">
@@ -83,22 +90,19 @@ interface LogLine {
           <mat-icon>download</mat-icon>
         </button>
 
-        <mat-form-field class="search" appearance="standard">
+        <mat-form-field class="search" appearance="outline">
           <mat-label>Search</mat-label>
           <input matInput [(ngModel)]="searchText" (ngModelChange)="applyFilters()" aria-label="Search log lines" />
-          <button
-            mat-icon-button
-            matSuffix
-            type="button"
-            *ngIf="searchText"
-            (click)="clearSearch()"
-            aria-label="Clear search"
-          >
-            <mat-icon>close</mat-icon>
-          </button>
+          @if (searchText) {
+          <ng-container ngProjectAs="[matSuffix], [matIconSuffix]">
+            <button mat-icon-button matSuffix type="button" (click)="clearSearch()" aria-label="Clear search">
+              <mat-icon>close</mat-icon>
+            </button>
+          </ng-container>
+          }
         </mat-form-field>
 
-        <mat-form-field class="level" appearance="standard">
+        <mat-form-field class="level" appearance="outline">
           <mat-label>Level</mat-label>
           <mat-select [(ngModel)]="levelFilter" (selectionChange)="applyFilters()" aria-label="Filter by log level">
             <mat-option value="all">All</mat-option>
@@ -112,18 +116,18 @@ interface LogLine {
         <span class="spacer"></span>
 
         <span class="counter">{{ logLines.length }} / {{ totalCount }} lines</span>
-        <span class="paused-label" *ngIf="paused">Paused</span>
+        @if (paused) {
+        <span class="paused-label">Paused</span>
+        }
       </div>
 
       <div class="logs" [class.wrap]="wrap" #logsContainer>
-        <div
-          class="log-line"
-          *ngFor="let line of logLines"
-          [class.warning]="line.severity === 'warning'"
-          [class.error]="line.severity === 'error'"
-        >
+        @for (line of logLines; track line) {
+        <div class="log-line" [class.warning]="line.severity === 'warning'" [class.error]="line.severity === 'error'">
           <span class="line-text">
-            <span *ngFor="let segment of line.segments" [class.match]="segment.match">{{ segment.text }}</span>
+            @for (segment of line.segments; track segment) {
+            <span [class.match]="segment.match">{{ segment.text }}</span>
+            }
           </span>
           <button
             mat-icon-button
@@ -137,7 +141,9 @@ interface LogLine {
             <mat-icon>content_copy</mat-icon>
           </button>
         </div>
-        <div class="empty" *ngIf="logLines.length === 0">No matching log lines.</div>
+        } @if (logLines.length === 0) {
+        <div class="empty">No matching log lines.</div>
+        }
       </div>
     </div>
   `,
@@ -256,6 +262,8 @@ interface LogLine {
       }
     `,
   ],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class ServiceLogsPageComponent implements OnInit, OnDestroy {
   @Input() services: ServiceStatus[] = [];

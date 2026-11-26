@@ -1,9 +1,10 @@
 // Modified or added for the MRS100 fork of ha-meross-local-broker (2026-11).
 import { TestBed } from '@angular/core/testing';
-import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 
 import { environment } from '@env/environment';
 import { TuningService, tuningErrorMessage } from './tuning.service';
+import { provideHttpClient, withInterceptorsFromDi, withXhr } from '@angular/common/http';
 
 describe('TuningService', () => {
   let service: TuningService;
@@ -11,7 +12,10 @@ describe('TuningService', () => {
   const base = environment.backend + '/_admin_';
 
   beforeEach(() => {
-    TestBed.configureTestingModule({ imports: [HttpClientTestingModule] });
+    TestBed.configureTestingModule({
+      imports: [],
+      providers: [provideHttpClient(withXhr(), withInterceptorsFromDi()), provideHttpClientTesting()],
+    });
     service = TestBed.inject(TuningService);
     http = TestBed.inject(HttpTestingController);
   });

@@ -1,5 +1,5 @@
 // Modified or added for the MRS100 fork of ha-meross-local-broker (2026-11).
-import { AfterViewInit, Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, OnDestroy, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { basicSetup, EditorView } from 'codemirror';
 import { Compartment } from '@codemirror/state';
@@ -34,6 +34,8 @@ import { yaml } from '@codemirror/lang-yaml';
       multi: true,
     },
   ],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class YamlEditorComponent implements AfterViewInit, OnDestroy, ControlValueAccessor {
   @ViewChild('host', { static: true }) host: ElementRef<HTMLDivElement>;

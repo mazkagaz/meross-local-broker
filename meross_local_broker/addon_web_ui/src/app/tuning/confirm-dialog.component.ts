@@ -1,6 +1,6 @@
 // Modified or added for the MRS100 fork of ha-meross-local-broker (2026-11).
-import { Component, Inject } from '@angular/core';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { Component, Inject, ChangeDetectionStrategy } from '@angular/core';
+import { MatDialogRef as MatDialogRef, MAT_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/dialog';
 
 export interface ConfirmDialogData {
   title: string;
@@ -34,6 +34,8 @@ export interface ConfirmDialogData {
       }
     `,
   ],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class ConfirmDialogComponent {
   constructor(

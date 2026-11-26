@@ -67,8 +67,17 @@
 }
 
 .tab-body {
+  display: flex;
+  flex-direction: row;
+  gap: 16px;
   padding: 16px 4px;
   align-items: flex-start;
+}
+
+@media (max-width: 959px) {
+  .tab-body {
+    flex-direction: column;
+  }
 }
 
 .list-card {
@@ -80,6 +89,7 @@
 .editor-column,
 .device-column {
   display: flex;
+  flex: 1 1 0;
   flex-direction: column;
   min-width: 0;
 }

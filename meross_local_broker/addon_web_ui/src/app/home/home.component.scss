@@ -4,6 +4,15 @@ Upstream: https://github.com/albertogeniola/ha-meross-local-broker (Apache-2.0).
 */
 .container {
   margin: 1em;
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+}
+
+.tiles-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
 .p10 {
