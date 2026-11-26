@@ -49,6 +49,7 @@ docker run -d --name "$BROKER" --network "$NET" \
     -v "$R/etc/cont-init.d/60-nginx.sh":/etc/cont-init.d/60-nginx.sh:ro \
     -v "$R/etc/services.d/api/run":/etc/services.d/api/run:ro \
     -v "$R/etc/services.d/mosquitto/run":/etc/services.d/mosquitto/run:ro \
+    -v "$R/usr/local/bin/mosquitto.sh":/usr/local/bin/mosquitto.sh:ro \
     -e MEROSS_STANDALONE=1 \
     -e advertise=false \
     -e ADMIN_BIND=0.0.0.0 \
