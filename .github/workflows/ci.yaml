@@ -91,7 +91,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Run the standalone container
         run: bash tools/test_standalone_docker.sh
       - name: Container logs on failure
@@ -103,17 +103,17 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Check out the integration
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: mazkagaz/meross-local-cloud
           # Pinned to the integration PR until it is merged, then switch to dev.
           ref: feature/docker-defaults
           path: cloud-src
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.13"
 
@@ -135,7 +135,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Prepare the Supervisor run directory
         run: sudo mkdir -p /run/supervisor/core
       - name: Run the add-on under a real Supervisor
