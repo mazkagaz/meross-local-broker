@@ -1,3 +1,16 @@
+# Notes de version — 1.5.2
+
+## 1.5.2 — support MSL610
+
+- Profil bundled **`meross.msl610`** : luminosité, température de couleur et
+  on/off via `ToggleX`.
+- L'intégration **4.0.6** expose la température de couleur en 2700–6500 K.
+- Tests golden frames à partir des captures de la télécommande : luminosité,
+  chaud/froid/mix, mise en veille et `TriggerX`.
+- Catalogue porté à **20 profils**.
+- Minuterie `TriggerX` non exposée pour l'instant.
+- Aucun changement de schéma ; les installations existantes sont compatibles.
+
 # Notes de version — 1.5.1
 
 ## 1.5.1 — datations UTC et dette technique
