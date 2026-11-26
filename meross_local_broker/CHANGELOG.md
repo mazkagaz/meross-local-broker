@@ -1,3 +1,17 @@
+## 1.5.0
+
+- Mode **autonome** pour Home Assistant Container (Docker sans Supervisor) :
+  détection par absence de `SUPERVISOR_TOKEN` ou `MEROSS_STANDALONE=1` ;
+  aucun appel `bashio::app.*` dans ce mode.
+- Admin configurable (`ADMIN_BIND`, `ADMIN_PORT`, `ADMIN_ALLOW_CIDR`), boucle
+  locale par défaut ; certificats avec SAN supplémentaires
+  (`TLS_SAN_EXTRA`, `TLS_SAN_AUTO`) ; ports MQTT/HTTPS fixes 2001/2004.
+- Bundle `deploy/` : `docker-compose.yml` (réseau hôte), `.env.example`,
+  `install.sh` (volume, `.env`, attente du broker, valeurs d'intégration).
+- Intégration : ports `2004`/`2001` préremplis dans le formulaire manuel.
+- HEALTHCHECK sur `/ca.crt` ; tests des helpers autonomes.
+- Parcours add-on inchangé.
+
 ## 1.4.8
 
 - Profil MRS100 `2026.11.4` : nouvelle entité **Position** (`number` 0–100 %,

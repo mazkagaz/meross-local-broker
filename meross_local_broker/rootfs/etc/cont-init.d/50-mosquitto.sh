@@ -79,7 +79,12 @@ fi
 # Subject Alternative Names: static names plus the LAN IPv4 addresses served by
 # the add-on, so clients connecting by IP can validate the hostname.
 # ------------------------------------------------------------------------------
-HOST_IPS=$(python3 /opt/custom_broker/supervisor_network.py 2>/dev/null || true)
+HOST_IPS=$(lan_ipv4_addresses 2>/dev/null || true)
+# A bridge container's address is not reachable by clients: only add detected
+# addresses in standalone when the container shares the host network.
+if is_standalone && [[ "${TLS_SAN_AUTO:-0}" != "1" ]]; then
+    HOST_IPS=""
+fi
 SAN="DNS:homeassistant.local, DNS:localhost, IP:127.0.0.1"
 if [[ -n "$HOST_IPS" ]]; then
     IFS=',' read -ra IPS <<< "$HOST_IPS"
@@ -91,6 +96,21 @@ if [[ -n "$HOST_IPS" ]]; then
     done
 else
     bashio::log.warning "No LAN IPv4 detected; certificate SAN keeps the static names only."
+fi
+
+# Explicit extra SANs (comma separated IP addresses or DNS names).
+if [[ -n "${TLS_SAN_EXTRA:-}" ]]; then
+    IFS=',' read -ra EXTRA_SANS <<< "${TLS_SAN_EXTRA}"
+    for entry in "${EXTRA_SANS[@]}"; do
+        entry="$(echo "$entry" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')"
+        [[ -z "$entry" ]] && continue
+        if [[ "$entry" =~ ^[0-9]{1,3}(\.[0-9]{1,3}){3}$ ]]; then
+            SAN+=", IP:$entry"
+        else
+            SAN+=", DNS:$entry"
+        fi
+    done
+    bashio::log.info "Additional TLS SANs: ${TLS_SAN_EXTRA}"
 fi
 
 NEED_SIGN=false

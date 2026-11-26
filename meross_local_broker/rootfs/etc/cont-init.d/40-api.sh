@@ -19,9 +19,14 @@ if [[ $REINIT_DB == "true" ]]; then
   fi
 fi
 
-# Configure env-vars
-ingress_entry=$(bashio::app.ingress_entry)
-sed -i "s#%%APIURL%%#${ingress_entry}#g" /var/www/assets/env.js
+# Configure env-vars. Standalone serves the UI at the root: the backend prefix
+# must stay empty, otherwise URLs would become protocol-relative (`//_admin_`).
+if is_standalone; then
+    api_url="${API_URL:-}"
+else
+    api_url=$(bashio::app.ingress_entry)
+fi
+sed -i "s#%%APIURL%%#${api_url}#g" /var/www/assets/env.js
 
 # Initializing DB
 pushd /opt/custom_broker >/dev/null
