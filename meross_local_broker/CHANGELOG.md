@@ -1,3 +1,14 @@
+## 1.6.1
+
+- Correctif de démarrage : la Web UI Angular 22 est de nouveau générée à la
+  racine de `/var/www`, avec `assets/env.js` présent. L'image 1.6.0 plaçait
+  les fichiers dans `/var/www/browser`, faisant échouer le cont-init et
+  arrêtant le conteneur.
+- Garde-fou CI ajouté sur la disposition de sortie du build Web UI.
+- Nouveau job CI qui construit réellement l'image courante, vérifie son
+  démarrage et la réutilise pour Standalone, E2E Docker et Supervisor.
+- Aucun changement du profil MSL610 ni de l'API broker.
+
 ## 1.6.0
 
 - Web UI migrée d'Angular 11 à **Angular 22.3** et Angular Material 22.

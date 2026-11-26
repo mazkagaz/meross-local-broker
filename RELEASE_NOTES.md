@@ -1,3 +1,16 @@
+# Notes de version — 1.6.1
+
+## 1.6.1 — correctif de démarrage Web UI
+
+- La Web UI est de nouveau générée directement dans `/var/www` avec
+  `assets/env.js`, au lieu de `/var/www/browser`.
+- Corrige l'échec du cont-init, le timeout s6 et le conteneur qui ne démarre
+  pas en 1.6.0.
+- Garde-fou CI sur la disposition Web UI, plus un smoke test qui démarre
+  réellement l'image construite.
+- E2E Docker et Supervisor utilisent désormais cette image courante.
+- Aucun changement du profil MSL610 ni de l'API broker.
+
 # Notes de version — 1.6.0
 
 ## 1.6.0 — Web UI Angular 22
