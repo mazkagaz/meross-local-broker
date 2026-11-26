@@ -60,9 +60,17 @@ The administration API (renaming/removing from the web panel, services, logs)
 is only reachable through the **Home Assistant ingress**, with the HA user
 identity. No debug port is published: `debug_mode` only enables detailed logs.
 
+## Choose your setup
+
+| Your Home Assistant             | Broker deployment                                                        |
+| ------------------------------- | ------------------------------------------------------------------------ |
+| Home Assistant OS or Supervised | install the **add-on** (below)                                           |
+| Home Assistant Container        | run the **standalone Docker container** ([guide](docs/guides/DOCKER.md)) |
+
 ## Before you start
 
-- Home Assistant OS or Supervised (the add-on needs the Supervisor).
+- A broker deployment: the add-on on HA OS/Supervised, or the standalone
+  Docker container on HA Container (**broker 1.5.0 or newer**).
 - HACS installed, for the Home Assistant integration.
 - A Meross device to pair and a **2.4 GHz WPA2** Wi-Fi network.
 - An Android phone for Meross Local Pairer.
@@ -76,7 +84,10 @@ broker as a standalone Docker container instead: see
 [docs/guides/DOCKER.md](docs/guides/DOCKER.md). The integration and pairer are
 unchanged; only the broker deployment differs.
 
-## Full installation
+## Full installation (add-on)
+
+The steps below apply to Home Assistant OS or Supervised. On Home Assistant
+Container, use the Docker guide above instead.
 
 ### 1. Install the add-on
 

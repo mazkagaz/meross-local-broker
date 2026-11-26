@@ -62,9 +62,17 @@ journaux) n'est accessible qu'à travers l'**ingress Home Assistant**, avec
 l'identité de l'utilisateur HA. Aucun port de débogage n'est publié : le mode
 `debug_mode` ne fait qu'activer les journaux détaillés.
 
+## Choisir son installation
+
+| Votre Home Assistant            | Déploiement du broker                                                       |
+| ------------------------------- | --------------------------------------------------------------------------- |
+| Home Assistant OS ou Supervised | installer l'**add-on** (ci-dessous)                                         |
+| Home Assistant Container        | lancer le **conteneur Docker autonome** ([guide](docs/guides/DOCKER.fr.md)) |
+
 ## Avant de commencer
 
-- Home Assistant OS ou Supervised (l'add-on a besoin du Supervisor).
+- Un broker déployé : l'add-on sous HA OS/Supervised, ou le conteneur Docker
+  autonome sous HA Container (**broker 1.5.0 ou plus récent**).
 - HACS installé, pour l'intégration Home Assistant.
 - Un appareil Meross à appairer et un Wi-Fi **2,4 GHz en WPA2**.
 - Un téléphone Android pour Meross Local Pairer.
@@ -78,7 +86,10 @@ tourner le broker comme conteneur Docker autonome : voir
 [docs/guides/DOCKER.fr.md](docs/guides/DOCKER.fr.md). L'intégration et le
 pairer ne changent pas ; seul le déploiement du broker diffère.
 
-## Installation complète
+## Installation complète (add-on)
+
+Les étapes ci-dessous concernent Home Assistant OS ou Supervised. Sous Home
+Assistant Container, utiliser le guide Docker ci-dessus.
 
 ### 1. Installer l'add-on
 
