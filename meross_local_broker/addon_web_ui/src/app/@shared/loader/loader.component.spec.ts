@@ -38,7 +38,7 @@ describe('LoaderComponent', () => {
     const div = element.querySelectorAll('div')[0];
 
     // Act
-    fixture.componentInstance.isLoading = true;
+    fixture.componentRef.setInput('isLoading', true);
     fixture.detectChanges();
 
     // Assert
@@ -60,7 +60,7 @@ describe('LoaderComponent', () => {
     const span = element.querySelectorAll('span')[0];
 
     // Act
-    fixture.componentInstance.message = 'testing';
+    fixture.componentRef.setInput('message', 'testing');
     fixture.detectChanges();
 
     // Assert

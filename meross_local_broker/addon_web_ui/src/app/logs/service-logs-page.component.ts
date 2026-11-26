@@ -43,7 +43,7 @@ interface LogLine {
         <span class="title">Logs</span>
       </div>
 
-      <nav mat-tab-nav-bar class="tabs">
+      <nav mat-tab-nav-bar class="tabs" [tabPanel]="tabPanel">
         @for (service of services; track service; let i = $index) {
         <a mat-tab-link [active]="i === selectedIndex" (click)="selectTab(i)">
           {{ serviceShortName(service) }}
@@ -51,100 +51,102 @@ interface LogLine {
         }
       </nav>
 
-      <div class="toolbar">
-        <button
-          mat-icon-button
-          type="button"
-          (click)="togglePause()"
-          [matTooltip]="paused ? 'Resume' : 'Pause'"
-          aria-label="Pause or resume"
-        >
-          <mat-icon>{{ paused ? 'play_arrow' : 'pause' }}</mat-icon>
-        </button>
-        <button
-          mat-icon-button
-          type="button"
-          (click)="toggleWrap()"
-          [matTooltip]="wrap ? 'Disable line wrapping' : 'Wrap lines'"
-          aria-label="Toggle line wrapping"
-        >
-          <mat-icon>wrap_text</mat-icon>
-        </button>
-        <button
-          mat-icon-button
-          type="button"
-          [cdkCopyToClipboard]="text"
-          (cdkCopyToClipboardCopied)="onCopied($event)"
-          matTooltip="Copy visible logs"
-          aria-label="Copy visible logs"
-        >
-          <mat-icon>content_copy</mat-icon>
-        </button>
-        <button
-          mat-icon-button
-          type="button"
-          (click)="downloadLogs()"
-          matTooltip="Download full log"
-          aria-label="Download full log"
-        >
-          <mat-icon>download</mat-icon>
-        </button>
-
-        <mat-form-field class="search" appearance="outline">
-          <mat-label>Search</mat-label>
-          <input matInput [(ngModel)]="searchText" (ngModelChange)="applyFilters()" aria-label="Search log lines" />
-          @if (searchText) {
-          <ng-container ngProjectAs="[matSuffix], [matIconSuffix]">
-            <button mat-icon-button matSuffix type="button" (click)="clearSearch()" aria-label="Clear search">
-              <mat-icon>close</mat-icon>
-            </button>
-          </ng-container>
-          }
-        </mat-form-field>
-
-        <mat-form-field class="level" appearance="outline">
-          <mat-label>Level</mat-label>
-          <mat-select [(ngModel)]="levelFilter" (selectionChange)="applyFilters()" aria-label="Filter by log level">
-            <mat-option value="all">All</mat-option>
-            <mat-option value="debug">Debug</mat-option>
-            <mat-option value="info">Info</mat-option>
-            <mat-option value="warning">Warning</mat-option>
-            <mat-option value="error">Error</mat-option>
-          </mat-select>
-        </mat-form-field>
-
-        <span class="spacer"></span>
-
-        <span class="counter">{{ logLines.length }} / {{ totalCount }} lines</span>
-        @if (paused) {
-        <span class="paused-label">Paused</span>
-        }
-      </div>
-
-      <div class="logs" [class.wrap]="wrap" #logsContainer>
-        @for (line of logLines; track line) {
-        <div class="log-line" [class.warning]="line.severity === 'warning'" [class.error]="line.severity === 'error'">
-          <span class="line-text">
-            @for (segment of line.segments; track segment) {
-            <span [class.match]="segment.match">{{ segment.text }}</span>
-            }
-          </span>
+      <mat-tab-nav-panel #tabPanel>
+        <div class="toolbar">
           <button
             mat-icon-button
-            class="line-copy"
             type="button"
-            [cdkCopyToClipboard]="line.text"
-            (cdkCopyToClipboardCopied)="onLineCopied($event)"
-            matTooltip="Copy this line"
-            aria-label="Copy this line"
+            (click)="togglePause()"
+            [matTooltip]="paused ? 'Resume' : 'Pause'"
+            aria-label="Pause or resume"
+          >
+            <mat-icon>{{ paused ? 'play_arrow' : 'pause' }}</mat-icon>
+          </button>
+          <button
+            mat-icon-button
+            type="button"
+            (click)="toggleWrap()"
+            [matTooltip]="wrap ? 'Disable line wrapping' : 'Wrap lines'"
+            aria-label="Toggle line wrapping"
+          >
+            <mat-icon>wrap_text</mat-icon>
+          </button>
+          <button
+            mat-icon-button
+            type="button"
+            [cdkCopyToClipboard]="text"
+            (cdkCopyToClipboardCopied)="onCopied($event)"
+            matTooltip="Copy visible logs"
+            aria-label="Copy visible logs"
           >
             <mat-icon>content_copy</mat-icon>
           </button>
+          <button
+            mat-icon-button
+            type="button"
+            (click)="downloadLogs()"
+            matTooltip="Download full log"
+            aria-label="Download full log"
+          >
+            <mat-icon>download</mat-icon>
+          </button>
+
+          <mat-form-field class="search" appearance="outline">
+            <mat-label>Search</mat-label>
+            <input matInput [(ngModel)]="searchText" (ngModelChange)="applyFilters()" aria-label="Search log lines" />
+            @if (searchText) {
+            <ng-container ngProjectAs="[matSuffix], [matIconSuffix]">
+              <button mat-icon-button matSuffix type="button" (click)="clearSearch()" aria-label="Clear search">
+                <mat-icon>close</mat-icon>
+              </button>
+            </ng-container>
+            }
+          </mat-form-field>
+
+          <mat-form-field class="level" appearance="outline">
+            <mat-label>Level</mat-label>
+            <mat-select [(ngModel)]="levelFilter" (selectionChange)="applyFilters()" aria-label="Filter by log level">
+              <mat-option value="all">All</mat-option>
+              <mat-option value="debug">Debug</mat-option>
+              <mat-option value="info">Info</mat-option>
+              <mat-option value="warning">Warning</mat-option>
+              <mat-option value="error">Error</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <span class="spacer"></span>
+
+          <span class="counter">{{ logLines.length }} / {{ totalCount }} lines</span>
+          @if (paused) {
+          <span class="paused-label">Paused</span>
+          }
         </div>
-        } @if (logLines.length === 0) {
-        <div class="empty">No matching log lines.</div>
-        }
-      </div>
+
+        <div class="logs" [class.wrap]="wrap" #logsContainer>
+          @for (line of logLines; track line) {
+          <div class="log-line" [class.warning]="line.severity === 'warning'" [class.error]="line.severity === 'error'">
+            <span class="line-text">
+              @for (segment of line.segments; track segment) {
+              <span [class.match]="segment.match">{{ segment.text }}</span>
+              }
+            </span>
+            <button
+              mat-icon-button
+              class="line-copy"
+              type="button"
+              [cdkCopyToClipboard]="line.text"
+              (cdkCopyToClipboardCopied)="onLineCopied($event)"
+              matTooltip="Copy this line"
+              aria-label="Copy this line"
+            >
+              <mat-icon>content_copy</mat-icon>
+            </button>
+          </div>
+          } @if (logLines.length === 0) {
+          <div class="empty">No matching log lines.</div>
+          }
+        </div>
+      </mat-tab-nav-panel>
     </div>
   `,
   styles: [
