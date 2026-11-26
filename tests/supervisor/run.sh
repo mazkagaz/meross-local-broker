@@ -12,6 +12,7 @@ SUPERVISOR_IMAGE=${SUPERVISOR_IMAGE:-ghcr.io/home-assistant/amd64-hassio-supervi
 WORK=$(mktemp -d)
 ADDON=meross_broker_ci
 SUPERVISOR=hassio_supervisor_ci
+ADDON_CONTAINER="app_local_${ADDON}"
 RUN_DIR=${SUPERVISOR_RUN_DIR:-/run/supervisor}
 
 cleanup() {
@@ -19,7 +20,7 @@ cleanup() {
         echo "KEEP=1: containers and $WORK kept for inspection" >&2
         return 0
     fi
-    docker rm -f "$SUPERVISOR" "addon_local_${ADDON}" hassio_cli >/dev/null 2>&1 || true
+    docker rm -f "$SUPERVISOR" "addon_local_${ADDON}" "$ADDON_CONTAINER" hassio_cli >/dev/null 2>&1 || true
     docker network rm hassio >/dev/null 2>&1 || true
     if [[ -d "$WORK" ]] && docker image inspect "$BASE_IMAGE" >/dev/null 2>&1; then
         docker run --rm -v "$WORK":/work --entrypoint sh "$BASE_IMAGE" \
@@ -113,7 +114,7 @@ docker start "$SUPERVISOR" >/dev/null
 fail() {
     echo "$*" >&2
     docker logs --tail 80 "$SUPERVISOR" >&2 || true
-    docker logs --tail 80 "addon_local_${ADDON}" >&2 || true
+    docker logs --tail 80 "$ADDON_CONTAINER" >&2 || true
     exit 1
 }
 
@@ -192,7 +193,7 @@ done
 timeout 5 openssl s_client -connect 127.0.0.1:2001 -brief </dev/null >/dev/null 2>&1 \
     || fail "MQTT TLS listener did not become ready"
 
-docker logs "addon_local_${ADDON}" >/tmp/addon.log 2>&1 || true
+docker logs "$ADDON_CONTAINER" >/tmp/addon.log 2>&1 || true
 grep -q "Substituting ingress_entry" /tmp/addon.log \
     || fail "add-on did not use the Supervisor ingress path"
 if grep -q "Standalone mode:" /tmp/addon.log; then

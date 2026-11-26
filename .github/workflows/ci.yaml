@@ -145,7 +145,7 @@ jobs:
         run: |
           docker ps -a
           docker logs --tail 120 hassio_supervisor_ci 2>&1 || true
-          docker logs --tail 120 addon_local_meross_broker_ci 2>&1 || true
+          docker logs --tail 120 app_local_meross_broker_ci 2>&1 || true
 
   gate:
     name: CI
