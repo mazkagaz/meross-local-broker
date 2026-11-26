@@ -6,12 +6,7 @@ module.exports = function (config) {
   config.set({
     basePath: '.',
     frameworks: ['jasmine'],
-    plugins: [
-      require('karma-jasmine'),
-      require('karma-chrome-launcher'),
-      require('karma-junit-reporter'),
-      require('karma-coverage-istanbul-reporter'),
-    ],
+    plugins: [require('karma-jasmine'), require('karma-chrome-launcher'), require('karma-junit-reporter')],
     client: {
       clearContext: false, // leave Jasmine Spec Runner output visible in browser
       captureConsole: Boolean(process.env.KARMA_ENABLE_CONSOLE),
@@ -21,11 +16,6 @@ module.exports = function (config) {
       outputFile: 'TESTS-xunit.xml',
       useBrowserName: false,
       suite: '', // Will become the package name attribute in xml testsuite element
-    },
-    coverageIstanbulReporter: {
-      reports: ['html', 'lcovonly', 'text-summary'],
-      dir: path.join(__dirname, './reports/coverage'),
-      fixWebpackSourcePaths: true,
     },
     reporters: ['progress', 'junit'],
     port: 9876,

@@ -1,3 +1,15 @@
+## 1.6.0
+
+- Web UI migrée d'Angular 11 à **Angular 22.3** et Angular Material 22.
+- Migration Material MDC, builder Angular `application`, suppression de
+  `@angular/flex-layout` et remplacement de la librairie QR.
+- Nettoyage de l'outillage dev legacy : Protractor, TSLint/codelyzer,
+  Stylelint/HTMLHint, Hads et ngx-rocket retirés.
+- `write:env` remplacé par un script local sans dépendance.
+- Audit npm : **0 vulnérabilité**, y compris les dépendances de développement.
+- 61 specs Karma validées sous Angular 22.
+- Profil MSL610 et API broker inchangés.
+
 ## 1.5.2
 
 - Profil bundled **`meross.msl610`** : luminosité, température de couleur et
