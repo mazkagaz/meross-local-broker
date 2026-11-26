@@ -1,3 +1,6 @@
+# check=skip=InvalidDefaultArgInFrom
+# BUILD_FROM is always supplied by the Home Assistant builder with the
+# architecture-specific base image. A default here would be wrong for multi-arch.
 ARG BUILD_FROM
 FROM $BUILD_FROM
 
@@ -8,7 +11,7 @@ ARG BUILD_ARCH
 ENV HIVEMQ='b2043e7fcbd5897a3799869d42c6202122221fbc' \
   LIBWEBSOCKETS='3.1.0' \
   MOSQUITTO='2.0.10' \
-  MOSQUITTO_GO_AUTH='1.5.0' \
+  MOSQUITTO_GO_COMMIT='1.5.0' \
   MOSQUTTO_DISCONNECT='0.0.1' \
   GOVERSION=1.16.4 \
   PIP_BREAK_SYSTEM_PACKAGES=1
@@ -120,7 +123,7 @@ RUN mkdir -p /tmp/go \
   && mkdir -p /usr/share/mosquitto \
   && cp /usr/local/lib/mosquitto_disconnections.so /usr/share/mosquitto/mosquitto_disconnections.so \
   && cd /tmp \
-  && git clone --depth 1 --branch "${MOSQUITTO_GO_AUTH}" \
+  && git clone --depth 1 --branch "${MOSQUITTO_GO_COMMIT}" \
   https://github.com/iegomez/mosquitto-go-auth.git \
   && export GOPROXY='https://proxy.golang.org,direct' \
   && cd mosquitto-go-auth \

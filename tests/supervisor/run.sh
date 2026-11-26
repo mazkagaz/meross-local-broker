@@ -165,16 +165,16 @@ done
 
 run_ha store reload >/dev/null 2>&1 || true
 echo "Installing local add-on..."
-if ! run_ha addons install "local_${ADDON}" >/tmp/addon-install.json 2>&1; then
+if ! run_ha apps install "local_${ADDON}" >/tmp/addon-install.json 2>&1; then
     cat /tmp/addon-install.json >&2
     fail "add-on installation failed"
 fi
-run_ha addons start "local_${ADDON}" >/dev/null \
+run_ha apps start "local_${ADDON}" >/dev/null \
     || fail "add-on start failed"
 
 state=""
 for _ in $(seq 1 120); do
-    state=$(run_ha addons info "local_${ADDON}" 2>/dev/null | jq -r '.data.state // empty' 2>/dev/null || true)
+    state=$(run_ha apps info "local_${ADDON}" 2>/dev/null | jq -r '.data.state // empty' 2>/dev/null || true)
     [[ "$state" == "started" ]] && break
     sleep 2
 done
