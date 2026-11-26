@@ -1,3 +1,19 @@
+# Notes de version — 1.5.1
+
+## 1.5.1 — datations UTC et dette technique
+
+- Datations unifiées en UTC : stockage naïf dans SQLite, valeurs aware dans
+  l'application, sérialisation tuning en ISO 8601 `Z`.
+- Correction de l'âge du cache Ability et des caches device de plus de 24 h.
+- Zéro warning pytest côté broker, SQLAlchemy passé en 1.4.54, CLI Supervisor
+  `apps`, métadonnées Docker nettoyées.
+- Web UI validée sous **Node 22** : build Angular et 61 specs Karma.
+- Tests : **221 passed, 1 skipped**, 33 subtests, rejoués sous `Europe/Paris`
+  et `America/New_York`.
+- Aucun changement de schéma ; les anciennes valeurs de cache peuvent refléter
+  l'ancien fuseau et se rafraîchissent naturellement.
+- Intégration **4.0.4+** et pairer inchangés.
+
 # Notes de version — 1.5.0
 
 ## 1.5.0 — broker autonome pour Home Assistant Container

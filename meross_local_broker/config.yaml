@@ -1,7 +1,7 @@
 # Modified or added for the MRS100 fork of ha-meross-local-broker (2026-11).
 # Upstream: https://github.com/albertogeniola/ha-meross-local-broker (Apache-2.0).
 name: "Meross Local Broker"
-version: "1.5.0"
+version: "1.5.1"
 description: "LAN-only Meross broker (MQTT/TLS + HTTP/HTTPS API, HTTPS by default) for Home Assistant."
 slug: "meross_local_broker"
 image: "ghcr.io/mazkagaz/{arch}-meross_local_broker"

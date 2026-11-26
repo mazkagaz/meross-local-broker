@@ -1,3 +1,18 @@
+## 1.5.1
+
+- Datations unifiées en UTC : stockage naïf UTC dans SQLite, valeurs aware
+  dans l'application, sérialisation tuning en ISO 8601 avec suffixe `Z`.
+- Correction du calcul d'âge du cache Ability et des caches device de plus de
+  24 h.
+- Suppression des warnings broker : regex Meross, SQLAlchemy 1.4.54, CLI
+  Supervisor `apps`, métadonnées Docker.
+- Web UI validée sous Node 22 avec build Angular et 61 specs Karma.
+- Tests : **221 passed, 1 skipped**, 33 subtests ; suite rejouée sous
+  `Europe/Paris` et `America/New_York`.
+- Aucun changement de schéma SQLite. Les anciennes valeurs de cache peuvent
+  refléter l'ancien fuseau du processus et se rafraîchissent naturellement.
+- Intégration **4.0.4+** inchangée ; pairer inchangé.
+
 ## 1.5.0
 
 - Mode **autonome** pour Home Assistant Container (Docker sans Supervisor) :

@@ -63,12 +63,12 @@ pinned requirements and run the whole suite:
 
 ```bash
 python3 -m venv .venv
-.venv/bin/pip install -r meross_local_broker/rootfs/opt/custom_broker/requirements.txt
+.venv/bin/pip install -r meross_local_broker/rootfs/opt/custom_broker/requirements_ci.txt
 cd meross_local_broker/rootfs/opt/custom_broker
-PYTHONPATH=. ../../../../.venv/bin/python -m unittest discover -p 'test_*.py'
+../../../../.venv/bin/python -m pytest -q
 ```
 
-Expected: 74 tests OK.
+Expected: **221 passed, 1 skipped, 26 subtests passed**.
 
 HACS cannot install add-ons; the companion
 [Meross Local Cloud integration](https://github.com/mazkagaz/meross-local-cloud) is a
