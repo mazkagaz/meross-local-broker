@@ -74,7 +74,7 @@ const DEVICE_STATE: any = {
     type: 'mrs100',
     sub_type: null,
     online: 'ONLINE',
-    last_seen: '2026-11-22T10:00:00',
+    last_seen: '2026-11-22T10:00:00Z',
     local_ip: '192.168.1.10',
     firmware: '1.0.0',
     hardware: '1.0',

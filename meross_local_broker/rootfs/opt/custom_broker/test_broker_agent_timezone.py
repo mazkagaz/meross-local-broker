@@ -8,11 +8,13 @@ Run with: python3 -m unittest test_broker_agent_timezone
 import json
 import time
 import unittest
+from datetime import timedelta
 from types import SimpleNamespace
 from unittest import mock
 
 import broker_agent
 from compat import OnlineStatus
+from time_utils import utcnow
 
 DEVICE_UUID = "2310184977069551370248e1e9de3638"
 DEVICE_KEY = "7b9ebd3edc1f13c6cb3f0d70d4ce066f"
@@ -140,16 +142,23 @@ class PeriodicRefreshTest(unittest.TestCase):
 
     def test_skips_device_with_fresh_info(self):
         broker = make_broker("Europe/Rome")
-        broker._devices_sys_info_timestamp[DEVICE_UUID] = broker_agent.datetime.now()
+        broker._devices_sys_info_timestamp[DEVICE_UUID] = utcnow()
         with mock.patch.object(broker_agent, "dbhelper", FakeDbHelper()):
             self.assertEqual(broker.refresh_stale_devices(), [])
         self.assertEqual(system_all_gets(broker), [])
 
     def test_refreshes_device_with_stale_info(self):
         broker = make_broker("Europe/Rome")
-        stale = broker_agent.datetime.now() - broker_agent.timedelta(
+        stale = utcnow() - timedelta(
             seconds=broker_agent._DEVICE_UPDATE_CACHE_INTERVAL_SECONDS + 1)
         broker._devices_sys_info_timestamp[DEVICE_UUID] = stale
+        with mock.patch.object(broker_agent, "dbhelper", FakeDbHelper()):
+            self.assertEqual(broker.refresh_stale_devices(), [DEVICE_UUID])
+        self.assertEqual(len(system_all_gets(broker)), 1)
+
+    def test_refreshes_device_stale_for_more_than_one_day(self):
+        broker = make_broker("Europe/Rome")
+        broker._devices_sys_info_timestamp[DEVICE_UUID] = utcnow() - timedelta(days=2)
         with mock.patch.object(broker_agent, "dbhelper", FakeDbHelper()):
             self.assertEqual(broker.refresh_stale_devices(), [DEVICE_UUID])
         self.assertEqual(len(system_all_gets(broker)), 1)

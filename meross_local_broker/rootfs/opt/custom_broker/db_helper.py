@@ -18,6 +18,7 @@ from datetime import datetime
 from hashlib import md5
 from utilities import hash_password, hash_token
 from model.enums import BridgeStatus, EventType
+from time_utils import utcnow
 import json
 import random
 
@@ -27,7 +28,7 @@ l = get_logger(__name__)
 
 def _utcnow() -> datetime:
     """Single clock entry point so tests can exercise token expiry."""
-    return datetime.utcnow()
+    return utcnow()
 
 
 class DbHelper:
@@ -189,7 +190,7 @@ class DbHelper:
             row = PendingUnbind(device_uuid=device_uuid)
             self._s.add(row)
         row.user_id = int(user_id)
-        row.created_at = datetime.now()
+        row.created_at = _utcnow()
         self._s.commit()
 
     def get_pending_unbinds(self):
@@ -240,7 +241,7 @@ class DbHelper:
         if dev is None:
             raise Exception("Device %s was not present into the database." % device_uuid)
         dev.online_status = status
-        dev.last_seen_time = datetime.now()
+        dev.last_seen_time = _utcnow()
         self._s.add(dev)
         self._s.commit()
 
@@ -335,7 +336,7 @@ class DbHelper:
         row.signal_open = config.get('signalOpen')
         row.signal_close = config.get('signalClose')
         row.payload_json = json.dumps(config)
-        row.updated_at = datetime.now()
+        row.updated_at = _utcnow()
         self._s.add(row)
         self._s.commit()
         l.info("Stored roller-shutter config for device %s channel %s: %s",
@@ -352,7 +353,7 @@ class DbHelper:
         if row is None:
             row = DeviceAbility(device_uuid=device_uuid)
         row.ability_json = json.dumps(ability)
-        row.updated_at = datetime.now()
+        row.updated_at = _utcnow()
         self._s.add(row)
         self._s.commit()
         return row
@@ -391,7 +392,7 @@ class DbHelper:
                 row.position = entry.get('position')
             if 'state' in entry:
                 row.state = entry.get('state')
-            row.updated_at = datetime.now()
+            row.updated_at = _utcnow()
             self._s.add(row)
         self._s.commit()
         return len(entries)
@@ -411,7 +412,7 @@ class DbHelper:
             if row is None:
                 row = RollerShutterAdjust(device_uuid=device_uuid, channel=channel)
             row.payload_json = json.dumps(entry)
-            row.updated_at = datetime.now()
+            row.updated_at = _utcnow()
             self._s.add(row)
         self._s.commit()
         return len(entries)

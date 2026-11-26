@@ -36,6 +36,7 @@ from db_helper import dbhelper
 from profile_lint import DEFAULT_SCHEMA, lint_documents, load_schema
 from profiles import ProfileCatalog, get_catalog, reload_catalog
 from protocol import _build_mqtt_message
+from time_utils import utc_iso, utcnow
 
 MAX_YAML_BYTES = 256 * 1024
 MAX_YAML_LINES = 5000
@@ -240,7 +241,7 @@ class MqttProbe:
             "header": sanitize(safe_header),
             "payload": sanitize(data.get("payload") or {}),
             "elapsed_ms": elapsed_ms,
-            "received_at": datetime.now(timezone.utc).isoformat(),
+            "received_at": utc_iso(utcnow()),
         }
 
 
@@ -398,7 +399,7 @@ class TuningStore:
 
     @staticmethod
     def _iso(value: Any) -> Any:
-        return value.isoformat() if hasattr(value, "isoformat") else value
+        return utc_iso(value)
 
     @staticmethod
     def _entity_rows(entities) -> List[Dict[str, Any]]:
@@ -1303,8 +1304,8 @@ class TuningStore:
             stat = path.stat()
             items.append({
                 "file": path.name,
-                "created_at": datetime.fromtimestamp(
-                    stat.st_mtime, timezone.utc).isoformat(),
+                "created_at": utc_iso(datetime.fromtimestamp(
+                    stat.st_mtime, timezone.utc)),
                 "hash": _hash_text(path.read_text()),
             })
         return sorted(items, key=lambda item: item["created_at"],
@@ -1386,7 +1387,7 @@ class TuningStore:
             manifest = {
                 "revision": self.catalog().revision,
                 "source": source,
-                "generated_at": datetime.now(timezone.utc).isoformat(),
+                "generated_at": utc_iso(utcnow()),
                 "profiles": [
                     {"id": name[:-5], "hash": _hash_text(text)}
                     for name, text in entries.items()
@@ -1465,7 +1466,7 @@ class TuningStore:
 
     def _audit(self, entry: Dict[str, Any]) -> None:
         entry = dict(entry)
-        entry["at"] = datetime.now(timezone.utc).isoformat()
+        entry["at"] = utc_iso(utcnow())
         try:
             self.audit.parent.mkdir(parents=True, exist_ok=True)
             with self.audit.open("a", encoding="utf-8") as handle:
@@ -1541,7 +1542,7 @@ class TuningStore:
         if override is None or not override.is_file():
             return
         self.backups.mkdir(parents=True, exist_ok=True)
-        stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
+        stamp = utcnow().strftime("%Y%m%dT%H%M%S%fZ")
         target = self.backups / f"{stamp}-{profile_id}.yaml"
         shutil.copyfile(override, target)
         os.chmod(target, 0o600)

@@ -21,7 +21,7 @@ from setup import setup_account
 from profiles import get_catalog, reload_catalog
 import profile_match
 from capture import get_capture_manager
-from datetime import datetime
+from datetime import datetime, timezone
 
 
 admin_blueprint = Blueprint('admin', __name__)
@@ -263,16 +263,16 @@ def get_events():
     from_timestamp = args.get('fromTimestamp')
     if from_timestamp is not None:
         try:
-            from_timestamp = datetime.utcfromtimestamp(float(from_timestamp))
+            from_timestamp = datetime.fromtimestamp(float(from_timestamp), timezone.utc)
         except (ValueError,TypeError) as e:
             raise BadRequestError(msg=f"Invalid fromTimestamp parameter specified: {from_timestamp}.")
 
     to_timestamp = args.get('toTimestamp')
     if to_timestamp is not None:
         try:
-            to_timestamp = datetime.utcfromtimestamp(float(to_timestamp))
+            to_timestamp = datetime.fromtimestamp(float(to_timestamp), timezone.utc)
         except (ValueError,TypeError) as e:
-            raise BadRequestError(msg=f"Invalid toTimestamp parameter specified: {from_timestamp}.")
+            raise BadRequestError(msg=f"Invalid toTimestamp parameter specified: {to_timestamp}.")
 
     device_uuid = args.get('deviceUuid')
     sub_device_id = args.get('subDeviceId')

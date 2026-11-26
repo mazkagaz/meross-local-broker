@@ -6,7 +6,7 @@ import json
 import tempfile
 import unittest
 import zipfile
-from datetime import datetime
+from datetime import datetime, timezone
 from io import BytesIO
 from pathlib import Path
 from types import SimpleNamespace
@@ -224,7 +224,7 @@ class TuningApiTest(unittest.TestCase):
             local_ip="192.168.1.10",
             fmware_version="1.0.0",
             hdware_version="1.0",
-            last_seen_time=datetime(2026, 11, 22, 10, 0, 0),
+            last_seen_time=datetime(2026, 11, 22, 10, 0, 0, tzinfo=timezone.utc),
             owner_user=SimpleNamespace(user_id=7, mqtt_key="secret"),
         )
         self.store._devices = lambda: [device]
@@ -251,6 +251,8 @@ class TuningApiTest(unittest.TestCase):
         self.assertEqual(
             [item["key"] for item in response.get_json()["entities"]],
             ["outlet_0", "outlet_1"])
+        self.assertTrue(
+            response.get_json()["device"]["last_seen"].endswith("Z"))
 
         response = self.client.get("/_admin_/tuning/devices/missing")
         self.assertEqual(response.status_code, 404)

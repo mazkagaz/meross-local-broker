@@ -2,7 +2,7 @@
 # Upstream: https://github.com/albertogeniola/ha-meross-local-broker (Apache-2.0).
 """API compatibility checks. Run with: python3 -m unittest test_http_api."""
 import base64
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import hashlib
 import json
 import tempfile
@@ -162,7 +162,7 @@ class HttpApiCompatibilityTest(unittest.TestCase):
         token = self.sign_in().get_json()['data']['token']
         headers = {'Authorization': f'Basic {token}'}
 
-        future = datetime.utcnow() + timedelta(days=8)
+        future = datetime.now(timezone.utc) + timedelta(days=8)
         with patch('db_helper._utcnow', return_value=future):
             response = self.client.post('/v1/Device/devList', json=self.envelope({}),
                                         headers=headers)
@@ -171,12 +171,30 @@ class HttpApiCompatibilityTest(unittest.TestCase):
 
         token = self.sign_in().get_json()['data']['token']
         headers = {'Authorization': f'Basic {token}'}
-        future = datetime.utcnow() + timedelta(days=31)
+        future = datetime.now(timezone.utc) + timedelta(days=31)
         with patch('db_helper._utcnow', return_value=future):
             response = self.client.post('/v1/Device/devList', json=self.envelope({}),
                                         headers=headers)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.get_json()['info'], 'token_expired')
+
+    def test_admin_events_epoch_filters_are_utc(self):
+        from db_helper import dbhelper
+        from model.enums import EventType
+        event = dbhelper.store_event(
+            EventType.USER_LOGIN_SUCCESS, details='UTC regression check')
+        self.assertIsNotNone(event.timestamp.tzinfo)
+        self.assertEqual(event.timestamp.utcoffset(), timedelta(0))
+
+        response = self.client.get('/_admin_/events?fromTimestamp=0')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.get_json()[0]['eventId'], event.event_id)
+
+        after = int(event.timestamp.timestamp()) + 1
+        response = self.client.get(
+            f'/_admin_/events?fromTimestamp={after}')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.get_json(), [])
 
     def test_login_rate_limit_returns_429(self):
         for _ in range(5):
