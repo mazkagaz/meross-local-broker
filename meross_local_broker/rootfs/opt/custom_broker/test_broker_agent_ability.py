@@ -3,12 +3,13 @@
 import hashlib
 import json
 import unittest
-from datetime import datetime, timedelta
+from datetime import timedelta
 from types import SimpleNamespace
 from unittest import mock
 
 import broker_agent
 from compat import OnlineStatus
+from time_utils import utcnow
 
 MQTT_KEY = "0123456789abcdef0123456789abcdef"
 DEVICE_UUID = "aabbccddeeff00112233445566778899"
@@ -110,7 +111,7 @@ class AbilityRequestTest(unittest.TestCase):
         db = FakeDbHelper(
             [make_device()],
             {DEVICE_UUID: SimpleNamespace(
-                updated_at=datetime.now(),
+                updated_at=utcnow(),
                 ability_json='{"Appliance.System.All": {}}')},
         )
         with mock.patch.object(broker_agent, "dbhelper", db):
@@ -122,7 +123,7 @@ class AbilityRequestTest(unittest.TestCase):
         db = FakeDbHelper(
             [make_device()],
             {DEVICE_UUID: SimpleNamespace(
-                updated_at=datetime.now(), ability_json="{}")},
+                updated_at=utcnow(), ability_json="{}")},
         )
         with mock.patch.object(broker_agent, "dbhelper", db):
             broker._issue_devices_discovery()
@@ -133,7 +134,7 @@ class AbilityRequestTest(unittest.TestCase):
         db = FakeDbHelper(
             [make_device()],
             {DEVICE_UUID: SimpleNamespace(
-                updated_at=datetime.now() - timedelta(days=2),
+                updated_at=utcnow() - timedelta(days=2),
                 ability_json='{"Appliance.System.All": {}}')},
         )
         with mock.patch.object(broker_agent, "dbhelper", db):

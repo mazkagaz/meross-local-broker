@@ -11,7 +11,6 @@ import re
 import ssl
 import time
 import uuid
-from datetime import datetime, timedelta
 from threading import RLock, Thread
 from typing import Dict, List, Optional
 
@@ -28,6 +27,7 @@ from model.db_models import Device
 import mqtt_integrity
 from protocol import _build_mqtt_message
 from timezone_utils import build_time_payload, build_time_rules, needs_time_sync
+from time_utils import to_epoch, utcnow
 
 CLIENT_ID = 'broker_agent'
 APPLIANCE_MESSAGE_TOPICS = '/appliance/+/publish'
@@ -262,14 +262,14 @@ class Broker:
                 except ValueError:
                     stored = None
             if isinstance(stored, dict) and stored:
-                age = now - row.updated_at.timestamp()
+                age = now - to_epoch(row.updated_at)
                 if age < _ABILITY_REFRESH_INTERVAL_SECONDS:
                     return False
         return self._issue_device_get_ability(device_uuid)
 
     def refresh_stale_devices(self) -> List[str]:
         """Issue Appliance.System.All to every known device whose info is missing or older than the cache interval."""
-        now = datetime.now()
+        now = utcnow()
         refreshed = []
         for device in dbhelper.get_all_devices():
             last_update_ts = self._devices_sys_info_timestamp.get(device.uuid)
@@ -337,7 +337,7 @@ class Broker:
 
         # If this is the first time we see this device or if its cached info is old, update its channel status
         last_update_ts = self._devices_sys_info_timestamp.get(device_uuid)
-        if last_update_ts is None or (datetime.now() - last_update_ts).seconds > _DEVICE_UPDATE_CACHE_INTERVAL_SECONDS:
+        if last_update_ts is None or (utcnow() - last_update_ts).total_seconds() > _DEVICE_UPDATE_CACHE_INTERVAL_SECONDS:
             l.info("Update required for device %s Issuing SystemAll command to discover its channels "
                    "and supplementary data", device_uuid)
             self._issue_device_get_all(device_uuid)
@@ -533,7 +533,7 @@ class Broker:
                     l.warning("Could not guess the channels for device uuid %s", appliance_uuid)
 
             # Update the last update timestamp
-            ts = datetime.now()
+            ts = utcnow()
             l.info("Setting last update timestamp to %s for device %s", ts, appliance_uuid)
             self._devices_sys_info_timestamp[device.uuid] = ts
 
