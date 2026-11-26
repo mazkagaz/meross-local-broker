@@ -41,7 +41,7 @@ d'intégration spécifiques sont bienvenues.
 
 | Brique                         | Version minimale | Remarques                                                    |
 | ------------------------------ | ---------------- | ------------------------------------------------------------ |
-| Broker                         | 1.4.8            | profil MRS100 2026.11.4 ; **1.5.0** pour HA Container        |
+| Broker                         | 1.4.8            | profil MRS100 ; profil MSL610 ; **1.5.0** pour HA Container  |
 | Intégration Meross Local Cloud | 3.2.2            | moteur profils 2.5.1 ; Position et durées en champ de saisie |
 | Meross Local Pairer            | 2.0.9            | découverte et appairage HTTPS uniquement                     |
 

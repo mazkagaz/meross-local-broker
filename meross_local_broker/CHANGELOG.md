@@ -1,3 +1,16 @@
+## 1.5.2
+
+- Profil bundled **`meross.msl610`** : luminosité, température de couleur et
+  on/off via `Appliance.Control.ToggleX`.
+- Température de couleur exposée par l'intégration **4.0.6** en mode
+  `ColorMode.COLOR_TEMP` (2700–6500 K, échelle native 1–100).
+- Tests golden frames MSL610 issus des captures de la télécommande :
+  luminosité, chaud/froid/mix, mise en veille et `TriggerX`.
+- Catalogue porté à **20 profils**.
+- La minuterie `TriggerX` reste non exposée ; elle est enregistrée sans
+  bloquer le profil.
+- Aucun changement de schéma SQLite ; compatible broker 1.5.1.
+
 ## 1.5.1
 
 - Datations unifiées en UTC : stockage naïf UTC dans SQLite, valeurs aware

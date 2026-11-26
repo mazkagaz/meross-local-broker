@@ -68,7 +68,7 @@ cd meross_local_broker/rootfs/opt/custom_broker
 ../../../../.venv/bin/python -m pytest -q
 ```
 
-Expected: **221 passed, 1 skipped, 26 subtests passed**.
+Expected: **224 passed, 1 skipped, 27 subtests passed**.
 
 HACS cannot install add-ons; the companion
 [Meross Local Cloud integration](https://github.com/mazkagaz/meross-local-cloud) is a
