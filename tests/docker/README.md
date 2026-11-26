@@ -73,10 +73,10 @@ Ces identifiants sont réservés aux tests et ne doivent pas être réutilisés.
 
 ## CI
 
-`.github/workflows/e2e.yaml` exécute ce harness sur les push/PR vers `main` et
-`dev`. Il récupère `mazkagaz/meross-local-cloud` à la référence indiquée dans le
-workflow (`feature/docker-defaults` tant que la PR d'intégration n'est pas
-fusionnée, puis `dev`).
+Le job `E2E Docker` de `.github/workflows/ci.yaml` exécute ce harness sur les
+push/PR vers `main` et `dev`. Il récupère `mazkagaz/meross-local-cloud` à la
+référence indiquée dans le workflow (`feature/docker-defaults` tant que la PR
+d'intégration n'est pas fusionnée, puis `dev`).
 
 ## Limites
 
