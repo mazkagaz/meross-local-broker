@@ -80,7 +80,9 @@ DOCKERFILE
 
 cp -a "$WORK/data/apps/local/$ADDON/." "$WORK/addons/local/$ADDON/"
 docker pull "$SUPERVISOR_IMAGE" >/dev/null
-docker pull "$BASE_IMAGE" >/dev/null
+if ! docker image inspect "$BASE_IMAGE" >/dev/null 2>&1; then
+    docker pull "$BASE_IMAGE" >/dev/null
+fi
 
 # Supervisor builds add-ons with docker:<host version>-cli. Docker Hub does not
 # publish every patch tag; alias the major tag locally so it is not pulled.

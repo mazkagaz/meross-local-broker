@@ -28,7 +28,9 @@ cleanup() {
 }
 trap cleanup EXIT
 
-docker pull "$IMAGE" >/dev/null
+if ! docker image inspect "$IMAGE" >/dev/null 2>&1; then
+    docker pull "$IMAGE" >/dev/null
+fi
 
 docker run -d --name "$NAME" --network host \
     -v "$DATA":/data \
