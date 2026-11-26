@@ -41,7 +41,6 @@ name: Meross Local Broker CI
 version: "1.5.0"
 slug: meross_broker_ci
 description: Local add-on used by the CI end-to-end test
-image: local/{arch}-addon-meross_broker_ci
 arch:
   - amd64
 init: false
