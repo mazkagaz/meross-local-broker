@@ -7,7 +7,9 @@ log, the device model/hardware/firmware, and the pairing method.
 
 - Build the Docker image (`../operations/BUILDING.md`).
 - Run the unit tests (HTTP API, MQTT integrity, timezone sync, MRS100 message
-  handling, Unbind publication, disconnect handling).
+  handling, Unbind publication, disconnect handling, standalone helpers).
+- Run the standalone container smoke test and the HA Container end-to-end
+  harness (below).
 - Start the add-on locally or in Home Assistant and verify that already-paired
   devices still behave as before.
 
@@ -18,21 +20,36 @@ connected to the local broker.
 ## Unit tests
 
 The pins live in
-`meross_local_broker/rootfs/opt/custom_broker/requirements.txt`:
+`meross_local_broker/rootfs/opt/custom_broker/requirements_ci.txt`:
 
 ```bash
 python3 -m venv .venv
-.venv/bin/pip install -r meross_local_broker/rootfs/opt/custom_broker/requirements.txt
+.venv/bin/pip install -r meross_local_broker/rootfs/opt/custom_broker/requirements_ci.txt
 cd meross_local_broker/rootfs/opt/custom_broker
-PYTHONPATH=. ../../../../.venv/bin/python -m unittest discover -p 'test_*.py'
+../../../../.venv/bin/python -m pytest -q
 ```
 
-Expected: **74 tests OK**. Modules: `test_http_api`, `test_mqtt_integrity`,
-`test_supervisor_network`, `test_timezone_utils`, `test_mrs100_roller_shutter`,
-`test_broker_agent_timezone`, `test_broker_agent_unbind`,
-`test_broker_agent_disconnect`.
+Expected: **209 passed, 1 skipped, 26 subtests passed**. Coverage includes the
+HTTP API, MQTT integrity, profiles, capture, tuning, standalone mode detection
+(`test_standalone`), timezone sync and the MRS100 paths.
 
 The Docker image runs `test_http_api` as a build gate.
+
+## Standalone Docker smoke test
+
+`tools/test_standalone_docker.sh` starts the published broker image with the
+repository's standalone scripts mounted over it, then checks HTTPS `/ca.crt`,
+the admin UI, MQTT over TLS and the absence of startup script errors. It needs
+Docker and `curl`; the CI workflow `.github/workflows/standalone.yaml` runs it
+on push and pull request.
+
+## HA Container end-to-end harness
+
+`tests/docker/run.sh` starts the standalone broker and a real Home Assistant
+Container, creates the local account, adds the integration through its config
+flow and checks that the entry loads and that the broker records the login.
+See `tests/docker/README.md` for the required tools, environment variables,
+test accounts, credentials and troubleshooting.
 
 ## Hardware test checklist
 
@@ -73,7 +90,8 @@ make reports        # rapport JUnit dans reports/
 ```
 
 Le workflow `.github/workflows/test.yaml` exécute le linter de profils puis
-la suite broker sur chaque push/PR ; les rapports JUnit sont archivés.
+la suite broker sur chaque push/PR ; les rapports JUnit sont archivés. Le
+workflow `standalone.yaml` exécute en plus le smoke test Docker autonome.
 
 ## Known validation gaps
 

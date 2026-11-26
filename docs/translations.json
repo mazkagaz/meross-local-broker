@@ -28,8 +28,8 @@
     {
       "source": "docs/guides/DOCKER.fr.md",
       "translation": "docs/guides/DOCKER.md",
-      "source_sha256": "0f41e9b8a42f839ac1660d21e9eab168536fed86d0b35fabe52d9550c8c06c9a",
-      "translation_sha256": "d21d45fe130865746d41a77e5d4f933c242d6190a440db9259ed5c00f032f37f"
+      "source_sha256": "a3719fb81745832ced6e8b87c6c79c9579d038397e87aaa0fa0966235b49c562",
+      "translation_sha256": "2d7939b098b52d6921ed268734fc876f2cd373f45b85a178e1e8e9980bd49913"
     }
   ]
 }

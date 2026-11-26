@@ -94,6 +94,16 @@ version précise dans `BROKER_IMAGE` pour éviter les surprises.
 | Appareil non appairé            | IP de l'hôte, ports 2001/2004, `docker compose ps`         |
 | mDNS absent                     | normal en bridge ; configurer manuellement                 |
 
+## Tests
+
+- `tools/test_standalone_docker.sh` : smoke test du conteneur autonome
+  (HTTPS, admin, MQTT/TLS), exécuté par la CI.
+- `tests/docker/run.sh` : test de bout en bout avec une instance Home
+  Assistant Container réelle (compte local, flux de configuration, entrée
+  chargée, événements broker).
+
+Outils, variables et comptes de test : [tests/docker/README.md](../../tests/docker/README.md).
+
 ## Sécurité
 
 - L'admin n'a pas d'authentification : laisser `ADMIN_BIND=127.0.0.1` ou

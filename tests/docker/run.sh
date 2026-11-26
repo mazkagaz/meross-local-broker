@@ -88,6 +88,12 @@ curl -fsS "$HA_URL/manifest.json" >/dev/null
 HA_URL="$HA_URL" BROKER_HOST=127.0.0.1 "$HA_PYTHON" \
     "$ROOT/tests/docker/ha_test.py"
 
+if docker logs "$HA" 2>&1 | grep -q "Detected blocking call.*meross_local_cloud"; then
+    echo "HA detected a blocking call in the integration:" >&2
+    docker logs "$HA" 2>&1 | grep -A3 "Detected blocking call.*meross_local_cloud" | head -20 >&2
+    exit 1
+fi
+
 curl -fsS http://127.0.0.1:2003/_admin_/events?limit=20 \
     | grep -q "logged in via Meross Local API"
 echo "docker e2e: OK"
