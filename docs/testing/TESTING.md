@@ -46,8 +46,9 @@ it on push and pull request.
 ## HA Container end-to-end harness
 
 `tests/docker/run.sh` starts the standalone broker and a real Home Assistant
-Container, creates the local account, adds the integration through its config
-flow and checks that the entry loads and that the broker records the login.
+Container, creates the local account, connects a simulated MRS100 over MQTT,
+adds the integration through its config flow and checks that the entry loads,
+that the broker matches the `meross.mrs100` profile and records the login.
 See `tests/docker/README.md` for the required tools, environment variables,
 test accounts, credentials and troubleshooting. The real Supervisor add-on
 path is covered by `tests/supervisor/run.sh` (see `tests/supervisor/README.md`). The `E2E Docker` job of `.github/workflows/ci.yaml` runs it on push and pull

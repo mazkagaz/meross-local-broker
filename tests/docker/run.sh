@@ -16,9 +16,16 @@ NET=e2e-meross-t
 WORK=$(mktemp -d)
 HA_CONFIG="$WORK/ha-config"
 BROKER_DATA="$WORK/broker-data"
+DEVICE_LOG="$WORK/device.log"
+DEVICE_PID=""
 R="$ROOT/meross_local_broker/rootfs"
 
 cleanup() {
+    if [[ "${KEEP:-0}" == "1" ]]; then
+        echo "KEEP=1: containers and $WORK kept for inspection" >&2
+        return 0
+    fi
+    [[ -n "$DEVICE_PID" ]] && kill "$DEVICE_PID" >/dev/null 2>&1 || true
     docker rm -f "$HA" "$BROKER" >/dev/null 2>&1 || true
     docker network rm "$NET" >/dev/null 2>&1 || true
     # The containers run as root: remove their files from a throwaway container.
@@ -67,10 +74,25 @@ for _ in $(seq 1 60); do
 done
 curl -kfsS https://127.0.0.1:2004/ca.crt >/dev/null
 
-curl -fsS -X PUT http://127.0.0.1:2003/_admin_/configuration \
+ACCOUNT=$(curl -fsS -X PUT http://127.0.0.1:2003/_admin_/configuration \
     -H 'Content-Type: application/json' \
-    -d '{"email":"local-user","password":"secret"}' >/dev/null
+    -d '{"email":"local-user","password":"secret"}')
+echo "$ACCOUNT" > "$WORK/account.json"
+USER_ID=$(echo "$ACCOUNT" | jq -r '.userId')
+MQTT_KEY=$(echo "$ACCOUNT" | jq -r '.mqttKey')
+sleep 3
+
+# Simulated MRS100: real MQTT/TLS device against the broker.
+"$HA_PYTHON" "$ROOT/tests/docker/device_sim.py" \
+    --ca "$BROKER_DATA/mqtt/certs/ca.crt" \
+    --user-id "$USER_ID" --key "$MQTT_KEY" >"$DEVICE_LOG" 2>&1 &
+DEVICE_PID=$!
 sleep 5
+kill -0 "$DEVICE_PID" 2>/dev/null || {
+    cat "$DEVICE_LOG" >&2
+    echo "device simulator exited" >&2
+    exit 1
+}
 
 docker run -d --name "$HA" --network "container:$BROKER" \
     -v "$HA_CONFIG":/config "$HA_IMAGE" >/dev/null
@@ -86,12 +108,20 @@ for _ in $(seq 1 90); do
 done
 curl -fsS "$HA_URL/manifest.json" >/dev/null
 
-if ! HA_URL="$HA_URL" BROKER_HOST=127.0.0.1 "$HA_PYTHON" \
+if ! HA_URL="$HA_URL" BROKER_HOST=127.0.0.1 EXPECT_DEVICE=1 "$HA_PYTHON" \
     "$ROOT/tests/docker/ha_test.py"; then
     echo "E2E test failed; Home Assistant logs:" >&2
     docker logs "$HA" 2>&1 | tail -100 >&2
     echo "Broker logs:" >&2
     docker logs "$BROKER" 2>&1 | tail -60 >&2
+    echo "Device simulator logs:" >&2
+    cat "$DEVICE_LOG" >&2 || true
+    echo "Broker devices:" >&2
+    curl -fsS http://127.0.0.1:2003/_admin_/devices >&2 || true
+    echo >&2
+    echo "Broker events:" >&2
+    curl -fsS "http://127.0.0.1:2003/_admin_/events?limit=40" >&2 || true
+    echo >&2
     exit 1
 fi
 
@@ -100,6 +130,12 @@ if docker logs "$HA" 2>&1 | grep -q "Detected blocking call.*meross_local_cloud"
     docker logs "$HA" 2>&1 | grep -A3 "Detected blocking call.*meross_local_cloud" | head -20 >&2
     exit 1
 fi
+
+DEVICES=$(curl -fsS http://127.0.0.1:2003/_admin_/devices)
+echo "$DEVICES" | grep -q '"id":"meross.mrs100"' \
+    || { echo "device profile not matched: $DEVICES" >&2; exit 1; }
+echo "$DEVICES" | grep -q '"onlineStatus":1' \
+    || { echo "device is not online: $DEVICES" >&2; exit 1; }
 
 curl -fsS http://127.0.0.1:2003/_admin_/events?limit=20 \
     | grep -q "logged in via Meross Local API"
