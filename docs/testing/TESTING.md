@@ -48,7 +48,8 @@ it on push and pull request.
 `tests/docker/run.sh` starts the standalone broker and a real Home Assistant
 Container, creates the local account, connects a simulated MRS100 over MQTT,
 adds the integration through its config flow and checks that the entry loads,
-that the broker matches the `meross.mrs100` profile and records the login.
+that the broker matches the `meross.mrs100` profile, that a cover entity is
+created and that a position command reaches the device.
 See `tests/docker/README.md` for the required tools, environment variables,
 test accounts, credentials and troubleshooting. The real Supervisor add-on
 path is covered by `tests/supervisor/run.sh` (see `tests/supervisor/README.md`). The `E2E Docker` job of `.github/workflows/ci.yaml` runs it on push and pull

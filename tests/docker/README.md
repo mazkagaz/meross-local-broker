@@ -53,8 +53,9 @@ sg docker -c "env CLOUD_ROOT=… HA_PYTHON=… bash tests/docker/run.sh"
 5. Onboarde HA et ajoute l'intégration par le vrai flux HTTP :
    hôte `127.0.0.1`, ports `2004`/`2001`, compte local.
 6. Vérifie que l'entrée est `loaded`, que le broker associe l'appareil avec le
-   profil `meross.mrs100` et l'état online, que les événements broker contiennent
-   `logged in via Meross Local API`, et qu'aucun avertissement
+   profil `meross.mrs100` et l'état online, qu'une entité `cover` apparaît, que
+   la commande de position est appliquée (position 50), que les événements
+   broker contiennent `logged in via Meross Local API`, et qu'aucun avertissement
    `Detected blocking call … meross_local_cloud` n'apparaît dans les logs HA.
 7. Supprime conteneurs, réseau et volumes temporaires (y compris les fichiers
    créés par root via un conteneur jetable).
@@ -83,10 +84,9 @@ d'intégration n'est pas fusionnée, puis `dev`).
 
 ## Limites
 
-- L'appareil est simulé : le test valide l'authentification device, l'Ability,
-  le matching de profil et l'état online côté broker. La création d'entités et
-  les commandes HA→device ne sont pas encore couvertes (maillon en cours
-  d'investigation).
+- L'appareil est simulé : le test couvre l'authentification device, l'Ability,
+  le matching de profil, l'état online, la création d'entités et une commande
+  cover. L'appairage réel (AP/BLE) et le pairer ne sont pas couverts.
 - Le test suppose une image broker déjà construite ; la CI reconstruit l'image
   et exécute par ailleurs `tools/test_standalone_docker.sh`.
 

@@ -50,9 +50,12 @@ class Simulator:
     def subscribe_topic(self) -> str:
         return f"/appliance/{self.args.uuid}/subscribe"
 
-    def _message(self, namespace: str, method: str, payload: dict) -> bytes:
-        message_id = _md5("".join(random.choice(string.ascii_uppercase + string.digits)
-                                 for _ in range(16)))
+    def _message(self, namespace: str, method: str, payload: dict,
+                 message_id: str | None = None) -> bytes:
+        if message_id is None:
+            message_id = _md5("".join(
+                random.choice(string.ascii_uppercase + string.digits)
+                for _ in range(16)))
         timestamp = int(time.time())
         sign = _md5(f"{message_id}{self.args.key}{timestamp}")
         return json.dumps({
@@ -70,9 +73,10 @@ class Simulator:
         }).encode("utf8")
 
     def _publish(self, namespace: str, method: str, payload: dict,
-                 agent: bool = False) -> None:
+                 agent: bool = False, message_id: str | None = None) -> None:
         topic = "/_agent" if agent else self.publish_topic
-        self.client.publish(topic, self._message(namespace, method, payload))
+        self.client.publish(topic, self._message(
+            namespace, method, payload, message_id=message_id))
 
     def _body(self, namespace: str) -> dict:
         if namespace == "Appliance.System.Ability":
@@ -115,9 +119,15 @@ class Simulator:
                                 "status": self.adjust}]}
         return {}
 
+    @staticmethod
+    def _first(value):
+        if isinstance(value, list):
+            return value[0] if value and isinstance(value[0], dict) else {}
+        return value if isinstance(value, dict) else {}
+
     def _apply_set(self, namespace: str, payload: dict) -> None:
         if namespace == POSITION:
-            channel = (payload.get("position") or [{}])[0]
+            channel = self._first(payload.get("position"))
             position = channel.get("position")
             if position is not None:
                 position = int(position)
@@ -127,13 +137,13 @@ class Simulator:
                     self.position = position
                     self.state = 1 if position > 0 else 2
         elif namespace == CONFIG:
-            channel = (payload.get("config") or [{}])[0]
+            channel = self._first(payload.get("config"))
             if "signalOpen" in channel:
                 self.signal_open = int(channel["signalOpen"])
             if "signalClose" in channel:
                 self.signal_close = int(channel["signalClose"])
         elif namespace == ADJUST:
-            channel = (payload.get("adjust") or [{}])[0]
+            channel = self._first(payload.get("adjust"))
             self.adjust = int(channel.get("value") or 0)
 
     def _on_connect(self, client, userdata, flags, reason_code, properties) -> None:
@@ -160,30 +170,43 @@ class Simulator:
 
         print(f"{method} {namespace}", flush=True)
         sender = header.get("from", "")
+        request_id = header.get("messageId")
         response_to_agent = sender.startswith("/_agent")
         if namespace == "Appliance.Control.Multiple":
             responses = []
+            changed_position = False
             for item in payload.get("multiple") or []:
                 item_header = item.get("header") or {}
                 item_ns = item_header.get("namespace")
+                item_method = item_header.get("method")
+                item_payload = item.get("payload") or {}
+                if item_method == "SET":
+                    self._apply_set(item_ns, item_payload)
+                    changed_position = changed_position or item_ns == POSITION
                 responses.append({
-                    "header": {"namespace": item_ns, "method": "GETACK"},
+                    "header": {
+                        "namespace": item_ns,
+                        "method": "SETACK" if item_method == "SET" else "GETACK",
+                    },
                     "payload": self._body(item_ns),
                 })
             self._publish(namespace, "SETACK", {"multiple": responses},
-                          agent=response_to_agent)
+                          agent=response_to_agent, message_id=request_id)
+            if changed_position:
+                self._publish(STATE, "PUSH", self._body(STATE),
+                              message_id=request_id)
             return
 
         if method == "SET":
             self._apply_set(namespace, payload)
             self._publish(namespace, "SETACK", self._body(namespace),
-                          agent=response_to_agent)
+                          agent=response_to_agent, message_id=request_id)
             if namespace == POSITION:
                 self._publish(STATE, "PUSH", self._body(STATE))
             return
 
         self._publish(namespace, "GETACK", self._body(namespace),
-                      agent=response_to_agent)
+                      agent=response_to_agent, message_id=request_id)
 
     def run(self) -> None:
         self.client.connect(self.args.host, self.args.port, keepalive=60)
