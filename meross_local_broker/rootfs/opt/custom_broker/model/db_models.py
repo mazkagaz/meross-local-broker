@@ -9,12 +9,13 @@ from optparse import Option
 from typing import Dict, Optional
 
 from compat import OnlineStatus
-from sqlalchemy import Column, String, BigInteger, Integer, DateTime, Boolean, Text
+from sqlalchemy import Column, String, BigInteger, Integer, Boolean, Text
 from sqlalchemy import ForeignKey, Enum
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from database import Base
 from sqlalchemy.inspection import inspect
+from time_utils import UTCDateTime, utcnow
 
 
 from model.enums import BridgeStatus, EventType
@@ -72,9 +73,9 @@ class UserToken(Base, Serializer):
     token_hash = Column(String(64), primary_key=True)
     user_id = Column(Integer, ForeignKey('users.user_id'))
     user = relationship("User")
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
-    last_used_at = Column(DateTime, default=datetime.utcnow, nullable=False)
-    absolute_expires_at = Column(DateTime, nullable=False)
+    created_at = Column(UTCDateTime, default=utcnow, nullable=False)
+    last_used_at = Column(UTCDateTime, default=utcnow, nullable=False)
+    absolute_expires_at = Column(UTCDateTime, nullable=False)
 
     def __init__(self, token_hash: str, user_id: int, created_at: datetime,
                  last_used_at: datetime, absolute_expires_at: datetime, *args, **kwargs):
@@ -138,7 +139,7 @@ class Device(Base, Serializer):
     child_subdevices = relationship("SubDevice", back_populates="parent_device")
 
     # Technical fields
-    last_seen_time = Column(DateTime)
+    last_seen_time = Column(UTCDateTime)
     bridge_status = Column(Enum(BridgeStatus), default=BridgeStatus.DISCONNECTED)
 
     def __init__(self, mac: str, *args, **kwargs):
@@ -168,7 +169,7 @@ class RevokedDevice(Base, Serializer):
     __tablename__ = 'revoked_devices'
 
     mac = Column(String(16), primary_key=True)
-    revoked_at = Column(DateTime, default=func.now())
+    revoked_at = Column(UTCDateTime, default=utcnow)
 
 
 class SubDevice(Base, Serializer):
@@ -208,7 +209,7 @@ class RollerShutterConfig(Base, Serializer):
     signal_open = Column(Integer, nullable=True)
     signal_close = Column(Integer, nullable=True)
     payload_json = Column(Text)
-    updated_at = Column(DateTime)
+    updated_at = Column(UTCDateTime)
 
 
 class DeviceAbility(Base, Serializer):
@@ -217,7 +218,7 @@ class DeviceAbility(Base, Serializer):
 
     device_uuid = Column(String, ForeignKey('devices.uuid'), primary_key=True)
     ability_json = Column(Text)
-    updated_at = Column(DateTime)
+    updated_at = Column(UTCDateTime)
 
 
 class PendingUnbind(Base, Serializer):
@@ -226,7 +227,7 @@ class PendingUnbind(Base, Serializer):
 
     device_uuid = Column(String, primary_key=True)
     user_id = Column(Integer, nullable=False)
-    created_at = Column(DateTime)
+    created_at = Column(UTCDateTime)
 
 
 class RollerShutterStatus(Base, Serializer):
@@ -238,7 +239,7 @@ class RollerShutterStatus(Base, Serializer):
     channel = Column(Integer, default=0)
     position = Column(Integer, nullable=True)
     state = Column(Integer, nullable=True)
-    updated_at = Column(DateTime)
+    updated_at = Column(UTCDateTime)
 
 
 class RollerShutterAdjust(Base, Serializer):
@@ -255,7 +256,7 @@ class RollerShutterAdjust(Base, Serializer):
     device_uuid = Column(String, ForeignKey('devices.uuid'))
     channel = Column(Integer, default=0)
     payload_json = Column(Text)
-    updated_at = Column(DateTime)
+    updated_at = Column(UTCDateTime)
 
 
 class Event(Base, Serializer):
@@ -263,7 +264,7 @@ class Event(Base, Serializer):
     __table_args__ = {'sqlite_autoincrement': True}
     
     event_id = Column(Integer, primary_key=True, autoincrement=True)
-    timestamp = Column(DateTime, server_default=func.now())
+    timestamp = Column(UTCDateTime, default=utcnow, server_default=func.now())
     event_type = Column(Enum(EventType), nullable=False)
     device_uuid = Column(String, nullable=True)
     sub_device_id = Column(String, nullable=True)
