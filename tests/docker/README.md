@@ -8,8 +8,8 @@ avec ajout réel de l'entrée `meross_local_cloud` par le flux de configuration.
 - **Docker Engine** accessible à l'utilisateur courant (groupe `docker`), ou
   exécution via `sg docker -c '…'`.
 - **curl** sur l'hôte.
-- **Python 3.11+ avec `aiohttp`** pour le script de pilotage HA. Le venv de
-  test de l'intégration convient :
+- **Python 3.11+ avec `aiohttp` et `paho-mqtt`** pour le pilotage HA et le
+  simulateur d'appareil. Le venv de test de l'intégration convient :
   `HA_PYTHON=/chemin/meross/.ha-venv/bin/python`.
 - Images : broker publié (`ghcr.io/mazkagaz/amd64-meross_local_broker:1.4.8`
   par défaut) et `ghcr.io/home-assistant/home-assistant:stable`.
@@ -46,14 +46,17 @@ sg docker -c "env CLOUD_ROOT=… HA_PYTHON=… bash tests/docker/run.sh"
    la boucle locale, un volume `/data` temporaire et les scripts du dépôt.
 2. Attend `/ca.crt`, puis crée le compte local via
    `PUT /_admin_/configuration`.
-3. Démarre HA `stable` avec `default_config` et le composant copié dans
+3. Démarre un **MRS100 simulé** en MQTT/TLS avec les identifiants device du
+   broker (MAC, UUID, clé du compte) et répond aux requêtes Ability/All.
+4. Démarre HA `stable` avec `default_config` et le composant copié dans
    `/config/custom_components/meross_local_cloud`.
-4. Onboarde HA et ajoute l'intégration par le vrai flux HTTP :
+5. Onboarde HA et ajoute l'intégration par le vrai flux HTTP :
    hôte `127.0.0.1`, ports `2004`/`2001`, compte local.
-5. Vérifie que l'entrée est `loaded`, que les événements broker contiennent
+6. Vérifie que l'entrée est `loaded`, que le broker associe l'appareil avec le
+   profil `meross.mrs100` et l'état online, que les événements broker contiennent
    `logged in via Meross Local API`, et qu'aucun avertissement
    `Detected blocking call … meross_local_cloud` n'apparaît dans les logs HA.
-6. Supprime conteneurs, réseau et volumes temporaires (y compris les fichiers
+7. Supprime conteneurs, réseau et volumes temporaires (y compris les fichiers
    créés par root via un conteneur jetable).
 
 HA partage le namespace réseau du broker (`--network container:`) : il joint
@@ -80,8 +83,10 @@ d'intégration n'est pas fusionnée, puis `dev`).
 
 ## Limites
 
-- Aucun appareil Meross : le test valide le login, le catalogue, le démarrage
-  de l'intégration et l'absence de régression d'import, pas l'appairage.
+- L'appareil est simulé : le test valide l'authentification device, l'Ability,
+  le matching de profil et l'état online côté broker. La création d'entités et
+  les commandes HA→device ne sont pas encore couvertes (maillon en cours
+  d'investigation).
 - Le test suppose une image broker déjà construite ; la CI reconstruit l'image
   et exécute par ailleurs `tools/test_standalone_docker.sh`.
 
