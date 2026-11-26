@@ -109,8 +109,7 @@ jobs:
         uses: actions/checkout@v7
         with:
           repository: mazkagaz/meross-local-cloud
-          # Pinned to the integration PR until it is merged, then switch to dev.
-          ref: feature/docker-defaults
+          ref: dev
           path: cloud-src
 
       - uses: actions/setup-python@v7
