@@ -40,8 +40,8 @@ The Docker image runs `test_http_api` as a build gate.
 `tools/test_standalone_docker.sh` starts the published broker image with the
 repository's standalone scripts mounted over it, then checks HTTPS `/ca.crt`,
 the admin UI, MQTT over TLS and the absence of startup script errors. It needs
-Docker and `curl`; the CI workflow `.github/workflows/standalone.yaml` runs it
-on push and pull request.
+Docker and `curl`; the `Standalone` job of `.github/workflows/ci.yaml` runs
+it on push and pull request.
 
 ## HA Container end-to-end harness
 
@@ -49,9 +49,9 @@ on push and pull request.
 Container, creates the local account, adds the integration through its config
 flow and checks that the entry loads and that the broker records the login.
 See `tests/docker/README.md` for the required tools, environment variables,
-test accounts, credentials and troubleshooting. The CI workflow
-`.github/workflows/e2e.yaml` runs it on push and pull requests against `main`
-and `dev`.
+test accounts, credentials and troubleshooting. The real Supervisor add-on
+path is covered by `tests/supervisor/run.sh` (see `tests/supervisor/README.md`). The `E2E Docker` job of `.github/workflows/ci.yaml` runs it on push and pull
+requests against `main` and `dev`.
 
 ## Hardware test checklist
 
@@ -91,9 +91,10 @@ make lint-profiles  # schéma + cohérence des profils
 make reports        # rapport JUnit dans reports/
 ```
 
-Le workflow `.github/workflows/test.yaml` exécute le linter de profils puis
-la suite broker sur chaque push/PR ; les rapports JUnit sont archivés. Le
-workflow `standalone.yaml` exécute en plus le smoke test Docker autonome.
+Le workflow `.github/workflows/ci.yaml` exécute les tests, le lint add-on, le
+smoke test autonome, le E2E HA Container et le E2E Supervisor sur chaque
+push/PR ; un job `gate` rend le statut global vert uniquement si tous
+réussissent. Les rapports JUnit sont archivés.
 
 ## Known validation gaps
 

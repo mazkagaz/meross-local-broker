@@ -12,6 +12,7 @@ SUPERVISOR_IMAGE=${SUPERVISOR_IMAGE:-ghcr.io/home-assistant/amd64-hassio-supervi
 WORK=$(mktemp -d)
 ADDON=meross_broker_ci
 SUPERVISOR=hassio_supervisor_ci
+RUN_DIR=${SUPERVISOR_RUN_DIR:-/run/supervisor}
 
 cleanup() {
     if [[ "${KEEP:-0}" == "1" ]]; then
@@ -28,7 +29,11 @@ cleanup() {
 }
 trap cleanup EXIT
 
-mkdir -p "$WORK/data" "$WORK/os" "$WORK/addons/local/$ADDON"
+[[ -d "$RUN_DIR" ]] || {
+    echo "missing $RUN_DIR (run: sudo mkdir -p $RUN_DIR/core)" >&2
+    exit 1
+}
+mkdir -p "$WORK/data" "$WORK/addons/local/$ADDON"
 cp -a "$ROOT/meross_local_broker/rootfs" "$WORK/addons/local/$ADDON/rootfs"
 
 cat > "$WORK/addons/local/$ADDON/config.yaml" <<'YAML'
@@ -36,6 +41,7 @@ name: Meross Local Broker CI
 version: "1.5.0"
 slug: meross_broker_ci
 description: Local add-on used by the CI end-to-end test
+image: local/{arch}-addon-meross_broker_ci
 arch:
   - amd64
 init: false
@@ -88,7 +94,7 @@ docker create --name "$SUPERVISOR" \
     --security-opt apparmor=unconfined \
     -v /var/run/docker.sock:/run/docker.sock:rw \
     -v /run/dbus:/run/dbus:ro \
-    -v "$WORK/os:/run/os:rw" \
+    -v "$RUN_DIR:/run/os:rw" \
     -v "$WORK/data:/data:rw,slave" \
     -v /etc/machine-id:/etc/machine-id:ro \
     -v "$WORK/addons:/addons:rw" \
@@ -151,6 +157,7 @@ for _ in $(seq 1 180); do
     sleep 5
 done
 
+run_ha store reload >/dev/null 2>&1 || true
 echo "Installing local add-on..."
 if ! run_ha addons install "local_${ADDON}" >/tmp/addon-install.json 2>&1; then
     cat /tmp/addon-install.json >&2

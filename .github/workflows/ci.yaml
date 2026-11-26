@@ -136,6 +136,8 @@ jobs:
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
+      - name: Prepare the Supervisor run directory
+        run: sudo mkdir -p /run/supervisor/core
       - name: Run the add-on under a real Supervisor
         run: bash tests/supervisor/run.sh
       - name: Container state on failure
