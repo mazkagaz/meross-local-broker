@@ -33,10 +33,10 @@ trap cleanup EXIT
     echo "missing $RUN_DIR (run: sudo mkdir -p $RUN_DIR/core)" >&2
     exit 1
 }
-mkdir -p "$WORK/data" "$WORK/addons/local/$ADDON"
-cp -a "$ROOT/meross_local_broker/rootfs" "$WORK/addons/local/$ADDON/rootfs"
+mkdir -p "$WORK/data/apps/local/$ADDON"
+cp -a "$ROOT/meross_local_broker/rootfs" "$WORK/data/apps/local/$ADDON/rootfs"
 
-cat > "$WORK/addons/local/$ADDON/config.yaml" <<'YAML'
+cat > "$WORK/data/apps/local/$ADDON/config.yaml" <<'YAML'
 name: Meross Local Broker CI
 version: "1.5.0"
 slug: meross_broker_ci
@@ -72,13 +72,13 @@ schema:
   mqtt_integrity_mode: "list(observe|enforce)"
 YAML
 
-cat > "$WORK/addons/local/$ADDON/Dockerfile" <<'DOCKERFILE'
+cat > "$WORK/data/apps/local/$ADDON/Dockerfile" <<'DOCKERFILE'
 ARG BUILD_FROM
 FROM ${BUILD_FROM}
 COPY rootfs/ /
 DOCKERFILE
 
-cat > "$WORK/addons/local/$ADDON/build.yaml" <<YAML
+cat > "$WORK/data/apps/local/$ADDON/build.yaml" <<YAML
 build_from:
   amd64: ${BASE_IMAGE}
 YAML
@@ -97,7 +97,6 @@ docker create --name "$SUPERVISOR" \
     -v "$RUN_DIR:/run/os:rw" \
     -v "$WORK/data:/data:rw,slave" \
     -v /etc/machine-id:/etc/machine-id:ro \
-    -v "$WORK/addons:/addons:rw" \
     -e SUPERVISOR_SHARE="$WORK/data" \
     -e SUPERVISOR_NAME="$SUPERVISOR" \
     -e SUPERVISOR_DEV=1 \
