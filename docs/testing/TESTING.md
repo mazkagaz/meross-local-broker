@@ -29,9 +29,13 @@ cd meross_local_broker/rootfs/opt/custom_broker
 ../../../../.venv/bin/python -m pytest -q
 ```
 
-Expected: **209 passed, 1 skipped, 26 subtests passed**. Coverage includes the
+Expected: **219 passed, 1 skipped, 26 subtests passed**. Coverage includes the
 HTTP API, MQTT integrity, profiles, capture, tuning, standalone mode detection
 (`test_standalone`), timezone sync and the MRS100 paths.
+
+The suite is run three times in CI: with the runner’s default timezone, then
+with `TZ=Europe/Paris` and `TZ=America/New_York`. A date regression that leaks
+the process timezone therefore fails the `Tests` job, not only a local run.
 
 The Docker image runs `test_http_api` as a build gate.
 

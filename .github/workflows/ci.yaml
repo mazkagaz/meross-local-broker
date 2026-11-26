@@ -67,6 +67,16 @@ jobs:
           python -m pytest -q \
             --junitxml="${GITHUB_WORKSPACE}/reports/broker.xml"
 
+      - name: Run the broker test suite across process timezones
+        working-directory: meross_local_broker/rootfs/opt/custom_broker
+        run: |
+          for tz in Europe/Paris America/New_York; do
+            echo "::group::TZ=$tz"
+            TZ="$tz" python -m pytest -q \
+              --junitxml="${GITHUB_WORKSPACE}/reports/broker-${tz//\//-}.xml"
+            echo "::endgroup::"
+          done
+
       - name: Upload test reports
         if: always()
         uses: actions/upload-artifact@v7
