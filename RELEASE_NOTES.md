@@ -1,3 +1,17 @@
+# Notes de version — 1.6.2
+
+## 1.6.2 — MSL610 : luminosité et couleur fiables
+
+- Profil MSL610 **2026.11.4** : luminosité en `capacity: 4` ; température de
+  couleur en `capacity: 6` avec la luminosité courante, sans retomber à 1 %.
+- Suppression du polling `GET`/`GETACK` du MSL610 : les timeouts après reload
+  disparaissent, l’état vient des `PUSH`.
+- Moteur de profils **2.6.0** synchronisé avec l’intégration, jeton
+  `$brightness` et chemins de provenance corrigés.
+- Nécessite l’intégration **4.0.7** pour le MSL610 ; aucun changement pour
+  les autres appareils.
+- Tests : **227 passed**, 34 subtests ; lint des profils à 0 erreur.
+
 # Notes de version — 1.6.1
 
 ## 1.6.1 — correctif de démarrage Web UI

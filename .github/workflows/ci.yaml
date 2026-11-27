@@ -34,7 +34,7 @@ jobs:
         uses: actions/checkout@v7
         with:
           repository: mazkagaz/meross-local-cloud
-          ref: 5ce5895c8282cf27ed7387529ea73fca86afdb5a
+          ref: 78c0e10eb1ff627e75ef07d243462402ea11f814
           path: cloud-src
 
       - uses: actions/setup-python@v7
@@ -138,7 +138,7 @@ jobs:
         uses: actions/checkout@v7
         with:
           repository: mazkagaz/meross-local-cloud
-          ref: dev
+          ref: 78c0e10eb1ff627e75ef07d243462402ea11f814
           path: cloud-src
 
       - uses: actions/setup-python@v7

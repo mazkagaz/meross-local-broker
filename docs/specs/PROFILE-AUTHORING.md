@@ -88,8 +88,15 @@ entité lors de la bascule vers les entités profils.
   `media_player`, `siren`, `update`) : sous-schéma strict, avec `capabilities`
   obligatoire pour `climate` et `fan`.
 
-Jetons autorisés dans les payloads : `$channel`, `$value` et `$id`
-(sous-appareils uniquement). Aucune expression, aucun template.
+Jetons autorisés dans les payloads : `$channel`, `$value`, `$id`
+(sous-appareils uniquement) et `$brightness` (entités `light` uniquement,
+moteur 2.6+). Aucune expression, aucun template.
+
+`$brightness` injecte la luminosité brute 0–100 de l’entité dans une commande.
+Une commande couleur qui l’utilise exige une luminosité connue ou fournie par
+l’appel Home Assistant ; sinon l’intégration refuse l’action sans envoyer de
+`SET`. Le profil MSL610 utilise `requires_engine: ">=2.6"` pour éviter qu’un
+moteur antérieur n’applique une commande couleur à 1 %.
 
 ## Canaux multiples
 

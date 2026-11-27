@@ -38,11 +38,11 @@ families are welcome.
 
 ## Version compatibility
 
-| Component                      | Minimum version | Notes                                                      |
-| ------------------------------ | --------------- | ---------------------------------------------------------- |
-| Broker                         | 1.4.8           | MRS100 profile; MSL610 profile; **1.5.0** for HA Container |
-| Meross Local Cloud integration | 3.2.2           | profile engine 2.5.1; Position and typed durations         |
-| Meross Local Pairer            | 2.0.9           | HTTPS discovery and pairing only                           |
+| Component                      | Minimum version | Notes                                     |
+| ------------------------------ | --------------- | ----------------------------------------- |
+| Broker                         | 1.6.2           | MSL610 final; **1.5.0+** for HA Container |
+| Meross Local Cloud integration | 4.0.7           | profile engine 2.6; MSL610 final          |
+| Meross Local Pairer            | 2.1.1           | HTTPS discovery and pairing only          |
 
 ## Ports
 
