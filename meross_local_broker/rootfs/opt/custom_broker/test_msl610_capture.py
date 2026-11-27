@@ -60,4 +60,24 @@ class Msl610CaptureTest(unittest.TestCase):
         command = self.compiled.entities["light"].commands["set_color_temp"]
         self.assertEqual(command.namespace, "Appliance.Control.Light")
         self.assertEqual(command.payload, {
-            "channel": "$channel", "light": {"temperature": "$value"}})
+            "channel": "$channel",
+            "light": {
+                "capacity": 6,
+                "temperature": "$value",
+                "luminance": "$brightness",
+            },
+        })
+
+    def test_brightness_command_sets_capacity(self):
+        command = self.compiled.entities["light"].commands["set_brightness"]
+        self.assertEqual(command.payload, {
+            "channel": "$channel",
+            "light": {"capacity": 4, "luminance": "$value"},
+        })
+
+    def test_light_and_togglex_are_not_polled(self):
+        for namespace in (
+                "Appliance.Control.Light", "Appliance.Control.ToggleX"):
+            methods = self.compiled.namespaces[namespace].methods
+            self.assertNotIn("GET", methods)
+            self.assertNotIn("GETACK", methods)

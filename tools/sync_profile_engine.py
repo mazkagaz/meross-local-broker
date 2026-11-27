@@ -55,7 +55,7 @@ def main(argv=None) -> int:
     args = parser.parse_args(argv)
 
     source = (Path(args.source).resolve()
-              / "custom_components/meross_cloud/profiles")
+              / "custom_components/meross_local_cloud/profiles")
     if not source.is_dir():
         print(f"ERROR: profiles directory not found: {source}",
               file=sys.stderr)
@@ -84,7 +84,7 @@ def main(argv=None) -> int:
         "# Shared profile engine — provenance",
         "",
         "Source: `mazkagaz/meross-local-cloud`, "
-        "`custom_components/meross_cloud/profiles/`.",
+        "`custom_components/meross_local_cloud/profiles/`.",
         f"Pinned commit: `{commit}`.",
         "",
         "These files are copied byte-for-byte by "
