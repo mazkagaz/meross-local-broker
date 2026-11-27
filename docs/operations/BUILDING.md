@@ -1,5 +1,7 @@
 # Building the add-on
 
+Checklist de release : [MAINTENANCE.md](../../MAINTENANCE.md).
+
 ## Local image (amd64)
 
 The Angular Web UI is built by CI before the Docker image; build it locally
