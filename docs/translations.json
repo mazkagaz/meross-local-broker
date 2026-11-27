@@ -4,8 +4,8 @@
     {
       "source": "README.fr.md",
       "translation": "README.md",
-      "source_sha256": "42ef2f03964d953d19d8accb4ce14c3904cbc791eea6a92aec314420a432d501",
-      "translation_sha256": "05b0470bb5994944cc81c79349e8962397f9dd28eade28578ed03b9d6f62c7de"
+      "source_sha256": "6f5fc7801a18b8abd01138cd3f7324f774aa80dec7ddcaa0c8b7e775d84ea46a",
+      "translation_sha256": "8d1e25f90ea193cd90d5874a926f6373b6091b58b56cae7824a2b3c542b8558c"
     },
     {
       "source": "meross_local_broker/DOCS.fr.md",
@@ -30,6 +30,12 @@
       "translation": "docs/guides/DOCKER.md",
       "source_sha256": "a3719fb81745832ced6e8b87c6c79c9579d038397e87aaa0fa0966235b49c562",
       "translation_sha256": "2d7939b098b52d6921ed268734fc876f2cd373f45b85a178e1e8e9980bd49913"
+    },
+    {
+      "source": "docs/guides/WEB-UI.fr.md",
+      "translation": "docs/guides/WEB-UI.md",
+      "source_sha256": "5f43f19e2d50a28cef69959ec7ac3d3b9c785de90302ad7dcadc00c5f1f6e960",
+      "translation_sha256": "2ed4cfd9aba497bd97fcab1516b63925b3e1023a1836e77c77ed15674d7156bd"
     }
   ]
 }

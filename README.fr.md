@@ -310,6 +310,8 @@ l'ingress Supervisor. Elle regroupe :
 Le catalogue livré reste en lecture seule ; seules les surcharges sous
 `/data/device_profiles` sont écrites. Guide complet :
 [`docs/guides/DEVICE-TUNING.fr.md`](docs/guides/DEVICE-TUNING.fr.md).
+Aperçu en images des pages d’administration :
+[`docs/guides/WEB-UI.fr.md`](docs/guides/WEB-UI.fr.md).
 
 **Exemple sans code** : ajouter un capteur `Movement` à un MRS100 à partir
 d’une capture réelle, en surcharge locale —
@@ -346,6 +348,7 @@ appareils. Laisser vide pour utiliser le fuseau de Home Assistant.
 ## Documentation technique
 
 - [Index de la documentation](docs/README.md)
+- [Interface web du broker](docs/guides/WEB-UI.fr.md)
 - [Vue d’architecture](docs/architecture/OVERVIEW.md)
 - [Contrats API](docs/specs/API-CONTRACTS.md)
 - [Auteur de profils](docs/specs/PROFILE-AUTHORING.md)
