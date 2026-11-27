@@ -303,6 +303,8 @@ Supervisor ingress. It provides:
 The bundled catalog stays read-only; only overrides under
 `/data/device_profiles` are written. Full guide:
 [`docs/guides/DEVICE-TUNING.md`](docs/guides/DEVICE-TUNING.md).
+Screenshots of the administration pages:
+[`docs/guides/WEB-UI.md`](docs/guides/WEB-UI.md).
 
 **No-code example**: add a `Movement` sensor to an MRS100 from a real capture,
 as a local override —
@@ -341,6 +343,7 @@ The technical documentation is currently in French; English translations are
 being added progressively.
 
 - [Documentation index](docs/README.md)
+- [Broker web interface](docs/guides/WEB-UI.md)
 - [Architecture overview](docs/architecture/OVERVIEW.md)
 - [API contracts](docs/specs/API-CONTRACTS.md)
 - [Profile authoring](docs/specs/PROFILE-AUTHORING.md)

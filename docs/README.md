@@ -39,6 +39,7 @@ pour les formats et les contrats.
 
 ### Guides
 
+- [Interface web du broker](guides/WEB-UI.fr.md) · [English](guides/WEB-UI.md)
 - [Tuning des appareils](guides/DEVICE-TUNING.fr.md)
 - [Ajouter une fonctionnalité sans coder — exemple MRS100](guides/OVERRIDE-MRS100-MOVEMENT.fr.md)
 - [Broker sous Home Assistant Container (Docker)](guides/DOCKER.fr.md)
