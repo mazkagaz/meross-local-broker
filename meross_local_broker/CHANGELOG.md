@@ -1,3 +1,16 @@
+## 1.6.2
+
+- Profil MSL610 **2026.11.4** : luminosité avec `capacity: 4`, température de
+  couleur avec `capacity: 6` et la luminosité courante. La couleur seule ne
+  retombe plus à 1 %.
+- Suppression de `GET`/`GETACK` pour Light et ToggleX : le scheduler ne poll
+  plus le MSL610, ce qui supprime les timeouts observés après reload.
+- Moteur de profils partagé **2.6.0** : jeton `$brightness`, provenance et
+  chemins de synchronisation `meross_local_cloud/profiles` corrigés.
+- Le profil exige l’intégration **4.0.7** (`requires_engine >=2.6`) ; les
+  autres appareils restent compatibles avec les versions antérieures.
+- Tests : **227 passed**, 34 subtests ; lint des profils à 0 erreur.
+
 ## 1.6.1
 
 - Correctif de démarrage : la Web UI Angular 22 est de nouveau générée à la
