@@ -112,7 +112,13 @@ class ProfileCatalogTest(unittest.TestCase):
         self.assertEqual(values["color_temp"], 50)
         command = compiled.entities["light"].commands["set_color_temp"]
         self.assertEqual(command.namespace, "Appliance.Control.Light")
+        self.assertEqual(command.payload["light"]["capacity"], 6)
         self.assertEqual(command.payload["light"]["temperature"], "$value")
+        self.assertEqual(command.payload["light"]["luminance"],
+                         "$brightness")
+        brightness = compiled.entities["light"].commands["set_brightness"]
+        self.assertEqual(brightness.payload["light"]["capacity"], 4)
+        self.assertEqual(brightness.payload["light"]["luminance"], "$value")
 
     def test_invalid_profile_is_excluded_without_breaking_catalog(self):
         with tempfile.TemporaryDirectory() as temporary:

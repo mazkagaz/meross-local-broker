@@ -84,7 +84,7 @@ class SharedProfileEngineTest(unittest.TestCase):
         source_root = os.environ.get("MEROSS_CLOUD_REPO")
         if not source_root:
             self.skipTest("MEROSS_CLOUD_REPO is not set")
-        source = (Path(source_root) / "custom_components/meross_cloud"
+        source = (Path(source_root) / "custom_components/meross_local_cloud"
                   / "profiles")
         vendored = Path(profile_engine.__file__).with_name(
             "compiler.py").parent
