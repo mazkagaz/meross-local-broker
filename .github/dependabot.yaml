@@ -5,3 +5,27 @@ updates:
     schedule:
       interval: weekly
       time: "06:00"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
+  - package-ecosystem: "pip"
+    directory: "/meross_local_broker/rootfs/opt/custom_broker"
+    schedule:
+      interval: monthly
+      time: "06:00"
+    open-pull-requests-limit: 5
+    groups:
+      python:
+        patterns:
+          - "*"
+  - package-ecosystem: "npm"
+    directory: "/meross_local_broker/addon_web_ui"
+    schedule:
+      interval: monthly
+      time: "06:00"
+    open-pull-requests-limit: 5
+    groups:
+      web-ui:
+        patterns:
+          - "*"

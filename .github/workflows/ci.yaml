@@ -66,7 +66,12 @@ jobs:
         working-directory: meross_local_broker/rootfs/opt/custom_broker
         run: |
           python -m pytest -q \
-            --junitxml="${GITHUB_WORKSPACE}/reports/broker.xml"
+            --junitxml="${GITHUB_WORKSPACE}/reports/broker.xml" \
+            --cov=. \
+            --cov-config=.coveragerc \
+            --cov-report=term-missing \
+            --cov-report=xml:"${GITHUB_WORKSPACE}/reports/coverage.xml" \
+            --cov-fail-under=70
 
       - name: Run the broker test suite across process timezones
         working-directory: meross_local_broker/rootfs/opt/custom_broker

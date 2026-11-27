@@ -1,0 +1,6 @@
+[run]
+source = .
+omit =
+    test_*.py
+    tests/*
+    */__pycache__/*

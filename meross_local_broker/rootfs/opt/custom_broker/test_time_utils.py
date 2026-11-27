@@ -47,6 +47,9 @@ class UtcDateTimeTypeTest(unittest.TestCase):
             Column("at", UTCDateTime))
         self.metadata.create_all(self.engine)
 
+    def tearDown(self):
+        self.engine.dispose()
+
     def test_sqlite_round_trip_returns_aware_utc(self):
         plus_two = timezone(timedelta(hours=2))
         value = datetime(2026, 11, 22, 12, 0, tzinfo=plus_two)
