@@ -4,6 +4,7 @@
 
 from __future__ import annotations
 
+import copy
 import hashlib
 import json
 import os
@@ -52,6 +53,8 @@ class ProfileCatalog:
         self.errors: List[Dict[str, str]] = []
         self.schema_version = 2
         self.revision = ""
+        self._signed_payload = None
+        self._signed_payload_revision = None
         self._load()
 
     def _load(self) -> None:
@@ -138,11 +141,16 @@ class ProfileCatalog:
         }
 
     def payload(self) -> Dict[str, Any]:
+        if (self._signed_payload is not None
+                and self._signed_payload_revision == self.revision):
+            return copy.deepcopy(self._signed_payload)
         body = self._body()
         signature = sign(_canonical(body))
         if signature:
             body["signature"] = signature
             body["algorithm"] = ALGORITHM
+            self._signed_payload = copy.deepcopy(body)
+            self._signed_payload_revision = self.revision
         return body
 
     def profile_hashes(self) -> Dict[str, str]:

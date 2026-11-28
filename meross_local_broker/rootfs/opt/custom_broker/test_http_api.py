@@ -118,6 +118,20 @@ class HttpApiCompatibilityTest(unittest.TestCase):
             _parse_client_version(None),
             (ClientType.UNKNOWN, None))
 
+    def test_legacy_login_upgrades_with_the_effective_md5_secret(self):
+        from db_helper import dbhelper
+        from utilities import _hash_password
+        legacy_hash = _hash_password(
+            self.user.salt, hashlib.md5(b'test-password').hexdigest())
+        dbhelper.set_user_password_hash(self.user, legacy_hash)
+        response = self.client.post(
+            '/v1/Auth/Login',
+            json=self.envelope({'email': 'test@example.com',
+                                'password': 'test-password'}),
+            headers={'User-Agent': 'MerossIOT/0.4.5'})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.get_json()['apiStatus'], 0)
+
     def test_numeric_timestamp_signature_is_accepted(self):
         from constants import _SECRET
         payload = {'email': 'test@example.com', 'password': 'test-password'}

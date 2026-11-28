@@ -75,6 +75,15 @@ class ProfileSigningTest(unittest.TestCase):
         self.assertIsNone(profile_signing.sign(
             b"data", key_path=missing, pub_path=missing + ".pub"))
 
+    def test_catalog_payload_signature_is_cached_per_revision(self):
+        catalog = ProfileCatalog(str(PROFILES), "")
+        with patch("profiles.sign", return_value="cached-signature") as signer:
+            first = catalog.payload()
+            second = catalog.payload()
+        self.assertEqual(first, second)
+        self.assertEqual(signer.call_count, 1)
+        self.assertEqual(first["signature"], "cached-signature")
+
     def test_catalog_payload_carries_a_valid_signature(self):
         catalog = ProfileCatalog(str(PROFILES), "")
         payload = catalog.payload()
