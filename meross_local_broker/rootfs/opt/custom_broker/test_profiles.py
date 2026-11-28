@@ -120,6 +120,34 @@ class ProfileCatalogTest(unittest.TestCase):
         self.assertEqual(brightness.payload["light"]["capacity"], 4)
         self.assertEqual(brightness.payload["light"]["luminance"], "$value")
 
+    def test_mss_profiles_do_not_poll_togglex(self):
+        catalog = ProfileCatalog(str(PROFILES))
+        for profile_id in ("meross.mss", "meross.mss310"):
+            methods = catalog.profiles[profile_id]["payloads"][
+                "Appliance.Control.ToggleX"]["methods"]
+            self.assertIn("PUSH", methods)
+            self.assertNotIn("GET", methods)
+            self.assertNotIn("GETACK", methods)
+
+    def test_mss110_matches_the_generic_mss_profile(self):
+        catalog = ProfileCatalog(str(PROFILES))
+        meta = profile_engine.ProfileMeta(
+            id="meross.mss",
+            version=catalog.profiles["meross.mss"]["profile"]["version"],
+            source="test",
+            digest=None,
+            requires_engine=None,
+            data=catalog.profiles["meross.mss"],
+        )
+        result = profile_engine.match_candidates(
+            [meta],
+            profile_engine.MatchContext(
+                type="mss110",
+                abilities=frozenset({"Appliance.Control.ToggleX"}),
+            ),
+        )
+        self.assertEqual(result.profile.id, "meross.mss")
+
     def test_invalid_profile_is_excluded_without_breaking_catalog(self):
         with tempfile.TemporaryDirectory() as temporary:
             directory = Path(temporary)
