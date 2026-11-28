@@ -6,6 +6,7 @@ Run with: python3 -m unittest test_log_redaction
 """
 
 import logging
+import sys
 import unittest
 
 from log_redaction import RedactionFilter, Redactor
@@ -35,6 +36,19 @@ class LogRedactionTest(unittest.TestCase):
         redactor = Redactor(b"secret")
         self.assertIn("127.0.0.1", redactor.redact("127.0.0.1:2002"))
         self.assertNotIn("10.0.0.5", redactor.redact("host 10.0.0.5"))
+
+    def test_filter_redacts_exception_tracebacks(self):
+        try:
+            raise ValueError(f"device {UUID} at {IP}")
+        except ValueError:
+            exc_info = sys.exc_info()
+        record = logging.LogRecord(
+            "broker_agent", logging.ERROR, __file__, 1,
+            "request failed", (), exc_info)
+        RedactionFilter(Redactor(b"secret")).filter(record)
+        self.assertIn("Traceback", record.exc_text)
+        self.assertNotIn(UUID, record.exc_text)
+        self.assertNotIn(IP, record.exc_text)
 
     def test_filter_redacts_arguments(self):
         record = logging.LogRecord(

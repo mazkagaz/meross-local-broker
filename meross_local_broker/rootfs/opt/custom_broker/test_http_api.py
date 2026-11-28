@@ -59,10 +59,14 @@ class HttpApiCompatibilityTest(unittest.TestCase):
         self.client = self.app.test_client()
         from rate_limit import login_rate_limiter
         login_rate_limiter.reset()
+        from blueprints.devs import mqtt_login_rate_limiter
+        mqtt_login_rate_limiter.reset()
 
     def tearDown(self):
         from rate_limit import login_rate_limiter
         login_rate_limiter.reset()
+        from blueprints.devs import mqtt_login_rate_limiter
+        mqtt_login_rate_limiter.reset()
         self.database.db_session.remove()
 
     @staticmethod
@@ -512,6 +516,24 @@ class HttpApiCompatibilityTest(unittest.TestCase):
         return self.client.post('/_devs_/auth', json={
             'username': mac, 'password': f'{self.user_id}_{digest}',
             'clientid': f'fmware:{uuid}_test'})
+
+    def test_mqtt_custom_login_is_rate_limited(self):
+        from blueprints.devs import mqtt_login_rate_limiter
+        account = f"mqtt:test@example.com"
+        for _ in range(5):
+            response = self.client.post('/_devs_/auth', json={
+                'username': 'test@example.com',
+                'password': 'wrong-password',
+                'clientid': 'not-a-meross-client',
+            })
+            self.assertEqual(response.status_code, 403)
+        self.assertIsNotNone(mqtt_login_rate_limiter.check(account, 'test@example.com'))
+        response = self.client.post('/_devs_/auth', json={
+            'username': 'test@example.com',
+            'password': 'wrong-password',
+            'clientid': 'not-a-meross-client',
+        })
+        self.assertEqual(response.status_code, 403)
 
     def test_forgotten_device_is_revoked_until_claimed(self):
         from db_helper import dbhelper

@@ -13,6 +13,7 @@ from flask import Blueprint, request
 from logger import get_logger
 from compat import OnlineStatus
 from model.enums import EventType
+from rate_limit import LoginRateLimiter
 
 
 devs_blueprint = Blueprint('_devs', __name__)
@@ -35,6 +36,34 @@ _APPLIANCE_DELIVERY_RE = re.compile(
     r'^/appliance/[A-Za-z0-9]+/(publish|subscribe)$')
 _NAT_DELIVERY_RE = re.compile(r'^/_nat_/[A-Za-z0-9-]+$')
 _ACL_DENIAL_LOG = ExpiringDict(max_age_seconds=300, max_len=5000)
+# MQTT authentication is called by Mosquitto from loopback, so the generic
+# login limiter's IP bucket would block every account at once. Use a dedicated
+# limiter keyed by the account and keep the broker's existing thresholds.
+mqtt_login_rate_limiter = LoginRateLimiter()
+
+
+def _mqtt_rate_limit_account(account: str) -> str:
+    return f"mqtt:{account}"
+
+
+def _mqtt_rate_limit_check(account: str) -> bool:
+    retry_after = mqtt_login_rate_limiter.check(
+        _mqtt_rate_limit_account(account), account)
+    if retry_after is not None:
+        _LOGGER.warning(
+            "LOGIN_CHECK=> MQTT authentication for %s is rate limited for %s s",
+            account, retry_after)
+        return False
+    return True
+
+
+def _mqtt_rate_limit_failure(account: str) -> None:
+    mqtt_login_rate_limiter.record_failure(
+        _mqtt_rate_limit_account(account), account)
+
+
+def _mqtt_rate_limit_success(account: str) -> None:
+    mqtt_login_rate_limiter.clear(_mqtt_rate_limit_account(account), account)
 
 
 def _accepted_topics(acc: int):
@@ -236,9 +265,13 @@ def _custom_login(email: str, password: str):
         dbhelper.store_event(event_type=EventType.AGENT_LOGIN_ATTEMPTED, details=f"Agent has tried to login to this API from {str(request.remote_addr)}. Atempt will be ignored.")
         return "ko", 401
 
+    if not _mqtt_rate_limit_check(email):
+        return "ko", 403
+
     # Lookup user email by the given username.
     user = dbhelper.get_user_by_email(email=email)
     if user is None:
+        _mqtt_rate_limit_failure(email)
         _LOGGER.error(
             "LOGIN_CHECK(custom)=> User \"%s\" does not exist.", email)
         dbhelper.store_event(event_type=EventType.USER_LOGIN_FAILURE, details=f"Custom login from {str(request.remote_addr)} failed: username {email} does not exist.")
@@ -249,11 +282,13 @@ def _custom_login(email: str, password: str):
 
     if verify_account_password(user, password):
         _upgrade_password_if_legacy(user, password)
+        _mqtt_rate_limit_success(email)
         _LOGGER.info(
             "LOGIN_CHECK(custom)=> User login attempt succeeded UserId: %s", email)
         dbhelper.store_event(event_type=EventType.USER_LOGIN_SUCCESS, user_id=user.user_id, details=f"Custom login from {str(request.remote_addr)} succeeded.")
         return "ok", 200
     else:
+        _mqtt_rate_limit_failure(email)
         _LOGGER.warning(
             "LOGIN_CHECK(custom)=> User login attempt failed (UserId %s)", email)
         dbhelper.store_event(event_type=EventType.USER_LOGIN_FAILURE, details=f"Custom login from {str(request.remote_addr)} with email {email} failed: wrong credentials.")
@@ -261,9 +296,13 @@ def _custom_login(email: str, password: str):
 
 
 def _app_login(user_id: str, md5hash: str) -> Tuple[str, int]:
+    account = f"app:{user_id}"
+    if not _mqtt_rate_limit_check(account):
+        return "ko", 403
     try:
         userid = int(user_id)
     except ValueError:
+        _mqtt_rate_limit_failure(account)
         _LOGGER.error("LOGIN_CHECK(app)=> UserId \"%s\" is invalid.", str(user_id))
         dbhelper.store_event(event_type=EventType.USER_LOGIN_FAILURE, user_id=user_id, details=f"App login from {str(request.remote_addr)} with user_id {str(user_id)} failed: invalid user_id, it should be numerical.")
         return "ko", 400
@@ -271,6 +310,7 @@ def _app_login(user_id: str, md5hash: str) -> Tuple[str, int]:
     # Lookup key by the given username.
     user = dbhelper.get_user_by_id(userid=userid)
     if user is None:
+        _mqtt_rate_limit_failure(account)
         _LOGGER.error(
             "LOGIN_CHECK(app)=> User with ID \"%s\" does not exist.", str(userid))
         dbhelper.store_event(event_type=EventType.USER_LOGIN_FAILURE, user_id=user_id, details=f"App login from {str(request.remote_addr)} with user_id {str(user_id)} failed: user id does not exist.")
@@ -285,11 +325,13 @@ def _app_login(user_id: str, md5hash: str) -> Tuple[str, int]:
     expected_digest = expected_md5hash.hexdigest()
 
     if hmac.compare_digest(expected_digest, md5hash):
+        _mqtt_rate_limit_success(account)
         _LOGGER.info(
             "LOGIN_CHECK(app)=> App login attempt succeeded UserId: %s", str(userid))
         dbhelper.store_event(event_type=EventType.USER_LOGIN_SUCCESS, user_id=user_id, details=f"App login from {str(request.remote_addr)} with user_id {str(user_id)} succeeded.")
         return "ok", 200
     else:
+        _mqtt_rate_limit_failure(account)
         _LOGGER.warning(
             "LOGIN_CHECK(app)=> App login attempt failed (UserId %s)", str(userid))
         dbhelper.store_event(event_type=EventType.USER_LOGIN_FAILURE, user_id=user_id, details=f"App login from {str(request.remote_addr)} with user_id {str(user_id)} failed: invalid user/password combination.")
@@ -297,9 +339,13 @@ def _app_login(user_id: str, md5hash: str) -> Tuple[str, int]:
 
 
 def _device_login(mac: str, user_id: str, device_uuid: str, md5hash: str, clientid: str) -> Tuple[str, int]:
+    account = f"device:{mac}"
+    if not _mqtt_rate_limit_check(account):
+        return "ko", 403
     try:
         userid = int(user_id)
     except ValueError:
+        _mqtt_rate_limit_failure(account)
         _LOGGER.error(
             "LOGIN_CHECK(device)=> UserId \"%s\" is invalid.", str(user_id))
         dbhelper.store_event(event_type=EventType.DEVICE_CONNECT_FAILURE, user_id=user_id, details=f"Device {device_uuid} ({str(request.remote_addr)}) failed authentication: invalid user_id specified.")
@@ -315,6 +361,7 @@ def _device_login(mac: str, user_id: str, device_uuid: str, md5hash: str, client
     # Lookup key by the given username.
     user = dbhelper.get_user_by_id(userid=userid)
     if user is None:
+        _mqtt_rate_limit_failure(account)
         _LOGGER.error(
             "LOGIN_CHECK(device)=> User with ID \"%s\" does not exist.", str(userid))
         dbhelper.store_event(event_type=EventType.DEVICE_CONNECT_FAILURE, user_id=user_id, details=f"Device {device_uuid} ({str(request.remote_addr)}) failed authentication: provided user_id {str(user_id)} does not exist.")
@@ -325,6 +372,7 @@ def _device_login(mac: str, user_id: str, device_uuid: str, md5hash: str, client
     expected_digest = expected_md5hash.hexdigest()
 
     if hmac.compare_digest(expected_digest, md5hash):
+        _mqtt_rate_limit_success(account)
         dbhelper.associate_user_device(
             userid=userid, mac=mac, uuid=device_uuid, device_client_id=clientid)
         dbhelper.update_device_status(
@@ -335,6 +383,7 @@ def _device_login(mac: str, user_id: str, device_uuid: str, md5hash: str, client
         dbhelper.store_event(event_type=EventType.DEVICE_CONNECT_SUCCESS, user_id=user_id, device_uuid=device_uuid, details=f"Device {device_uuid} ({str(request.remote_addr)}) successfully authenticated.")
         return "ok", 200
     else:
+        _mqtt_rate_limit_failure(account)
         _LOGGER.warning(
             "Device login attempt failed (device with mac \"%s\", userid \"%s\")", str(mac), str(userid))
         dbhelper.store_event(event_type=EventType.DEVICE_CONNECT_FAILURE, user_id=user_id, device_uuid=device_uuid, details=f"Device {device_uuid} ({str(request.remote_addr)}) failed authentication.")
