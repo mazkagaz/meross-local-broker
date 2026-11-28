@@ -1,3 +1,17 @@
+# Notes de version — 1.6.3
+
+## 1.6.3 — synchronisation de l’horloge des appareils
+
+- Le broker répond désormais aux notifications `Appliance.System.Clock`
+  `PUSH` avec l’heure epoch courante.
+- Un écart supérieur à 5 secondes déclenche la réponse ; une horloge déjà
+  correcte est laissée tranquille.
+- Les appareils qui démarrent sans NTP ne restent plus bloqués sur un
+  timestamp relatif au boot.
+- Aucun changement de profil, de schéma ou d’API ; intégration et pairer
+  inchangés.
+- Tests : **229 passed**, 1 skipped, 27 subtests ; lint et CI complets.
+
 # Notes de version — 1.6.2
 
 ## 1.6.2 — MSL610 : luminosité et couleur fiables
