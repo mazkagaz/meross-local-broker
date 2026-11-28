@@ -2,18 +2,21 @@
 
 ## Local image (amd64)
 
-The Angular Web UI is built by CI before the Docker image; build it locally
-first if you want the ingress panel. Use **Node 22**, as CI does:
+The Angular Web UI is built by CI before the Docker image. A local image build
+**requires the UI to be generated first**; otherwise the Dockerfile now stops
+with an explicit error. Use **Node 22**, as CI does:
 
 ```bash
 cd meross_local_broker/addon_web_ui
 npm ci
 npm run build          # output: ../rootfs/var/www
 cd ../..
+test -f meross_local_broker/rootfs/var/www/index.html
+test -f meross_local_broker/rootfs/var/www/assets/env.js
 ```
 
-Angular 11 relies on the legacy OpenSSL provider. With Node 17 or newer, prefix
-the build with `NODE_OPTIONS=--openssl-legacy-provider npm run build`.
+Do not commit the generated `rootfs/var/www` files. The Dockerfile checks both
+required files before the image is built.
 
 ```bash
 docker build \
@@ -68,7 +71,7 @@ cd meross_local_broker/rootfs/opt/custom_broker
 ../../../../.venv/bin/python -m pytest -q
 ```
 
-Expected: **224 passed, 1 skipped, 27 subtests passed**.
+Expected: **229 passed, 1 skipped, 27 subtests passed**.
 
 HACS cannot install add-ons; the companion
 [Meross Local Cloud integration](https://github.com/mazkagaz/meross-local-cloud) is a

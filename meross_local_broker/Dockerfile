@@ -151,6 +151,13 @@ WORKDIR /
 COPY rootfs /
 COPY --chown=mosquitto:mosquitto --chmod=0755 rootfs/etc/mosquitto/certs /etc/mosquitto/
 
+# Fail the local build with a clear message when the Web UI was not built.
+# CI and the Builder build it first; a bare checkout does not contain it.
+RUN if [ ! -f /var/www/index.html ] || [ ! -f /var/www/assets/env.js ]; then \
+      echo "ERROR: Web UI missing. Build it first: cd meross_local_broker/addon_web_ui && npm ci && npm run build" >&2; \
+      exit 1; \
+    fi
+
 # Exercise the real API against disposable data as well as the Flask import check.
 RUN cd /opt/custom_broker && python3 -m unittest test_http_api
 
