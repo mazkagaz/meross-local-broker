@@ -57,6 +57,8 @@ _ABILITY_REQUEST_COOLDOWN_SECONDS = 300
 _DEVICE_REFRESH_INTERVAL_SECONDS = 60
 # Minimum interval between two Appliance.System.Time pushes to the same device (avoids loops if a device refuses it)
 _TIMEZONE_SYNC_COOLDOWN_SECONDS = 600
+_CLOCK_NAMESPACE = 'Appliance.System.Clock'
+_CLOCK_DRIFT_SECONDS = 5
 
 # MRS100 / roller-shutter support. The official cloud persists signalOpen /
 # signalClose and re-applies them to the device; the local broker emulates it.
@@ -368,6 +370,9 @@ class Broker:
         if namespace == 'Appliance.System.Ability' and method == 'GETACK':
             self._store_device_ability(device_uuid, payload)
 
+        if namespace == _CLOCK_NAMESPACE and method == 'PUSH':
+            self._reply_to_clock_push(device_uuid, payload, user)
+
         # Cache cover state/calibration reported by the device. Adjustment is a
         # report/result, not a desired config; it is never replayed.
         if namespace in (_ROLLER_SHUTTER_POSITION_NS, _ROLLER_SHUTTER_STATE_NS) \
@@ -455,6 +460,28 @@ class Broker:
         if _ROLLER_SHUTTER_STATE_NS in ability:
             dbhelper.update_device_channel(
                 device_uuid=device_uuid, channel_id=0)
+        return True
+
+    def _reply_to_clock_push(self, device_uuid: str, payload: dict,
+                             user) -> bool:
+        """Reply to a boot-relative Clock PUSH with the current epoch time."""
+        clock = (payload.get('payload') or {}).get('clock') or {}
+        timestamp = clock.get('timestamp')
+        if isinstance(timestamp, bool) or not isinstance(timestamp, (int, float)):
+            l.warning("Ignoring invalid Clock PUSH from device %s: %r",
+                      device_uuid, timestamp)
+            return False
+        now = int(time.time())
+        if abs(now - int(timestamp)) <= _CLOCK_DRIFT_SECONDS:
+            l.debug("Clock for device %s is already current (%s)", device_uuid,
+                    timestamp)
+            return False
+        msg, _ = _build_mqtt_message(
+            method='PUSH', namespace=_CLOCK_NAMESPACE,
+            payload={'clock': {'timestamp': now}}, dev_key=user.mqtt_key)
+        self.c.publish(topic=f"/appliance/{device_uuid}/subscribe", payload=msg)
+        l.info("Replied to Clock PUSH for device %s (device=%s, now=%s)",
+               device_uuid, timestamp, now)
         return True
 
     def _handle_message_to_agent(self, topic: str, payload: dict) -> None:

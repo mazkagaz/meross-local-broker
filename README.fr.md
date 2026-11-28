@@ -39,11 +39,11 @@ d'intégration spécifiques sont bienvenues.
 
 ## Compatibilité des versions
 
-| Brique                         | Version minimale | Remarques                                   |
-| ------------------------------ | ---------------- | ------------------------------------------- |
-| Broker                         | 1.6.2            | MSL610 final ; **1.5.0+** pour HA Container |
-| Intégration Meross Local Cloud | 4.0.7            | moteur profils 2.6 ; MSL610 final           |
-| Meross Local Pairer            | 2.1.1            | découverte et appairage HTTPS uniquement    |
+| Brique                         | Version minimale | Remarques                                                     |
+| ------------------------------ | ---------------- | ------------------------------------------------------------- |
+| Broker                         | 1.6.3            | Synchro horloge ; MSL610 final ; **1.5.0+** pour HA Container |
+| Intégration Meross Local Cloud | 4.0.7            | moteur profils 2.6 ; MSL610 final                             |
+| Meross Local Pairer            | 2.1.1            | découverte et appairage HTTPS uniquement                      |
 
 ## Ports
 
