@@ -16,9 +16,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - uses: actions/setup-python@v7
-        with:
-          python-version: "3.13"
+      - uses: ./.github/actions/setup-broker-python
 
       - name: Audit Python dependencies
         run: |

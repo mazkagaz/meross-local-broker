@@ -37,18 +37,7 @@ jobs:
           ref: 78c0e10eb1ff627e75ef07d243462402ea11f814
           path: cloud-src
 
-      - uses: actions/setup-python@v7
-        with:
-          python-version: "3.13"
-          cache: pip
-          cache-dependency-path: |
-            meross_local_broker/rootfs/opt/custom_broker/requirements_ci.txt
-
-      - name: Install test dependencies
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install \
-            -r meross_local_broker/rootfs/opt/custom_broker/requirements_ci.txt
+      - uses: ./.github/actions/setup-broker-python
 
       - name: Check the shared profile engine
         run: |
