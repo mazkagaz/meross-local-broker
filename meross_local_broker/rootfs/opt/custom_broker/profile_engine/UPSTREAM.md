@@ -1,7 +1,7 @@
 # Shared profile engine — provenance
 
 Source: `mazkagaz/meross-local-cloud`, `custom_components/meross_local_cloud/profiles/`.
-Pinned commit: `78c0e10eb1ff627e75ef07d243462402ea11f814`.
+Pinned commit: `ca282213a7cd35ca81886ba2d8dd7a1a97f041b5`.
 
 These files are copied byte-for-byte by `tools/sync_profile_engine.py`. Do not edit them here; update the integration, then re-run the sync tool.
 
