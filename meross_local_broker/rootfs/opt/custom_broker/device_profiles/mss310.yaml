@@ -10,7 +10,9 @@ match:
     all: [Appliance.Control.ToggleX]
 payloads:
   Appliance.Control.ToggleX:
-    methods: [GET, SET, GETACK, SETACK, PUSH]
+    # GET/GETACK are intentionally absent: firmware 2.1.17 reboots
+    # after a ToggleX GET. State is PUSH-driven.
+    methods: [SET, SETACK, PUSH]
     digest: digest
     fields:
       channel: { type: integer }
