@@ -37,6 +37,11 @@ Trames (`frames.jsonl`, une ligne par message) :
   "topic": "/appliance/<uuid>/publish",
   "namespace": "Appliance.RollerShutter.Position",
   "method": "GETACK",
+  "header": {
+    "from": "/appliance/<uuid>/publish",
+    "namespace": "Appliance.RollerShutter.Position",
+    "method": "GETACK"
+  },
   "payload": { "channel": 0, "position": 42, "state": 1 }
 }
 ```
@@ -48,8 +53,9 @@ Trames (`frames.jsonl`, une ligne par message) :
 
 ## Assainissement
 
-- `sign` et `messageId` retirés ; les identifiants de message éventuellement
-  utiles sont remplacés par un hash court.
+- `sign` et `messageId` retirés du header ; les identifiants de message
+  éventuellement utiles sont remplacés par un hash court.
+- `header.from` conservé mais UUID redacté comme le topic.
 - Horodatages conservés, jamais les clés, tokens ou mots de passe.
 - MAC affichable en clair ou masquée selon le réglage de la page avancée.
 - Trame tronquée au-delà d'une taille configurable, avec marqueur

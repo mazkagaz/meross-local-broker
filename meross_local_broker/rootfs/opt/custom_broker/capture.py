@@ -223,12 +223,14 @@ class CaptureSession:
             return
         header = payload.get("header") if isinstance(payload, dict) else None
         header = header if isinstance(header, dict) else {}
+        safe_header = _sanitize(header)
         frame = {
             "ts": round(now - self.started_at, 3),
             "dir": direction,
             "topic": redact_text(topic),
             "namespace": header.get("namespace"),
             "method": header.get("method"),
+            "header": safe_header,
             "payload": _sanitize(payload.get("payload")
                                  if isinstance(payload, dict) else None),
         }
