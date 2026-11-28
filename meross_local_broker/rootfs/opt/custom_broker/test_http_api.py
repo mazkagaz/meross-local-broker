@@ -5,6 +5,7 @@ import base64
 from datetime import datetime, timedelta, timezone
 import hashlib
 import json
+import os
 import tempfile
 import unittest
 from pathlib import Path
@@ -59,10 +60,14 @@ class HttpApiCompatibilityTest(unittest.TestCase):
         self.client = self.app.test_client()
         from rate_limit import login_rate_limiter
         login_rate_limiter.reset()
+        from blueprints.devs import mqtt_login_rate_limiter
+        mqtt_login_rate_limiter.reset()
 
     def tearDown(self):
         from rate_limit import login_rate_limiter
         login_rate_limiter.reset()
+        from blueprints.devs import mqtt_login_rate_limiter
+        mqtt_login_rate_limiter.reset()
         self.database.db_session.remove()
 
     @staticmethod
@@ -112,6 +117,20 @@ class HttpApiCompatibilityTest(unittest.TestCase):
         self.assertEqual(
             _parse_client_version(None),
             (ClientType.UNKNOWN, None))
+
+    def test_legacy_login_upgrades_with_the_effective_md5_secret(self):
+        from db_helper import dbhelper
+        from utilities import _hash_password
+        legacy_hash = _hash_password(
+            self.user.salt, hashlib.md5(b'test-password').hexdigest())
+        dbhelper.set_user_password_hash(self.user, legacy_hash)
+        response = self.client.post(
+            '/v1/Auth/Login',
+            json=self.envelope({'email': 'test@example.com',
+                                'password': 'test-password'}),
+            headers={'User-Agent': 'MerossIOT/0.4.5'})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.get_json()['apiStatus'], 0)
 
     def test_numeric_timestamp_signature_is_accepted(self):
         from constants import _SECRET
@@ -512,6 +531,53 @@ class HttpApiCompatibilityTest(unittest.TestCase):
         return self.client.post('/_devs_/auth', json={
             'username': mac, 'password': f'{self.user_id}_{digest}',
             'clientid': f'fmware:{uuid}_test'})
+
+    def test_mqtt_custom_login_rate_limit_is_opt_in(self):
+        from blueprints.devs import mqtt_login_rate_limiter
+        account = "mqtt:test@example.com"
+        for _ in range(6):
+            response = self.client.post('/_devs_/auth', json={
+                'username': 'test@example.com',
+                'password': 'wrong-password',
+                'clientid': 'not-a-meross-client',
+            })
+            self.assertEqual(response.status_code, 403)
+        self.assertIsNone(
+            mqtt_login_rate_limiter.check(account, 'test@example.com'))
+
+    def test_mqtt_custom_login_is_rate_limited_when_enabled(self):
+        from blueprints.devs import mqtt_login_rate_limiter
+        account = "mqtt:test@example.com"
+        with patch.dict(os.environ, {"MQTT_AUTH_RATE_LIMIT": "true"}):
+            for _ in range(5):
+                response = self.client.post('/_devs_/auth', json={
+                    'username': 'test@example.com',
+                    'password': 'wrong-password',
+                    'clientid': 'not-a-meross-client',
+                })
+                self.assertEqual(response.status_code, 403)
+            self.assertIsNotNone(
+                mqtt_login_rate_limiter.check(account, 'test@example.com'))
+            response = self.client.post('/_devs_/auth', json={
+                'username': 'test@example.com',
+                'password': 'wrong-password',
+                'clientid': 'not-a-meross-client',
+            })
+            self.assertEqual(response.status_code, 403)
+
+    def test_mqtt_device_login_is_never_rate_limited(self):
+        from blueprints.devs import mqtt_login_rate_limiter
+        mac, uuid = 'AA:BB:CC:DD:EE:01', 'aabbccddeeff00112233445566778899'
+        with patch.dict(os.environ, {"MQTT_AUTH_RATE_LIMIT": "true"}):
+            for _ in range(6):
+                response = self.client.post('/_devs_/auth', json={
+                    'username': mac,
+                    'password': f'{self.user_id}_wrong',
+                    'clientid': f'fmware:{uuid}_test',
+                })
+                self.assertEqual(response.status_code, 403)
+        self.assertIsNone(
+            mqtt_login_rate_limiter.check(f"mqtt:device:{mac}", f"device:{mac}"))
 
     def test_forgotten_device_is_revoked_until_claimed(self):
         from db_helper import dbhelper

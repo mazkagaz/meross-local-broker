@@ -29,9 +29,11 @@ options:
   debug_mode: false
   device_timezone: ""
   mqtt_integrity_mode: "observe"
+  mqtt_auth_rate_limit: false
 schema:
   reinit_db: "bool"
   advertise: "bool"
   debug_mode: "bool"
   device_timezone: "str?"
   mqtt_integrity_mode: "list(observe|enforce)"
+  mqtt_auth_rate_limit: "bool"

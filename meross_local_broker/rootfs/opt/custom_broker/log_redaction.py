@@ -94,6 +94,12 @@ class RedactionFilter(logging.Filter):
             record.msg = self._redactor.redact(record.msg)
         if record.args:
             record.args = _redact_args(self._redactor, record.args)
+        if record.exc_info and not record.exc_text:
+            record.exc_text = logging.Formatter().formatException(record.exc_info)
+        if record.exc_text:
+            record.exc_text = self._redactor.redact(record.exc_text)
+        if record.stack_info:
+            record.stack_info = self._redactor.redact(record.stack_info)
         return True
 
 

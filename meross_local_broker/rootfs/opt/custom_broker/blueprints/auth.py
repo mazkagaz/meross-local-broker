@@ -9,7 +9,7 @@ from typing import Dict, Optional, Tuple
 
 from flask import Blueprint, request
 
-from authentication import _attempt_password_upgrade, _user_login
+from authentication import _user_login
 from decorator import meross_http_api
 from messaging import make_api_response
 from packaging.version import Version, parse as parse_version, InvalidVersion
@@ -64,22 +64,9 @@ def login(api_payload: Dict, *args, **kwargs):
     if password is None:
         raise HttpApiError("Missing password parameter")
 
-    # Attempt a password upgrade here if calling user-agent is old enough
-    client_type, client_version = _parse_client_version(request.headers.get("User-Agent"))
-    if client_type == ClientType.HA_LIBRARY:
-        try:
-            parsed_version = parse_version(client_version)
-        except InvalidVersion:
-            _LOGGER.warning("Failed to parse version from string %s.",client_version)
-            parsed_version = None
-
-        if parsed_version is not None and parsed_version < Version("0.4.6.0"):
-            _LOGGER.warning("Detected login attempt from old client using non-hashed password.")
-            if _attempt_password_upgrade(email, password):
-                _LOGGER.warning("Password upgrade successful.")
-            else:
-                _LOGGER.error("Password upgrade failed.")
-
+    # _user_login computes the effective MD5 secret and upgrades a legacy
+    # hash with that same secret. Upgrading here with the raw password would
+    # make the subsequent MD5 verification fail.
     user, token = _user_login(email, password, False)
     _LOGGER.info("User: %s successfully logged in" % email)
     data = {

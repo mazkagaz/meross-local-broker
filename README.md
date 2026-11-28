@@ -252,13 +252,14 @@ Options are set in **Settings → Add-ons → Meross Local Broker →
 Configuration**. Details are in [DOCS.md](meross_local_broker/DOCS.md) (also
 available in [French](meross_local_broker/DOCS.fr.md)).
 
-| Option                | Default   | Purpose                                                      |
-| --------------------- | --------- | ------------------------------------------------------------ |
-| `advertise`           | `true`    | mDNS advertisement of the broker and HTTPS API               |
-| `debug_mode`          | `false`   | detailed logs                                                |
-| `device_timezone`     | empty     | timezone (+ DST) pushed to devices; empty = HA timezone      |
-| `mqtt_integrity_mode` | `observe` | signature/freshness/anti-replay check of publications        |
-| `reinit_db`           | `false`   | erase local account and devices at startup (troubleshooting) |
+| Option                 | Default   | Purpose                                                      |
+| ---------------------- | --------- | ------------------------------------------------------------ |
+| `advertise`            | `true`    | mDNS advertisement of the broker and HTTPS API               |
+| `debug_mode`           | `false`   | detailed logs                                                |
+| `device_timezone`      | empty     | timezone (+ DST) pushed to devices; empty = HA timezone      |
+| `mqtt_integrity_mode`  | `observe` | signature/freshness/anti-replay check of publications        |
+| `mqtt_auth_rate_limit` | `false`   | rate-limit custom/app MQTT login failures; devices exempt    |
+| `reinit_db`            | `false`   | erase local account and devices at startup (troubleshooting) |
 
 ## Device profiles (advanced mode)
 
