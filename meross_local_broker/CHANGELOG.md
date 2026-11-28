@@ -1,3 +1,13 @@
+## 1.6.3
+
+- Réponse aux notifications `Appliance.System.Clock` **PUSH** : si l’heure
+  annoncée par l’appareil s’écarte de plus de 5 secondes de l’heure courante,
+  le broker renvoie un `PUSH` Clock avec l’heure epoch.
+- Les appareils démarrant sans NTP peuvent ainsi synchroniser leur horloge
+  locale au lieu de rester sur un timestamp relatif au boot.
+- Correctif générique, sans changement de profil ni d’API.
+- Tests : **229 passed**, 1 skipped, 27 subtests.
+
 ## 1.6.2
 
 - Profil MSL610 **2026.11.4** : luminosité avec `capacity: 4`, température de

@@ -4,8 +4,8 @@
     {
       "source": "README.fr.md",
       "translation": "README.md",
-      "source_sha256": "62d24226e50732b5d02698a34c2555c2c2784d349b94fdd86a19eda134d1f7a9",
-      "translation_sha256": "c03a285f704e8ba6f47ebeb3fe57c5a81a29a50f5de60faf3c2f7638f77ae544"
+      "source_sha256": "9545f2887cc6e9ed6a99bce90fb841841b96ebed08033eedcaab72ec4d7d5305",
+      "translation_sha256": "9cb0cb630d1662418f283e4d1378ca2b57cc4a77e538b1d0119b67dbc37bd27e"
     },
     {
       "source": "meross_local_broker/DOCS.fr.md",
