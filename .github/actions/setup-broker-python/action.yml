@@ -1,0 +1,26 @@
+name: Setup broker Python
+description: Install Python and the pinned broker test dependencies.
+
+inputs:
+  python-version:
+    description: Python version used by the job.
+    required: false
+    default: "3.13"
+  requirements:
+    description: Requirements file to install.
+    required: false
+    default: meross_local_broker/rootfs/opt/custom_broker/requirements_ci.txt
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-python@v7
+      with:
+        python-version: ${{ inputs.python-version }}
+        cache: pip
+        cache-dependency-path: ${{ inputs.requirements }}
+    - name: Install Python dependencies
+      shell: bash
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install -r "${{ inputs.requirements }}"
