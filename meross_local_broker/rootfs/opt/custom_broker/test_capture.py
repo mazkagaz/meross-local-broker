@@ -73,6 +73,12 @@ class CaptureTest(unittest.TestCase):
         self.assertNotIn("key", frame["payload"])
         self.assertNotIn("sign", frame)
         self.assertNotIn("messageId", frame)
+        self.assertIn("header", frame)
+        self.assertEqual(frame["header"]["namespace"],
+                         "Appliance.RollerShutter.Position")
+        self.assertEqual(frame["header"]["method"], "GETACK")
+        self.assertNotIn("sign", frame["header"])
+        self.assertNotIn("messageId", frame["header"])
         raw = json.dumps(frame)
         self.assertNotIn(UUID, raw)
         self.assertNotIn("AA:BB:CC:DD:EE:FF", raw)
