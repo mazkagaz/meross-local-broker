@@ -62,6 +62,10 @@ only enables detailed logs.
   `observe` logs mismatches and lets the message through; `enforce` rejects it.
   Keep `observe` for at least one release before enabling `enforce`.
 
+- **`mqtt_auth_rate_limit`** (`false`): rate-limits repeated MQTT login
+  failures for custom and app accounts. Device connections (`fmware:`) are
+  always exempt so a plug cannot be locked out by a stale key.
+
 Each MQTT device is limited to its own topics
 (`/appliance/<uuid>/publish` and `/appliance/<uuid>/subscribe`); an app account
 can only publish to the devices it owns.

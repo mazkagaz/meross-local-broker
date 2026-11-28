@@ -2,6 +2,7 @@
 # Upstream: https://github.com/albertogeniola/ha-meross-local-broker (Apache-2.0).
 """Flask blueprint for device-specific API"""
 import hmac
+import os
 import re
 from hashlib import md5
 from typing import Tuple
@@ -42,11 +43,19 @@ _ACL_DENIAL_LOG = ExpiringDict(max_age_seconds=300, max_len=5000)
 mqtt_login_rate_limiter = LoginRateLimiter()
 
 
+def _mqtt_rate_limit_enabled() -> bool:
+    return os.getenv("MQTT_AUTH_RATE_LIMIT", "false").strip().lower() in {
+        "1", "true", "yes", "on"
+    }
+
+
 def _mqtt_rate_limit_account(account: str) -> str:
     return f"mqtt:{account}"
 
 
 def _mqtt_rate_limit_check(account: str) -> bool:
+    if not _mqtt_rate_limit_enabled():
+        return True
     retry_after = mqtt_login_rate_limiter.check(
         _mqtt_rate_limit_account(account), account)
     if retry_after is not None:
@@ -58,12 +67,15 @@ def _mqtt_rate_limit_check(account: str) -> bool:
 
 
 def _mqtt_rate_limit_failure(account: str) -> None:
-    mqtt_login_rate_limiter.record_failure(
-        _mqtt_rate_limit_account(account), account)
+    if _mqtt_rate_limit_enabled():
+        mqtt_login_rate_limiter.record_failure(
+            _mqtt_rate_limit_account(account), account)
 
 
 def _mqtt_rate_limit_success(account: str) -> None:
-    mqtt_login_rate_limiter.clear(_mqtt_rate_limit_account(account), account)
+    if _mqtt_rate_limit_enabled():
+        mqtt_login_rate_limiter.clear(
+            _mqtt_rate_limit_account(account), account)
 
 
 def _accepted_topics(acc: int):
@@ -339,13 +351,9 @@ def _app_login(user_id: str, md5hash: str) -> Tuple[str, int]:
 
 
 def _device_login(mac: str, user_id: str, device_uuid: str, md5hash: str, clientid: str) -> Tuple[str, int]:
-    account = f"device:{mac}"
-    if not _mqtt_rate_limit_check(account):
-        return "ko", 403
     try:
         userid = int(user_id)
     except ValueError:
-        _mqtt_rate_limit_failure(account)
         _LOGGER.error(
             "LOGIN_CHECK(device)=> UserId \"%s\" is invalid.", str(user_id))
         dbhelper.store_event(event_type=EventType.DEVICE_CONNECT_FAILURE, user_id=user_id, details=f"Device {device_uuid} ({str(request.remote_addr)}) failed authentication: invalid user_id specified.")
@@ -361,7 +369,6 @@ def _device_login(mac: str, user_id: str, device_uuid: str, md5hash: str, client
     # Lookup key by the given username.
     user = dbhelper.get_user_by_id(userid=userid)
     if user is None:
-        _mqtt_rate_limit_failure(account)
         _LOGGER.error(
             "LOGIN_CHECK(device)=> User with ID \"%s\" does not exist.", str(userid))
         dbhelper.store_event(event_type=EventType.DEVICE_CONNECT_FAILURE, user_id=user_id, details=f"Device {device_uuid} ({str(request.remote_addr)}) failed authentication: provided user_id {str(user_id)} does not exist.")
@@ -372,7 +379,6 @@ def _device_login(mac: str, user_id: str, device_uuid: str, md5hash: str, client
     expected_digest = expected_md5hash.hexdigest()
 
     if hmac.compare_digest(expected_digest, md5hash):
-        _mqtt_rate_limit_success(account)
         dbhelper.associate_user_device(
             userid=userid, mac=mac, uuid=device_uuid, device_client_id=clientid)
         dbhelper.update_device_status(
@@ -383,7 +389,6 @@ def _device_login(mac: str, user_id: str, device_uuid: str, md5hash: str, client
         dbhelper.store_event(event_type=EventType.DEVICE_CONNECT_SUCCESS, user_id=user_id, device_uuid=device_uuid, details=f"Device {device_uuid} ({str(request.remote_addr)}) successfully authenticated.")
         return "ok", 200
     else:
-        _mqtt_rate_limit_failure(account)
         _LOGGER.warning(
             "Device login attempt failed (device with mac \"%s\", userid \"%s\")", str(mac), str(userid))
         dbhelper.store_event(event_type=EventType.DEVICE_CONNECT_FAILURE, user_id=user_id, device_uuid=device_uuid, details=f"Device {device_uuid} ({str(request.remote_addr)}) failed authentication.")

@@ -5,6 +5,10 @@ source /opt/utils/bashutils.sh
 pushd /opt/custom_broker >/dev/null
 export PYTHONPATH=/opt/custom_broker${PYTHONPATH:+:$PYTHONPATH}
 
+# MQTT account rate limiting (custom/app only; devices are always exempt).
+MQTT_AUTH_RATE_LIMIT=$(get_option 'mqtt_auth_rate_limit' 'false')
+export MQTT_AUTH_RATE_LIMIT
+
 DEBUG_MODE=$(get_option 'debug_mode' 'false')
 if [[ $DEBUG_MODE == "true" ]]; then
   bashio::log.warning "Verbose logging enabled."

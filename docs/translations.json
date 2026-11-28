@@ -4,14 +4,14 @@
     {
       "source": "README.fr.md",
       "translation": "README.md",
-      "source_sha256": "9545f2887cc6e9ed6a99bce90fb841841b96ebed08033eedcaab72ec4d7d5305",
-      "translation_sha256": "9cb0cb630d1662418f283e4d1378ca2b57cc4a77e538b1d0119b67dbc37bd27e"
+      "source_sha256": "00eec9e0a6fdc2fc6a7d93f1410a98d8b406bb2501cf19dd9c90cee3e8f046ea",
+      "translation_sha256": "456d9aa057881c429c606c6f8c6f8727065d743752b931b37ef5f642806f4ed5"
     },
     {
       "source": "meross_local_broker/DOCS.fr.md",
       "translation": "meross_local_broker/DOCS.md",
-      "source_sha256": "62b0eff0c6987cff3978bea3258e36afd503f2b8d988c3e0aae6b0a8cb076b4a",
-      "translation_sha256": "bced21211bf32f18c8fbac0dbef16fb66149c4986f264dba5ca80e655aee3b17"
+      "source_sha256": "eefb2e06e02f50d470d356eea3f5677741e74ef017c712a85724dab03f1a854d",
+      "translation_sha256": "8f1f29362efae334fd18081e27635441316f1c261b54ce5390271d37efa90c91"
     },
     {
       "source": "docs/guides/DEVICE-TUNING.fr.md",

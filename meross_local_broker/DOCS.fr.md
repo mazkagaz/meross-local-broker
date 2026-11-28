@@ -64,6 +64,11 @@ n'est publié : `debug_mode` ne fait qu'activer les journaux détaillés.
   `observe` journalise les écarts et laisse passer le message ; `enforce` le
   rejette. Laisser `observe` au moins une version avant d'activer `enforce`.
 
+- **`mqtt_auth_rate_limit`** (`false`) : limite les échecs de connexion MQTT
+  répétés pour les comptes custom et app. Les connexions d'appareils
+  (`fmware:`) en sont toujours exemptées, pour qu'une ancienne clé ne puisse
+  pas bloquer une prise.
+
 Chaque appareil MQTT est limité à ses propres topics
 (`/appliance/<uuid>/publish` et `/appliance/<uuid>/subscribe`) ; un compte
 applicatif ne peut publier que vers les appareils qu'il possède.
