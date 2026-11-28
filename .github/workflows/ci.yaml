@@ -105,7 +105,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Download the current image
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: broker-image
           path: ${{ runner.temp }}
@@ -127,7 +127,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Download the current image
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: broker-image
           path: ${{ runner.temp }}
@@ -226,7 +226,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Download Web UI build
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: webui-dist
           path: meross_local_broker/rootfs/var/www
